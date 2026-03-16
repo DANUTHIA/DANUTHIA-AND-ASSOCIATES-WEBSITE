@@ -1,0 +1,68 @@
+{
+  "entities": {
+    "BookingRequest": {
+      "title": "Booking Request",
+      "description": "A consultation booking request submitted by a client.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who submitted the request."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "The full name of the client."
+        },
+        "projectScale": {
+          "type": "string",
+          "enum": ["residential", "commercial", "regional"],
+          "description": "The scale of the project."
+        },
+        "preferredDate": {
+          "type": "string",
+          "description": "The preferred date for the consultation (YYYY-MM-DD)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the request was created."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "reviewed", "contacted"],
+          "description": "The status of the booking request."
+        }
+      },
+      "required": ["userId", "fullName", "projectScale", "preferredDate", "createdAt", "status"]
+    },
+    "User": {
+      "title": "User Profile",
+      "description": "User profile data.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["client", "admin"]
+        }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "/bookingRequests/{requestId}": {
+      "schema": {
+        "$ref": "#/entities/BookingRequest"
+      },
+      "description": "Stores all consultation booking requests."
+    },
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/User"
+      },
+      "description": "Stores user profiles and roles."
+    }
+  }
+}
