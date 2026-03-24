@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowDown, Box, Map, Building2, Quote, ArrowRight, Calendar, ChevronRight, Maximize, CheckCircle } from 'lucide-react';
-import { motion } from 'motion/react';
+import { ArrowDown, Box, Map, Building2, Quote, ArrowRight, Calendar, ChevronRight, Maximize, CheckCircle, HardHat } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useLocation, Link } from 'react-router-dom';
 import Logo from '../components/Logo';
 
-const fadeInUp = {
+const HERO_IMAGES = [
+  "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2000&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2000&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2000&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2000&auto=format&fit=crop"
+];
+
+const fadeInUp: any = {
   hidden: { opacity: 0, y: 40 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
 };
 
-const staggerContainer = {
+const staggerContainer: any = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -31,6 +38,14 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (location.hash === '#book') {
@@ -120,7 +135,7 @@ export default function Home() {
           </motion.div>
         </div>
 
-        {/* Right Column: 2D Integration Zone */}
+        {/* Right Column: Cinematic Image Slider */}
         <div className="bg-charcoal p-4 md:p-8 flex items-center justify-center min-h-[50vh] lg:min-h-full">
           <motion.div 
             initial={{ opacity: 0 }}
@@ -128,38 +143,45 @@ export default function Home() {
             transition={{ duration: 1 }}
             className="w-full h-full min-h-[400px] border border-bronze/30 shadow-[0_0_40px_rgba(157,138,94,0.15)] flex items-center justify-center relative overflow-hidden group rounded-sm"
           >
-            {/* Simulated Grid Background */}
-            <div className="absolute inset-0 opacity-20" style={{
-              backgroundImage: `linear-gradient(to right, rgba(98, 117, 133, 0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(98, 117, 133, 0.5) 1px, transparent 1px)`,
-              backgroundSize: '40px 40px'
-            }}></div>
-            
-            {/* Kisumu Waterfront Master Plan Image (2D Top-Down View) */}
-            <div className="absolute inset-0">
-              <img 
-                src="https://images.unsplash.com/photo-1511818966892-d7d671e672a2?q=80&w=2000&auto=format&fit=crop" 
-                alt="Kisumu Waterfront 2D Master Plan" 
-                className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 mix-blend-luminosity group-hover:mix-blend-normal"
+            {/* Image Crossfade */}
+            <AnimatePresence mode="popLayout">
+              <motion.img
+                key={currentImageIndex}
+                src={HERO_IMAGES[currentImageIndex]}
+                alt="Architectural Showcase"
+                className="absolute inset-0 w-full h-full object-cover mix-blend-luminosity opacity-80"
+                initial={{ opacity: 0, scale: 1.1 }}
+                animate={{ opacity: 0.8, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.5, ease: "easeInOut" }}
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-transparent opacity-80"></div>
-            </div>
+            </AnimatePresence>
+
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-charcoal/30 pointer-events-none"></div>
+            
+            {/* Simulated Grid Background Overlay */}
+            <div className="absolute inset-0 opacity-10 mix-blend-overlay pointer-events-none" style={{
+              backgroundImage: `linear-gradient(to right, rgba(255, 255, 255, 0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 1px, transparent 1px)`,
+              backgroundSize: '40px 40px'
+            }}></div>
 
             {/* Floating UI Elements */}
-            <div className="absolute top-4 left-4 bg-charcoal/90 backdrop-blur-sm border border-steel/30 p-3 text-xs font-mono text-concrete uppercase tracking-widest flex items-center gap-2 z-10">
-              <div className="w-2 h-2 rounded-full bg-bronze animate-pulse"></div>
-              Kisumu Waterfront Master Plan
+            <div className="absolute top-4 left-4 bg-charcoal/90 backdrop-blur-sm border border-steel/30 p-3 text-xs font-mono text-concrete uppercase tracking-widest flex items-center gap-3 z-10 pointer-events-none">
+              <div className="flex gap-1">
+                {HERO_IMAGES.map((_, idx) => (
+                  <div 
+                    key={idx} 
+                    className={`h-1 transition-all duration-500 ${idx === currentImageIndex ? 'w-4 bg-bronze' : 'w-1 bg-steel'}`}
+                  />
+                ))}
+              </div>
+              Featured Projects
             </div>
 
             <div className="absolute bottom-4 right-4 bg-charcoal/90 backdrop-blur-sm border border-steel/30 p-2 text-steel hover:text-bronze transition-colors z-10 cursor-pointer">
               <Maximize size={16} />
-            </div>
-
-            <div className="relative z-10 text-center pointer-events-none">
-              <Map size={48} className="mx-auto mb-4 text-bronze/50 group-hover:text-bronze transition-colors duration-500" />
-              <p className="font-mono text-bronze/90 text-sm tracking-widest uppercase bg-charcoal/80 px-4 py-2 backdrop-blur-sm border border-bronze/20">
-                2D Master Plan Render
-              </p>
             </div>
           </motion.div>
         </div>
@@ -174,7 +196,7 @@ export default function Home() {
         viewport={{ once: true, margin: "-100px" }}
         variants={staggerContainer}
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-steel/30">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-steel/30 border-y border-steel/30">
           {/* Card 1 */}
           <motion.div variants={fadeInUp} className="bg-steel text-concrete p-8 md:p-12 relative group hover:bg-charcoal transition-colors duration-500 overflow-hidden">
             <div className="absolute top-8 right-8 text-concrete/30 group-hover:text-bronze group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
@@ -225,6 +247,23 @@ export default function Home() {
               ))}
             </div>
           </motion.div>
+
+          {/* Card 4 */}
+          <motion.div variants={fadeInUp} className="bg-steel text-concrete p-8 md:p-12 relative group hover:bg-charcoal transition-colors duration-500 overflow-hidden">
+            <div className="absolute top-8 right-8 text-concrete/30 group-hover:text-bronze group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500">
+              <HardHat size={24} />
+            </div>
+            <h2 className="font-display text-3xl font-bold uppercase tracking-tight mb-16 pr-8 relative z-10 group-hover:translate-x-2 transition-transform duration-300">
+              Construction Management
+            </h2>
+            <div className="flex flex-wrap gap-2 mt-auto relative z-10">
+              {['Site Supervision', 'Cost Control'].map(tag => (
+                <span key={tag} className="px-3 py-1 border border-concrete/20 text-xs uppercase tracking-wider group-hover:border-bronze/50 group-hover:text-bronze transition-colors duration-300">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </motion.section>
 
@@ -253,17 +292,19 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-steel/30">
           {/* Project 1 */}
           <Link to="/portfolio" className="group cursor-pointer block">
-            <motion.div variants={fadeInUp}>
+            <motion.div variants={fadeInUp} className="h-full flex flex-col">
               <div className="aspect-square relative overflow-hidden bg-charcoal">
-                <img 
-                  src="https://images.unsplash.com/photo-1565008576549-57569a49371d?q=80&w=800&auto=format&fit=crop" 
-                  alt="Ahero Topographical drainage analysis" 
-                  className="object-cover w-full h-full opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 mix-blend-luminosity group-hover:mix-blend-normal"
+                <motion.img 
+                  whileHover={{ scale: 1.15, filter: 'brightness(1.1) contrast(1.1)' }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=800&auto=format&fit=crop" 
+                  alt="Ahero Flood Mitigation" 
+                  className="object-cover w-full h-full opacity-80 group-hover:opacity-100 mix-blend-luminosity group-hover:mix-blend-normal"
                   referrerPolicy="no-referrer"
                 />
                 <div className="absolute inset-0 border border-steel/20 m-4 pointer-events-none group-hover:border-bronze/50 transition-colors duration-500"></div>
               </div>
-              <div className="p-6 border-t border-steel/30 bg-concrete group-hover:bg-charcoal group-hover:text-concrete transition-colors duration-300">
+              <div className="p-6 border-t border-steel/30 bg-concrete group-hover:bg-charcoal group-hover:text-concrete transition-colors duration-300 flex-grow">
                 <h3 className="font-display font-bold text-xl uppercase mb-2 group-hover:text-bronze transition-colors">Ahero Flood Mitigation</h3>
                 <p className="text-sm font-mono text-steel group-hover:text-concrete/70 uppercase tracking-wider transition-colors">Topographical drainage analysis</p>
               </div>
@@ -272,17 +313,19 @@ export default function Home() {
 
           {/* Project 2 */}
           <Link to="/portfolio" className="group cursor-pointer block">
-            <motion.div variants={fadeInUp}>
+            <motion.div variants={fadeInUp} className="h-full flex flex-col">
               <div className="aspect-square relative overflow-hidden bg-charcoal">
-                <img 
-                  src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=800&auto=format&fit=crop" 
-                  alt="Maseno Land-use mapping" 
-                  className="object-cover w-full h-full opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 mix-blend-luminosity group-hover:mix-blend-normal"
+                <motion.img 
+                  whileHover={{ scale: 1.15, filter: 'brightness(1.1) contrast(1.1)' }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  src="https://images.unsplash.com/photo-1590486803833-1c5dc8ddd4c8?q=80&w=800&auto=format&fit=crop" 
+                  alt="Maseno Environmental Conservation" 
+                  className="object-cover w-full h-full opacity-80 group-hover:opacity-100 mix-blend-luminosity group-hover:mix-blend-normal"
                   referrerPolicy="no-referrer"
                 />
                 <div className="absolute inset-0 border border-steel/20 m-4 pointer-events-none group-hover:border-bronze/50 transition-colors duration-500"></div>
               </div>
-              <div className="p-6 border-t border-steel/30 bg-concrete group-hover:bg-charcoal group-hover:text-concrete transition-colors duration-300">
+              <div className="p-6 border-t border-steel/30 bg-concrete group-hover:bg-charcoal group-hover:text-concrete transition-colors duration-300 flex-grow">
                 <h3 className="font-display font-bold text-xl uppercase mb-2 group-hover:text-bronze transition-colors">Maseno Environmental Conservation</h3>
                 <p className="text-sm font-mono text-steel group-hover:text-concrete/70 uppercase tracking-wider transition-colors">Land-use mapping</p>
               </div>
@@ -291,17 +334,19 @@ export default function Home() {
 
           {/* Project 3 */}
           <Link to="/portfolio" className="group cursor-pointer block">
-            <motion.div variants={fadeInUp}>
+            <motion.div variants={fadeInUp} className="h-full flex flex-col">
               <div className="aspect-square relative overflow-hidden bg-charcoal">
-                <img 
-                  src="https://images.unsplash.com/photo-1519331379826-f10be5486c6f?q=80&w=800&auto=format&fit=crop" 
-                  alt="Public Parks GIS Feature class mapping" 
-                  className="object-cover w-full h-full opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 mix-blend-luminosity group-hover:mix-blend-normal"
+                <motion.img 
+                  whileHover={{ scale: 1.15, filter: 'brightness(1.1) contrast(1.1)' }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=800&auto=format&fit=crop" 
+                  alt="Public Parks Construction Management" 
+                  className="object-cover w-full h-full opacity-80 group-hover:opacity-100 mix-blend-luminosity group-hover:mix-blend-normal"
                   referrerPolicy="no-referrer"
                 />
                 <div className="absolute inset-0 border border-steel/20 m-4 pointer-events-none group-hover:border-bronze/50 transition-colors duration-500"></div>
               </div>
-              <div className="p-6 border-t border-steel/30 bg-concrete group-hover:bg-charcoal group-hover:text-concrete transition-colors duration-300">
+              <div className="p-6 border-t border-steel/30 bg-concrete group-hover:bg-charcoal group-hover:text-concrete transition-colors duration-300 flex-grow">
                 <h3 className="font-display font-bold text-xl uppercase mb-2 group-hover:text-bronze transition-colors">Public Parks Network</h3>
                 <p className="text-sm font-mono text-steel group-hover:text-concrete/70 uppercase tracking-wider transition-colors">GIS Feature class mapping</p>
               </div>

@@ -5,10 +5,10 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
 
-  --color-concrete: #F5F5F5;
-  --color-charcoal: #2C3033;
-  --color-bronze: #9D8A5E;
-  --color-steel: #627585;
+  --color-concrete: #F4F0EA;
+  --color-charcoal: #1A1918;
+  --color-bronze: #C46D3B;
+  --color-steel: #8A847C;
 }
 
 html {

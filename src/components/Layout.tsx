@@ -3,8 +3,9 @@ import { Menu, X, CheckCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Outlet, Link, NavLink, useLocation } from 'react-router-dom';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, handleFirestoreError, OperationType } from '../firebase';
 import Logo from './Logo';
+import Global3DBackground from './Global3DBackground';
 
 export default function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -23,7 +24,7 @@ export default function Layout() {
       setEmail('');
       setTimeout(() => setSubscribed(false), 5000);
     } catch (error) {
-      console.error("Newsletter subscription failed", error);
+      handleFirestoreError(error, OperationType.CREATE, 'newsletter');
     }
   };
 
@@ -31,9 +32,10 @@ export default function Layout() {
     isActive ? "text-bronze transition-colors" : "hover:text-bronze transition-colors";
 
   return (
-    <div className="min-h-screen bg-concrete text-charcoal selection:bg-bronze selection:text-white flex flex-col">
+    <div className="min-h-screen bg-transparent text-charcoal selection:bg-bronze selection:text-white flex flex-col relative">
+      <Global3DBackground />
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-concrete border-b border-steel/30">
+      <nav className="sticky top-0 z-50 bg-concrete/90 backdrop-blur-md border-b border-steel/30">
         <div className="w-full px-4 md:px-8 flex items-center justify-between h-16">
           <Link to="/" className="hover:opacity-80 transition-opacity cursor-pointer" onClick={closeMenu}>
             <Logo className="scale-75 origin-left" />
@@ -44,7 +46,7 @@ export default function Layout() {
             <NavLink to="/services" className={navLinkClass}>Services</NavLink>
             <NavLink to="/portfolio" className={navLinkClass}>Portfolio</NavLink>
             <NavLink to="/about" className={navLinkClass}>About</NavLink>
-            <NavLink to="/admin" className={navLinkClass}>Admin</NavLink>
+            <NavLink to="/portal" className={navLinkClass}>Client Portal</NavLink>
             <Link to="/#book" className="px-4 py-2 bg-charcoal text-concrete hover:bg-bronze hover:scale-105 transition-all duration-300">Book</Link>
           </div>
 
@@ -67,7 +69,7 @@ export default function Layout() {
             <Link to="/services" className="p-4 border-b border-steel/10 hover:bg-steel/5" onClick={closeMenu}>Services</Link>
             <Link to="/portfolio" className="p-4 border-b border-steel/10 hover:bg-steel/5" onClick={closeMenu}>Portfolio</Link>
             <Link to="/about" className="p-4 border-b border-steel/10 hover:bg-steel/5" onClick={closeMenu}>About</Link>
-            <Link to="/admin" className="p-4 border-b border-steel/10 hover:bg-steel/5" onClick={closeMenu}>Admin</Link>
+            <Link to="/portal" className="p-4 border-b border-steel/10 hover:bg-steel/5" onClick={closeMenu}>Client Portal</Link>
             <Link to="/#book" className="p-4 bg-charcoal text-concrete hover:bg-bronze transition-colors" onClick={closeMenu}>Book</Link>
           </motion.div>
         )}
@@ -129,6 +131,7 @@ export default function Layout() {
             <div className="flex flex-col gap-2 font-medium uppercase text-sm text-charcoal/70">
               <Link to="/about" className="hover:text-charcoal transition-colors w-fit">Privacy Policy</Link>
               <Link to="/about" className="hover:text-charcoal transition-colors w-fit">Terms of Service</Link>
+              <Link to="/admin" className="hover:text-charcoal transition-colors w-fit">Admin Dashboard</Link>
               <span className="mt-4 text-xs">© {new Date().getFullYear()} Danuthia & Co.</span>
             </div>
           </div>

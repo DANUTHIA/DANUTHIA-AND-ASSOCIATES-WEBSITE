@@ -23,6 +23,24 @@ service cloud.firestore {
     //   - email: string (required, immutable)
     //   - role: string (required) - 'client' or 'admin'
     //
+    // Collection: projectUpdates
+    // Document ID: Auto-generated
+    // Fields:
+    //   - clientId: string (required, immutable) - The UID of the client
+    //   - title: string (required) - Title of the update
+    //   - description: string (required) - Detailed description
+    //   - imageUrl: string (optional) - URL to an image
+    //   - createdAt: timestamp (required, immutable) - Creation time
+    //
+    // Collection: messages
+    // Document ID: Auto-generated
+    // Fields:
+    //   - senderId: string (required, immutable) - The UID of the sender
+    //   - receiverId: string (required, immutable) - The UID of the receiver
+    //   - text: string (required) - The message content
+    //   - createdAt: timestamp (required, immutable) - Creation time
+    //   - read: boolean (required) - Whether the message has been read
+    //
     // ===============================================================
 
     // ===============================================================
@@ -93,6 +111,40 @@ service cloud.firestore {
              data.createdAt is timestamp;
     }
 
+    function isValidProjectUpdate() {
+      let data = request.resource.data;
+      return hasOnlyAllowedFields(['clientId', 'title', 'description', 'imageUrl', 'createdAt']) &&
+             hasRequiredFields(['clientId', 'title', 'description', 'createdAt']) &&
+             data.clientId is string && data.clientId.size() > 0 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 150 &&
+             data.description is string && data.description.size() > 0 && data.description.size() <= 2000 &&
+             (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 500)) &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidMessage() {
+      let data = request.resource.data;
+      return hasOnlyAllowedFields(['senderId', 'receiverId', 'text', 'createdAt', 'read']) &&
+             hasRequiredFields(['senderId', 'receiverId', 'text', 'createdAt', 'read']) &&
+             data.senderId is string && data.senderId.size() > 0 &&
+             data.receiverId is string && data.receiverId.size() > 0 &&
+             data.text is string && data.text.size() > 0 && data.text.size() <= 2000 &&
+             data.createdAt is timestamp &&
+             data.read is bool;
+    }
+
+    function isValidDocument() {
+      let data = request.resource.data;
+      return hasOnlyAllowedFields(['clientId', 'fileName', 'fileType', 'fileData', 'uploadedBy', 'createdAt']) &&
+             hasRequiredFields(['clientId', 'fileName', 'fileType', 'fileData', 'uploadedBy', 'createdAt']) &&
+             data.clientId is string && data.clientId.size() > 0 &&
+             data.fileName is string && data.fileName.size() > 0 && data.fileName.size() <= 255 &&
+             data.fileType is string && data.fileType.size() > 0 && data.fileType.size() <= 100 &&
+             data.fileData is string && data.fileData.size() > 0 && data.fileData.size() <= 1048576 &&
+             data.uploadedBy is string && data.uploadedBy.size() > 0 &&
+             data.createdAt is timestamp;
+    }
+
     // ===============================================================
     // Rules
     // ===============================================================
@@ -134,6 +186,50 @@ service cloud.firestore {
                     request.resource.data.preferredDate == resource.data.preferredDate;
                     
       allow delete: if isAdmin();
+    }
+
+    match /projectUpdates/{updateId} {
+      // Clients can read their own updates, admins can read all
+      allow read: if (isAuthenticated() && resource.data.clientId == request.auth.uid) || isAdmin();
+      
+      // Only admins can create, update, or delete project updates
+      allow create: if isAdmin() && isValidProjectUpdate() && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin() && isValidProjectUpdate() && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.clientId == resource.data.clientId;
+      allow delete: if isAdmin();
+    }
+
+    match /messages/{messageId} {
+      // Users can read messages where they are the sender or receiver, admins can read all
+      allow read: if isAuthenticated() && (resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid || isAdmin());
+      
+      // Users can create messages if they are the sender. Clients can only send to 'admin'.
+      allow create: if isAuthenticated() && isValidMessage() && 
+                    request.resource.data.senderId == request.auth.uid &&
+                    request.resource.data.createdAt == request.time &&
+                    (request.resource.data.receiverId == 'admin' || isAdmin());
+                    
+      // Users can only update the 'read' status of messages they received
+      allow update: if isAuthenticated() && isValidMessage() &&
+                    request.resource.data.senderId == resource.data.senderId &&
+                    request.resource.data.receiverId == resource.data.receiverId &&
+                    request.resource.data.text == resource.data.text &&
+                    request.resource.data.createdAt == resource.data.createdAt &&
+                    (
+                      (resource.data.receiverId == request.auth.uid && request.resource.data.read == true) ||
+                      isAdmin()
+                    );
+                    
+      allow delete: if isAdmin();
+    }
+
+    match /documents/{documentId} {
+      allow read: if isAuthenticated() && (resource.data.clientId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidDocument() && 
+                    request.resource.data.createdAt == request.time &&
+                    request.resource.data.uploadedBy == request.auth.uid &&
+                    (request.resource.data.clientId == request.auth.uid || isAdmin());
+      allow update: if false;
+      allow delete: if isAuthenticated() && (resource.data.uploadedBy == request.auth.uid || isAdmin());
     }
   }
 }

@@ -3,12 +3,12 @@ import { motion } from 'motion/react';
 import { Box, Building2, Map, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const fadeInUp = {
+const fadeInUp: any = {
   hidden: { opacity: 0, y: 40 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
 };
 
-const staggerContainer = {
+const staggerContainer: any = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
