@@ -145,6 +145,22 @@ service cloud.firestore {
              data.createdAt is timestamp;
     }
 
+    function isValidClientLead() {
+      let data = request.resource.data;
+      return hasOnlyAllowedFields(['client', 'project', 'createdAt', 'status']) &&
+             hasRequiredFields(['client', 'project', 'createdAt', 'status']) &&
+             data.client is map && data.client.keys().hasAll(['full_name']) &&
+             data.client.full_name is string && data.client.full_name.size() > 0 && data.client.full_name.size() <= 100 &&
+             (!('contact_preference' in data.client) || (data.client.contact_preference in ['email', 'phone', 'unspecified'])) &&
+             data.project is map && data.project.keys().hasAll(['scope', 'location', 'urgency_flag']) &&
+             data.project.scope is string && data.project.scope.size() > 0 && data.project.scope.size() <= 1000 &&
+             data.project.location is string && data.project.location.size() > 0 && data.project.location.size() <= 200 &&
+             (!('budget_tier' in data.project) || (data.project.budget_tier in ['low', 'medium', 'high', 'enterprise', 'undecided'])) &&
+             data.project.urgency_flag is bool &&
+             data.createdAt is timestamp &&
+             data.status in ['new', 'contacted', 'archived'];
+    }
+
     // ===============================================================
     // Rules
     // ===============================================================
@@ -230,6 +246,13 @@ service cloud.firestore {
                     (request.resource.data.clientId == request.auth.uid || isAdmin());
       allow update: if false;
       allow delete: if isAuthenticated() && (resource.data.uploadedBy == request.auth.uid || isAdmin());
+    }
+
+    match /clientLeads/{leadId} {
+      allow read: if isAdmin();
+      allow create: if isValidClientLead() && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin() && isValidClientLead() && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isAdmin();
     }
   }
 }

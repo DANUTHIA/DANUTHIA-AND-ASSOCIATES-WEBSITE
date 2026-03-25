@@ -127,64 +127,76 @@ export default function Portfolio() {
   return (
     <main className="bg-concrete min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-charcoal text-concrete p-8 md:p-16 flex flex-col justify-center overflow-hidden border-b border-steel/30 min-h-[50vh]">
+      <section className="relative bg-charcoal text-concrete p-8 md:p-16 flex flex-col justify-center overflow-hidden min-h-[60vh]">
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.05, scale: 1 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
           className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
         >
-          <span className="font-display font-bold text-[15rem] leading-none text-steel">PORTFOLIO</span>
+          <span className="font-display font-bold text-[12vw] leading-none text-steel whitespace-nowrap">PORTFOLIO</span>
         </motion.div>
         
         <motion.div 
           initial="hidden"
           animate="visible"
           variants={staggerContainer}
-          className="relative z-10 max-w-4xl"
+          className="relative z-10 max-w-5xl mx-auto w-full"
         >
-          <motion.h1 variants={fadeInUp} className="font-display text-5xl md:text-7xl font-bold leading-[0.9] tracking-tighter mb-8 uppercase">
-            Built Environment.<br/>
-            <span className="text-bronze">Realized Vision.</span>
-          </motion.h1>
-          <motion.p variants={fadeInUp} className="text-lg md:text-xl text-concrete/80 max-w-2xl font-light leading-relaxed">
-            A curated selection of our architectural and urban planning projects across East Africa. Click to explore the details.
-          </motion.p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-end">
+            <div>
+              <motion.h1 variants={fadeInUp} className="font-display text-5xl md:text-7xl font-bold leading-[0.9] tracking-tighter mb-8 uppercase">
+                Built Environment.<br/>
+                <span className="text-bronze font-light italic">Realized Vision.</span>
+              </motion.h1>
+            </div>
+            <motion.div variants={fadeInUp} className="pb-2">
+              <p className="text-lg md:text-xl text-concrete/80 font-light leading-relaxed border-l border-bronze pl-6">
+                A curated selection of our architectural and urban planning projects across East Africa. Click to explore the details.
+              </p>
+            </motion.div>
+          </div>
         </motion.div>
       </section>
 
       {/* Grid Section */}
-      <section className="p-8 md:p-16 max-w-7xl mx-auto">
+      <section className="p-8 md:p-16 max-w-7xl mx-auto py-24">
         <motion.div 
           initial="hidden"
           animate="visible"
           variants={staggerContainer}
-          className="grid grid-cols-1 md:grid-cols-2 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 gap-y-24 gap-x-12"
         >
-          {projects.map((project) => (
+          {projects.map((project, index) => (
             <motion.div 
               variants={fadeInUp}
               key={project.id} 
-              className="group cursor-pointer relative"
+              className={`group cursor-pointer relative ${index % 2 !== 0 ? 'md:mt-24' : ''}`}
               onClick={() => { setSelectedId(project.id); setCurrentImageIndex(0); }}
             >
-              <div className="aspect-[4/3] relative overflow-hidden bg-charcoal mb-4">
+              <div className="aspect-[4/5] relative overflow-hidden bg-charcoal mb-6">
                 <img 
                   src={project.img} 
                   alt={project.title} 
-                  className="object-cover w-full h-full opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 mix-blend-luminosity group-hover:mix-blend-normal"
+                  className="object-cover w-full h-full opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-1000 mix-blend-luminosity group-hover:mix-blend-normal"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute inset-0 border border-steel/20 m-4 pointer-events-none group-hover:border-bronze/50 transition-colors duration-500"></div>
-                <div className="absolute bottom-4 right-4 bg-charcoal/90 p-3 text-concrete opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-sm border border-steel/30">
+                <div className="absolute inset-0 border border-steel/20 m-4 pointer-events-none group-hover:border-bronze/50 transition-colors duration-700"></div>
+                <div className="absolute bottom-6 right-6 bg-charcoal/90 p-4 text-concrete opacity-0 group-hover:opacity-100 transition-opacity duration-500 backdrop-blur-sm border border-steel/30 rounded-full">
                   <Maximize2 size={20} />
                 </div>
               </div>
-              <h3 className="font-display font-bold text-2xl uppercase group-hover:text-bronze transition-colors flex items-center justify-between">
-                {project.title}
-                <ArrowRight size={20} className="opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all duration-300" />
-              </h3>
-              <p className="text-sm font-mono text-steel uppercase tracking-wider mt-1">{project.category}</p>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="font-display font-bold text-3xl uppercase group-hover:text-bronze transition-colors mb-2">
+                    {project.title}
+                  </h3>
+                  <p className="text-sm font-mono text-charcoal/60 uppercase tracking-widest">{project.category}</p>
+                </div>
+                <span className="font-display text-xl italic text-steel group-hover:text-bronze transition-colors">
+                  {project.year}
+                </span>
+              </div>
             </motion.div>
           ))}
         </motion.div>
@@ -197,7 +209,7 @@ export default function Portfolio() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-charcoal/90 backdrop-blur-md"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-charcoal/95 backdrop-blur-xl"
             onClick={() => setSelectedId(null)}
           >
             <motion.div 
@@ -205,66 +217,66 @@ export default function Portfolio() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 50, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="bg-concrete w-full max-w-6xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col md:flex-row border border-steel/30"
+              className="bg-concrete w-full max-w-7xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col md:flex-row border border-steel/30"
               onClick={e => e.stopPropagation()}
             >
-              <div className="w-full md:w-3/5 h-[40vh] md:h-auto relative bg-charcoal group">
+              <div className="w-full md:w-3/5 h-[50vh] md:h-auto relative bg-charcoal group">
                 <img 
                   src={selectedProject.images ? selectedProject.images[currentImageIndex] : selectedProject.img} 
                   alt={selectedProject.title} 
-                  className="w-full h-full object-cover mix-blend-luminosity group-hover:mix-blend-normal transition-all duration-700"
+                  className="w-full h-full object-cover transition-all duration-700"
                   referrerPolicy="no-referrer"
                 />
                 {selectedProject.images && selectedProject.images.length > 1 && (
                   <>
                     <button 
                       onClick={(e) => { e.stopPropagation(); setCurrentImageIndex((prev) => (prev === 0 ? selectedProject.images!.length - 1 : prev - 1)); }}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-concrete/80 hover:bg-concrete text-charcoal p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute left-6 top-1/2 -translate-y-1/2 bg-concrete/80 hover:bg-concrete text-charcoal p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <ChevronLeft size={24} />
                     </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); setCurrentImageIndex((prev) => (prev === selectedProject.images!.length - 1 ? 0 : prev + 1)); }}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-concrete/80 hover:bg-concrete text-charcoal p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute right-6 top-1/2 -translate-y-1/2 bg-concrete/80 hover:bg-concrete text-charcoal p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <ChevronRight size={24} />
                     </button>
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
                       {selectedProject.images.map((_, idx) => (
                         <button
                           key={idx}
                           onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(idx); }}
-                          className={`w-2 h-2 rounded-full transition-all ${idx === currentImageIndex ? 'bg-bronze w-6' : 'bg-concrete/50 hover:bg-concrete'}`}
+                          className={`h-1.5 rounded-full transition-all ${idx === currentImageIndex ? 'bg-bronze w-8' : 'bg-concrete/50 hover:bg-concrete w-2'}`}
                         />
                       ))}
                     </div>
                   </>
                 )}
               </div>
-              <div className="w-full md:w-2/5 p-8 md:p-12 flex flex-col">
+              <div className="w-full md:w-2/5 p-8 md:p-16 flex flex-col bg-concrete">
                 <button 
                   onClick={() => setSelectedId(null)}
-                  className="self-end text-steel hover:text-bronze transition-colors mb-8"
+                  className="self-end text-steel hover:text-bronze transition-colors mb-8 bg-steel/10 p-2 rounded-full"
                 >
-                  <X size={32} />
+                  <X size={24} />
                 </button>
                 
-                <p className="text-sm font-mono text-bronze uppercase tracking-widest mb-2">{selectedProject.category}</p>
-                <h2 className="font-display text-4xl font-bold uppercase tracking-tighter mb-8">{selectedProject.title}</h2>
+                <p className="text-sm font-mono text-bronze uppercase tracking-widest mb-4">{selectedProject.category}</p>
+                <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tighter mb-8 leading-none">{selectedProject.title}</h2>
                 
-                <p className="text-lg text-charcoal/80 leading-relaxed mb-8">
+                <p className="text-lg text-charcoal/80 leading-relaxed mb-10 font-light">
                   {selectedProject.description}
                 </p>
 
                 {selectedProject.sustainablePrinciples && (
                   <div className="mb-12 flex-grow">
-                    <p className="text-xs font-mono text-steel uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <p className="text-xs font-mono text-steel uppercase tracking-widest mb-4 flex items-center gap-2">
                       <Leaf size={14} className="text-bronze" /> Sustainable Principles
                     </p>
-                    <ul className="space-y-2">
+                    <ul className="space-y-3">
                       {selectedProject.sustainablePrinciples.map((principle, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-sm text-charcoal/80">
-                          <span className="text-bronze mt-1">•</span>
+                        <li key={idx} className="flex items-start gap-3 text-sm text-charcoal/80">
+                          <span className="text-bronze mt-1 font-bold">•</span>
                           {principle}
                         </li>
                       ))}
@@ -274,12 +286,12 @@ export default function Portfolio() {
                 
                 <div className="grid grid-cols-2 gap-8 border-t border-steel/30 pt-8 mt-auto">
                   <div>
-                    <p className="text-xs font-mono text-steel uppercase tracking-widest mb-1">Client</p>
-                    <p className="font-bold uppercase">{selectedProject.client}</p>
+                    <p className="text-xs font-mono text-steel uppercase tracking-widest mb-2">Client</p>
+                    <p className="font-bold uppercase text-sm">{selectedProject.client}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-mono text-steel uppercase tracking-widest mb-1">Year</p>
-                    <p className="font-bold uppercase">{selectedProject.year}</p>
+                    <p className="text-xs font-mono text-steel uppercase tracking-widest mb-2">Year</p>
+                    <p className="font-bold uppercase text-sm">{selectedProject.year}</p>
                   </div>
                 </div>
               </div>

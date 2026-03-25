@@ -453,85 +453,89 @@ export default function Admin() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <div className="bg-white p-6 border border-steel/20 rounded-xl shadow-sm flex items-center justify-between">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="bg-white p-8 border border-steel/20 flex flex-col justify-between relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div>
-            <p className="text-steel font-mono text-xs uppercase tracking-widest mb-1">Total Bookings</p>
-            <h3 className="text-3xl font-bold text-charcoal">{initialLoading ? '-' : requests.length}</h3>
+            <p className="text-steel font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Total Bookings</p>
+            <h3 className="font-display text-5xl font-light text-charcoal">{initialLoading ? '-' : requests.length}</h3>
           </div>
-          <div className="w-12 h-12 rounded-full bg-bronze/10 flex items-center justify-center text-bronze">
-            <Calendar size={24} />
+          <div className="mt-6 flex justify-end">
+            <Calendar size={20} className="text-bronze/50" strokeWidth={1} />
           </div>
         </div>
-        <div className="bg-white p-6 border border-steel/20 rounded-xl shadow-sm flex items-center justify-between">
+        <div className="bg-white p-8 border border-steel/20 flex flex-col justify-between relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div>
-            <p className="text-steel font-mono text-xs uppercase tracking-widest mb-1">Pending Requests</p>
-            <h3 className="text-3xl font-bold text-yellow-600">{initialLoading ? '-' : pendingCount}</h3>
+            <p className="text-steel font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Pending Requests</p>
+            <h3 className="font-display text-5xl font-light text-bronze">{initialLoading ? '-' : pendingCount}</h3>
           </div>
-          <div className="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
-            <Clock size={24} />
+          <div className="mt-6 flex justify-end">
+            <Clock size={20} className="text-bronze/50" strokeWidth={1} />
           </div>
         </div>
-        <div className="bg-white p-6 border border-steel/20 rounded-xl shadow-sm flex items-center justify-between">
+        <div className="bg-white p-8 border border-steel/20 flex flex-col justify-between relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div>
-            <p className="text-steel font-mono text-xs uppercase tracking-widest mb-1">Subscribers</p>
-            <h3 className="text-3xl font-bold text-charcoal">{initialLoading ? '-' : subscribers.length}</h3>
+            <p className="text-steel font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Subscribers</p>
+            <h3 className="font-display text-5xl font-light text-charcoal">{initialLoading ? '-' : subscribers.length}</h3>
           </div>
-          <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-            <Users size={24} />
+          <div className="mt-6 flex justify-end">
+            <Users size={20} className="text-bronze/50" strokeWidth={1} />
           </div>
         </div>
-        <div className="bg-white p-6 border border-steel/20 rounded-xl shadow-sm flex items-center justify-between">
+        <div className="bg-white p-8 border border-steel/20 flex flex-col justify-between relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div>
-            <p className="text-steel font-mono text-xs uppercase tracking-widest mb-1">Project Updates</p>
-            <h3 className="text-3xl font-bold text-charcoal">{initialLoading ? '-' : updates.length}</h3>
+            <p className="text-steel font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Project Updates</p>
+            <h3 className="font-display text-5xl font-light text-charcoal">{initialLoading ? '-' : updates.length}</h3>
           </div>
-          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-            <FileText size={24} />
+          <div className="mt-6 flex justify-end">
+            <FileText size={20} className="text-bronze/50" strokeWidth={1} />
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-8 mb-8 border-b border-steel/20 overflow-x-auto">
+      <div className="flex gap-8 mb-12 border-b border-steel/20 overflow-x-auto custom-scrollbar">
         <button 
           onClick={() => setActiveTab('overview')}
-          className={`pb-4 font-bold uppercase tracking-widest text-sm transition-colors whitespace-nowrap ${activeTab === 'overview' ? 'text-bronze border-b-2 border-bronze' : 'text-steel hover:text-charcoal'}`}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'overview' ? 'text-charcoal border-b border-charcoal' : 'text-steel hover:text-charcoal'}`}
         >
           Overview
         </button>
         <button 
           onClick={() => setActiveTab('bookings')}
-          className={`pb-4 font-bold uppercase tracking-widest text-sm transition-colors whitespace-nowrap ${activeTab === 'bookings' ? 'text-bronze border-b-2 border-bronze' : 'text-steel hover:text-charcoal'}`}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'bookings' ? 'text-charcoal border-b border-charcoal' : 'text-steel hover:text-charcoal'}`}
         >
           Booking Requests
         </button>
         <button 
           onClick={() => setActiveTab('updates')}
-          className={`pb-4 font-bold uppercase tracking-widest text-sm transition-colors whitespace-nowrap ${activeTab === 'updates' ? 'text-bronze border-b-2 border-bronze' : 'text-steel hover:text-charcoal'}`}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'updates' ? 'text-charcoal border-b border-charcoal' : 'text-steel hover:text-charcoal'}`}
         >
           Project Updates
         </button>
         <button 
           onClick={() => setActiveTab('messages')}
-          className={`pb-4 font-bold uppercase tracking-widest text-sm transition-colors whitespace-nowrap flex items-center gap-2 ${activeTab === 'messages' ? 'text-bronze border-b-2 border-bronze' : 'text-steel hover:text-charcoal'}`}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap flex items-center gap-2 ${activeTab === 'messages' ? 'text-charcoal border-b border-charcoal' : 'text-steel hover:text-charcoal'}`}
         >
           Messages
           {messages.filter(m => !m.read && m.receiverId === 'admin').length > 0 && (
-            <span className="bg-bronze text-white text-[10px] px-2 py-0.5 rounded-full">
+            <span className="bg-bronze text-white text-[8px] px-1.5 py-0.5 rounded-full">
               {messages.filter(m => !m.read && m.receiverId === 'admin').length}
             </span>
           )}
         </button>
         <button 
           onClick={() => setActiveTab('newsletter')}
-          className={`pb-4 font-bold uppercase tracking-widest text-sm transition-colors whitespace-nowrap ${activeTab === 'newsletter' ? 'text-bronze border-b-2 border-bronze' : 'text-steel hover:text-charcoal'}`}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'newsletter' ? 'text-charcoal border-b border-charcoal' : 'text-steel hover:text-charcoal'}`}
         >
           Subscribers
         </button>
         <button 
           onClick={() => setActiveTab('documents')}
-          className={`pb-4 font-bold uppercase tracking-widest text-sm transition-colors whitespace-nowrap ${activeTab === 'documents' ? 'text-bronze border-b-2 border-bronze' : 'text-steel hover:text-charcoal'}`}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'documents' ? 'text-charcoal border-b border-charcoal' : 'text-steel hover:text-charcoal'}`}
         >
           Documents
         </button>
@@ -580,28 +584,28 @@ export default function Admin() {
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Chart: Booking Statuses */}
-              <div className="bg-white border border-steel/20 rounded-xl shadow-sm p-6">
-                <h3 className="font-bold uppercase tracking-widest text-sm text-charcoal mb-6 flex items-center gap-2">
-                  <BarChart3 size={16} className="text-bronze" />
-                  Booking Request Statuses
+              <div className="bg-white border border-steel/20 p-8">
+                <h3 className="font-display text-2xl font-light text-charcoal mb-8 flex items-center gap-3">
+                  <BarChart3 size={20} className="text-bronze" strokeWidth={1.5} />
+                  Booking Statuses
                 </h3>
                 {initialLoading ? (
                   <div className="h-64 flex items-center justify-center">
                     <div className="w-8 h-8 border-2 border-bronze border-t-transparent rounded-full animate-spin"></div>
                   </div>
                 ) : requests.length === 0 ? (
-                  <div className="h-64 flex items-center justify-center text-steel text-sm">No booking data available.</div>
+                  <div className="h-64 flex items-center justify-center text-steel text-sm font-light">No booking data available.</div>
                 ) : (
                   <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={statusData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} allowDecimals={false} />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#8C8C8C', fontFamily: 'JetBrains Mono' }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#8C8C8C', fontFamily: 'JetBrains Mono' }} allowDecimals={false} />
                         <Tooltip 
-                          cursor={{ fill: '#f3f4f6' }}
-                          contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                          cursor={{ fill: '#F5F5F0' }}
+                          contentStyle={{ borderRadius: '0', border: '1px solid rgba(140, 140, 140, 0.2)', boxShadow: 'none', fontFamily: 'Montserrat', fontSize: '12px' }}
                         />
-                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                        <Bar dataKey="value" radius={[0, 0, 0, 0]}>
                           {statusData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
@@ -613,28 +617,28 @@ export default function Admin() {
               </div>
 
               {/* Recent Activity (Updates & Bookings mixed) */}
-              <div className="bg-white border border-steel/20 rounded-xl shadow-sm p-6">
-                <h3 className="font-bold uppercase tracking-widest text-sm text-charcoal mb-6 flex items-center gap-2">
-                  <Clock size={16} className="text-bronze" />
+              <div className="bg-white border border-steel/20 p-8">
+                <h3 className="font-display text-2xl font-light text-charcoal mb-8 flex items-center gap-3">
+                  <Clock size={20} className="text-bronze" strokeWidth={1.5} />
                   Recent Activity
                 </h3>
                 {initialLoading ? (
                   renderSkeleton()
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {/* Just showing the 5 most recent bookings for overview */}
                     {requests.slice(0, 5).map(req => (
-                      <div key={req.id} className="flex items-start gap-4 p-3 hover:bg-concrete/50 rounded-lg transition-colors">
-                        <div className="w-8 h-8 rounded-full bg-bronze/10 flex items-center justify-center text-bronze shrink-0 mt-0.5">
-                          <Calendar size={14} />
+                      <div key={req.id} className="flex items-start gap-4 pb-6 border-b border-steel/10 last:border-0 last:pb-0">
+                        <div className="w-8 h-8 border border-bronze/30 flex items-center justify-center text-bronze shrink-0 mt-1">
+                          <Calendar size={14} strokeWidth={1.5} />
                         </div>
                         <div>
                           <p className="text-sm font-medium text-charcoal">New Booking: {req.fullName}</p>
-                          <p className="text-xs text-steel mt-1">{req.createdAt?.toDate ? req.createdAt.toDate().toLocaleDateString() : 'Just now'} • {req.projectScale}</p>
+                          <p className="text-[10px] font-mono text-steel mt-2 uppercase tracking-widest">{req.createdAt?.toDate ? req.createdAt.toDate().toLocaleDateString() : 'Just now'} • {req.projectScale}</p>
                         </div>
                       </div>
                     ))}
-                    {requests.length === 0 && <p className="text-sm text-steel text-center py-8">No recent activity.</p>}
+                    {requests.length === 0 && <p className="text-sm font-light text-steel text-center py-8">No recent activity.</p>}
                   </div>
                 )}
               </div>
@@ -643,17 +647,17 @@ export default function Admin() {
 
           {/* Bookings Tab */}
           {activeTab === 'bookings' && (
-            <div className="bg-white border border-steel/20 rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-white border border-steel/20 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-concrete/50 border-b border-steel/20 text-xs font-bold text-steel uppercase tracking-widest">
-                      <th className="p-5 font-medium">Date</th>
-                      <th className="p-5 font-medium">Client Name</th>
-                      <th className="p-5 font-medium">Project Scale</th>
-                      <th className="p-5 font-medium">Preferred Date</th>
-                      <th className="p-5 font-medium">Status</th>
-                      <th className="p-5 font-medium text-right">Actions</th>
+                    <tr className="bg-concrete/50 border-b border-steel/20 text-[10px] font-mono text-steel uppercase tracking-[0.2em]">
+                      <th className="p-6 font-normal">Date</th>
+                      <th className="p-6 font-normal">Client Name</th>
+                      <th className="p-6 font-normal">Project Scale</th>
+                      <th className="p-6 font-normal">Preferred Date</th>
+                      <th className="p-6 font-normal">Status</th>
+                      <th className="p-6 font-normal text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-steel/10">
@@ -661,37 +665,37 @@ export default function Admin() {
                       <tr><td colSpan={6}>{renderSkeleton()}</td></tr>
                     ) : requests.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="p-12 text-center text-steel">
-                          <Calendar size={32} className="mx-auto mb-4 opacity-20" />
+                        <td colSpan={6} className="p-16 text-center text-steel font-light">
+                          <Calendar size={32} className="mx-auto mb-4 opacity-20" strokeWidth={1} />
                           <p>No booking requests found.</p>
                         </td>
                       </tr>
                     ) : (
                       requests.map((req) => (
                         <tr key={req.id} className="hover:bg-concrete/30 transition-colors group">
-                          <td className="p-5 text-sm text-charcoal/80">
+                          <td className="p-6 text-xs font-mono text-charcoal/80">
                             {req.createdAt?.toDate ? req.createdAt.toDate().toLocaleDateString() : 'Just now'}
                           </td>
-                          <td className="p-5 font-medium text-charcoal">{req.fullName}</td>
-                          <td className="p-5 text-sm capitalize text-charcoal/80">{req.projectScale}</td>
-                          <td className="p-5 text-sm text-charcoal/80">{req.preferredDate}</td>
-                          <td className="p-5">
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider
-                              ${req.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 
-                                req.status === 'reviewed' ? 'bg-blue-100 text-blue-700' : 
-                                'bg-green-100 text-green-700'}`}
+                          <td className="p-6 font-medium text-charcoal text-sm">{req.fullName}</td>
+                          <td className="p-6 text-sm capitalize text-charcoal/80 font-light">{req.projectScale}</td>
+                          <td className="p-6 text-sm text-charcoal/80 font-light">{req.preferredDate}</td>
+                          <td className="p-6">
+                            <span className={`inline-flex items-center gap-2 px-3 py-1 text-[10px] font-mono uppercase tracking-widest border
+                              ${req.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 
+                                req.status === 'reviewed' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
+                                'bg-green-50 text-green-700 border-green-200'}`}
                             >
-                              {req.status === 'pending' && <Clock size={12} />}
-                              {req.status === 'reviewed' && <CheckCircle size={12} />}
-                              {req.status === 'contacted' && <Phone size={12} />}
+                              {req.status === 'pending' && <Clock size={10} />}
+                              {req.status === 'reviewed' && <CheckCircle size={10} />}
+                              {req.status === 'contacted' && <Phone size={10} />}
                               {req.status}
                             </span>
                           </td>
-                          <td className="p-5 text-right flex justify-end items-center gap-3">
+                          <td className="p-6 text-right flex justify-end items-center gap-4">
                             <select 
                               value={req.status}
                               onChange={(e) => updateStatus(req.id, e.target.value)}
-                              className="text-xs font-bold uppercase tracking-widest bg-concrete border border-steel/20 rounded px-3 py-1.5 outline-none focus:border-bronze focus:ring-1 focus:ring-bronze cursor-pointer text-charcoal transition-all"
+                              className="text-[10px] font-mono uppercase tracking-widest bg-transparent border border-steel/20 px-3 py-1.5 outline-none focus:border-bronze cursor-pointer text-charcoal transition-all"
                             >
                               <option value="pending">Pending</option>
                               <option value="reviewed">Reviewed</option>
@@ -699,10 +703,10 @@ export default function Admin() {
                             </select>
                             <button 
                               onClick={() => setDeleteConfirm({ type: 'booking', id: req.id })} 
-                              className="p-1.5 text-steel hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                              className="p-2 text-steel hover:text-red-600 transition-colors"
                               title="Delete Request"
                             >
-                              <Trash2 size={16} />
+                              <Trash2 size={16} strokeWidth={1.5} />
                             </button>
                           </td>
                         </tr>
@@ -716,21 +720,21 @@ export default function Admin() {
 
           {/* Project Updates Tab */}
           {activeTab === 'updates' && (
-            <div className="space-y-8">
+            <div className="space-y-12">
               {/* Create Form */}
-              <div className="bg-white border border-steel/20 rounded-xl shadow-sm p-6 md:p-8">
-                <h2 className="font-display text-xl font-bold uppercase tracking-tight mb-6 flex items-center gap-2 text-charcoal">
-                  <Plus size={20} className="text-bronze" />
+              <div className="bg-white border border-steel/20 p-8 md:p-12">
+                <h2 className="font-display text-2xl font-light tracking-tight mb-8 flex items-center gap-3 text-charcoal">
+                  <Plus size={20} className="text-bronze" strokeWidth={1.5} />
                   Post New Update
                 </h2>
-                <form onSubmit={handleCreateUpdate} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <form onSubmit={handleCreateUpdate} className="space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-widest text-steel mb-2">Select Client *</label>
+                      <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-steel mb-3">Select Client *</label>
                       <select 
                         value={newUpdate.clientId}
                         onChange={e => setNewUpdate({...newUpdate, clientId: e.target.value})}
-                        className="w-full bg-concrete border border-steel/20 rounded-lg p-3.5 text-sm focus:outline-none focus:border-bronze focus:ring-1 focus:ring-bronze transition-all"
+                        className="w-full bg-transparent border-b border-steel/30 py-3 text-sm focus:outline-none focus:border-bronze transition-colors font-light"
                         required
                       >
                         <option value="">-- Select a Client --</option>
@@ -740,41 +744,41 @@ export default function Admin() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-widest text-steel mb-2">Update Title *</label>
+                      <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-steel mb-3">Update Title *</label>
                       <input 
                         type="text"
                         value={newUpdate.title}
                         onChange={e => setNewUpdate({...newUpdate, title: e.target.value})}
-                        className="w-full bg-concrete border border-steel/20 rounded-lg p-3.5 text-sm focus:outline-none focus:border-bronze focus:ring-1 focus:ring-bronze transition-all"
+                        className="w-full bg-transparent border-b border-steel/30 py-3 text-sm focus:outline-none focus:border-bronze transition-colors font-light"
                         placeholder="e.g., Foundation Poured"
                         required
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-steel mb-2">Description *</label>
+                    <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-steel mb-3">Description *</label>
                     <textarea 
                       value={newUpdate.description}
                       onChange={e => setNewUpdate({...newUpdate, description: e.target.value})}
-                      className="w-full bg-concrete border border-steel/20 rounded-lg p-3.5 text-sm focus:outline-none focus:border-bronze focus:ring-1 focus:ring-bronze transition-all min-h-[120px] resize-y"
+                      className="w-full bg-transparent border-b border-steel/30 py-3 text-sm focus:outline-none focus:border-bronze transition-colors font-light min-h-[120px] resize-y"
                       placeholder="Detailed progress report..."
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-steel mb-2">Image URL (Optional)</label>
+                    <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-steel mb-3">Image URL (Optional)</label>
                     <input 
                       type="url"
                       value={newUpdate.imageUrl}
                       onChange={e => setNewUpdate({...newUpdate, imageUrl: e.target.value})}
-                      className="w-full bg-concrete border border-steel/20 rounded-lg p-3.5 text-sm focus:outline-none focus:border-bronze focus:ring-1 focus:ring-bronze transition-all"
+                      className="w-full bg-transparent border-b border-steel/30 py-3 text-sm focus:outline-none focus:border-bronze transition-colors font-light"
                       placeholder="https://..."
                     />
                   </div>
                   <button 
                     type="submit"
                     disabled={isCreatingUpdate}
-                    className="bg-charcoal text-concrete px-8 py-3.5 rounded-lg font-bold uppercase tracking-widest text-sm hover:bg-bronze transition-colors disabled:opacity-50 shadow-md shadow-charcoal/10"
+                    className="bg-charcoal text-concrete px-8 py-4 font-mono text-[10px] uppercase tracking-[0.2em] hover:bg-bronze transition-colors disabled:opacity-50"
                   >
                     {isCreatingUpdate ? 'Posting...' : 'Post Update'}
                   </button>
@@ -782,15 +786,15 @@ export default function Admin() {
               </div>
 
               {/* Updates List */}
-              <div className="bg-white border border-steel/20 rounded-xl shadow-sm overflow-hidden">
+              <div className="bg-white border border-steel/20 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-concrete/50 border-b border-steel/20 text-xs font-bold text-steel uppercase tracking-widest">
-                        <th className="p-5 font-medium">Date</th>
-                        <th className="p-5 font-medium">Client</th>
-                        <th className="p-5 font-medium">Title</th>
-                        <th className="p-5 font-medium text-right">Actions</th>
+                      <tr className="bg-concrete/50 border-b border-steel/20 text-[10px] font-mono text-steel uppercase tracking-[0.2em]">
+                        <th className="p-6 font-normal">Date</th>
+                        <th className="p-6 font-normal">Client</th>
+                        <th className="p-6 font-normal">Title</th>
+                        <th className="p-6 font-normal text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-steel/10">
@@ -798,8 +802,8 @@ export default function Admin() {
                         <tr><td colSpan={4}>{renderSkeleton()}</td></tr>
                       ) : updates.length === 0 ? (
                         <tr>
-                          <td colSpan={4} className="p-12 text-center text-steel">
-                            <FileText size={32} className="mx-auto mb-4 opacity-20" />
+                          <td colSpan={4} className="p-16 text-center text-steel font-light">
+                            <FileText size={32} className="mx-auto mb-4 opacity-20" strokeWidth={1} />
                             <p>No project updates posted yet.</p>
                           </td>
                         </tr>
@@ -808,18 +812,18 @@ export default function Admin() {
                           const clientEmail = clients.find(c => c.id === upd.clientId)?.email || upd.clientId;
                           return (
                             <tr key={upd.id} className="hover:bg-concrete/30 transition-colors group">
-                              <td className="p-5 text-sm text-charcoal/80">
+                              <td className="p-6 text-xs font-mono text-charcoal/80">
                                 {upd.createdAt?.toDate ? upd.createdAt.toDate().toLocaleDateString() : 'Just now'}
                               </td>
-                              <td className="p-5 text-sm font-medium text-charcoal">{clientEmail}</td>
-                              <td className="p-5 text-sm text-charcoal/80">{upd.title}</td>
-                              <td className="p-5 text-right">
+                              <td className="p-6 font-medium text-charcoal text-sm">{clientEmail}</td>
+                              <td className="p-6 text-sm text-charcoal/80 font-light">{upd.title}</td>
+                              <td className="p-6 text-right">
                                 <button 
                                   onClick={() => setDeleteConfirm({ type: 'update', id: upd.id })} 
-                                  className="p-1.5 text-steel hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                  className="p-2 text-steel hover:text-red-600 transition-colors inline-block"
                                   title="Delete Update"
                                 >
-                                  <Trash2 size={16} />
+                                  <Trash2 size={16} strokeWidth={1.5} />
                                 </button>
                               </td>
                             </tr>
@@ -837,16 +841,16 @@ export default function Admin() {
           {activeTab === 'messages' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[600px]">
               {/* Clients List */}
-              <div className="bg-white border border-steel/20 rounded-xl shadow-sm overflow-hidden flex flex-col">
-                <div className="p-4 border-b border-steel/20 bg-concrete/50">
-                  <h3 className="font-bold uppercase tracking-widest text-sm text-charcoal flex items-center gap-2">
-                    <Users size={16} className="text-bronze" />
+              <div className="bg-white border border-steel/20 overflow-hidden flex flex-col">
+                <div className="p-6 border-b border-steel/20 bg-concrete/50">
+                  <h3 className="font-display text-xl font-light text-charcoal flex items-center gap-3">
+                    <Users size={18} className="text-bronze" strokeWidth={1.5} />
                     Clients
                   </h3>
                 </div>
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
                   {clients.length === 0 ? (
-                    <div className="p-8 text-center text-steel text-sm">No clients found.</div>
+                    <div className="p-8 text-center text-steel font-light text-sm">No clients found.</div>
                   ) : (
                     <div className="divide-y divide-steel/10">
                       {clients.map(client => {
@@ -858,18 +862,18 @@ export default function Admin() {
                           <button
                             key={client.id}
                             onClick={() => setSelectedChatClient(client.id)}
-                            className={`w-full text-left p-4 hover:bg-concrete/50 transition-colors flex flex-col gap-1 ${selectedChatClient === client.id ? 'bg-concrete/80 border-l-4 border-bronze' : 'border-l-4 border-transparent'}`}
+                            className={`w-full text-left p-6 hover:bg-concrete/50 transition-colors flex flex-col gap-2 ${selectedChatClient === client.id ? 'bg-bronze/5 border-l-2 border-bronze' : 'border-l-2 border-transparent'}`}
                           >
                             <div className="flex justify-between items-center w-full">
-                              <span className="font-medium text-charcoal text-sm truncate">{client.email}</span>
+                              <span className="font-medium text-charcoal text-sm truncate pr-4">{client.email}</span>
                               {unreadCount > 0 && (
-                                <span className="bg-bronze text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                <span className="bg-bronze text-white text-[10px] px-2 py-0.5 rounded-full shrink-0">
                                   {unreadCount}
                                 </span>
                               )}
                             </div>
                             {lastMessage && (
-                              <p className="text-xs text-steel truncate">
+                              <p className="text-xs text-steel truncate font-light">
                                 {lastMessage.senderId === user?.uid ? 'You: ' : ''}{lastMessage.text}
                               </p>
                             )}
@@ -882,24 +886,24 @@ export default function Admin() {
               </div>
 
               {/* Chat Window */}
-              <div className="lg:col-span-2 bg-white border border-steel/20 rounded-xl shadow-sm flex flex-col">
+              <div className="lg:col-span-2 bg-white border border-steel/20 flex flex-col">
                 {selectedChatClient ? (
                   <>
-                    <div className="p-4 border-b border-steel/20 bg-concrete/50 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-bronze/10 flex items-center justify-center text-bronze">
-                        <MessageSquare size={16} />
+                    <div className="p-6 border-b border-steel/20 bg-concrete/50 flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-bronze/10 flex items-center justify-center text-bronze">
+                        <MessageSquare size={18} strokeWidth={1.5} />
                       </div>
                       <div>
-                        <h3 className="font-bold text-sm text-charcoal">
+                        <h3 className="font-display text-xl font-light text-charcoal">
                           {clients.find(c => c.id === selectedChatClient)?.email}
                         </h3>
-                        <p className="text-[10px] text-steel uppercase tracking-widest">Client Chat</p>
+                        <p className="text-[10px] font-mono text-steel uppercase tracking-[0.2em] mt-1">Client Chat</p>
                       </div>
                     </div>
                     
-                    <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                    <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
                       {messages.filter(m => m.senderId === selectedChatClient || m.receiverId === selectedChatClient).length === 0 ? (
-                        <div className="h-full flex items-center justify-center text-steel text-sm">
+                        <div className="h-full flex items-center justify-center text-steel text-sm font-light">
                           No messages yet. Start the conversation.
                         </div>
                       ) : (
@@ -909,9 +913,9 @@ export default function Admin() {
                             const isMine = msg.senderId === user?.uid;
                             return (
                               <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`max-w-[70%] p-3 rounded-lg ${isMine ? 'bg-charcoal text-concrete rounded-br-none' : 'bg-steel/10 text-charcoal rounded-bl-none'}`}>
-                                  <p className="text-sm">{msg.text}</p>
-                                  <span className="text-[10px] opacity-70 mt-1 block text-right">
+                                <div className={`max-w-[70%] p-4 ${isMine ? 'bg-charcoal text-concrete rounded-tl-xl rounded-tr-xl rounded-bl-xl' : 'bg-concrete text-charcoal border border-steel/20 rounded-tl-xl rounded-tr-xl rounded-br-xl'}`}>
+                                  <p className="text-sm font-light leading-relaxed">{msg.text}</p>
+                                  <span className="text-[10px] font-mono opacity-50 mt-2 block text-right uppercase tracking-widest">
                                     {msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Sending...'}
                                   </span>
                                 </div>
@@ -922,31 +926,31 @@ export default function Admin() {
                       <div ref={messagesEndRef} />
                     </div>
 
-                    <div className="p-4 border-t border-steel/20 bg-concrete/30">
-                      <form onSubmit={handleSendReply} className="flex gap-2">
+                    <div className="p-6 border-t border-steel/20 bg-concrete/30">
+                      <form onSubmit={handleSendReply} className="flex gap-4">
                         <input
                           type="text"
                           value={adminReply}
                           onChange={(e) => setAdminReply(e.target.value)}
                           placeholder="Type your reply..."
-                          className="flex-1 bg-white border border-steel/20 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-bronze focus:ring-1 focus:ring-bronze"
+                          className="flex-1 bg-white border border-steel/20 px-4 py-3 text-sm font-light focus:outline-none focus:border-bronze transition-colors"
                           disabled={sendingReply}
                         />
                         <button
                           type="submit"
                           disabled={!adminReply.trim() || sendingReply}
-                          className="bg-bronze text-white p-2 rounded-lg hover:bg-bronze/90 transition-colors disabled:opacity-50"
+                          className="bg-charcoal text-concrete px-6 py-3 hover:bg-bronze transition-colors duration-300 disabled:opacity-50 flex items-center justify-center"
                         >
-                          <Send size={18} />
+                          <Send size={16} strokeWidth={1.5} />
                         </button>
                       </form>
                     </div>
                   </>
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-steel p-8 text-center">
-                    <MessageSquare size={48} className="mb-4 opacity-20" />
-                    <p className="font-medium text-charcoal mb-1">No Chat Selected</p>
-                    <p className="text-sm">Select a client from the list to view and send messages.</p>
+                    <MessageSquare size={48} className="mb-6 opacity-20" strokeWidth={1} />
+                    <p className="font-display text-2xl font-light text-charcoal mb-2">No Chat Selected</p>
+                    <p className="text-sm font-light">Select a client from the list to view and send messages.</p>
                   </div>
                 )}
               </div>
@@ -955,14 +959,14 @@ export default function Admin() {
 
           {/* Newsletter Tab */}
           {activeTab === 'newsletter' && (
-            <div className="bg-white border border-steel/20 rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-white border border-steel/20 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-concrete/50 border-b border-steel/20 text-xs font-bold text-steel uppercase tracking-widest">
-                      <th className="p-5 font-medium">Date Subscribed</th>
-                      <th className="p-5 font-medium">Email Address</th>
-                      <th className="p-5 font-medium text-right">Actions</th>
+                    <tr className="bg-concrete/50 border-b border-steel/20 text-[10px] font-mono text-steel uppercase tracking-[0.2em]">
+                      <th className="p-6 font-normal">Date Subscribed</th>
+                      <th className="p-6 font-normal">Email Address</th>
+                      <th className="p-6 font-normal text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-steel/10">
@@ -970,30 +974,30 @@ export default function Admin() {
                       <tr><td colSpan={3}>{renderSkeleton()}</td></tr>
                     ) : subscribers.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="p-12 text-center text-steel">
-                          <Users size={32} className="mx-auto mb-4 opacity-20" />
+                        <td colSpan={3} className="p-16 text-center text-steel font-light">
+                          <Users size={32} className="mx-auto mb-4 opacity-20" strokeWidth={1} />
                           <p>No subscribers found.</p>
                         </td>
                       </tr>
                     ) : (
                       subscribers.map((sub) => (
                         <tr key={sub.id} className="hover:bg-concrete/30 transition-colors group">
-                          <td className="p-5 text-sm text-charcoal/80">
+                          <td className="p-6 text-xs font-mono text-charcoal/80">
                             {sub.createdAt?.toDate ? sub.createdAt.toDate().toLocaleDateString() : 'Just now'}
                           </td>
-                          <td className="p-5 font-medium text-charcoal flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                              <Mail size={14} />
+                          <td className="p-6 font-medium text-charcoal flex items-center gap-3 text-sm">
+                            <div className="w-8 h-8 rounded-full bg-bronze/10 flex items-center justify-center text-bronze">
+                              <Mail size={14} strokeWidth={1.5} />
                             </div>
                             {sub.email}
                           </td>
-                          <td className="p-5 text-right">
+                          <td className="p-6 text-right">
                             <button 
                               onClick={() => setDeleteConfirm({ type: 'newsletter', id: sub.id })} 
-                              className="p-1.5 text-steel hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                              className="p-2 text-steel hover:text-red-600 transition-colors inline-block"
                               title="Delete Subscriber"
                             >
-                              <Trash2 size={16} />
+                              <Trash2 size={16} strokeWidth={1.5} />
                             </button>
                           </td>
                         </tr>
@@ -1009,28 +1013,28 @@ export default function Admin() {
           {activeTab === 'documents' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Client List */}
-              <div className="lg:col-span-1 bg-white border border-steel/20 rounded-xl shadow-sm overflow-hidden flex flex-col h-[600px]">
-                <div className="p-4 border-b border-steel/20 bg-concrete/50">
-                  <h3 className="font-bold uppercase tracking-widest text-sm text-charcoal flex items-center gap-2">
-                    <Users size={16} className="text-bronze" />
+              <div className="lg:col-span-1 bg-white border border-steel/20 overflow-hidden flex flex-col h-[600px]">
+                <div className="p-6 border-b border-steel/20 bg-concrete/50">
+                  <h3 className="font-display text-xl font-light text-charcoal flex items-center gap-3">
+                    <Users size={18} className="text-bronze" strokeWidth={1.5} />
                     Clients
                   </h3>
                 </div>
-                <div className="flex-1 overflow-y-auto p-2">
+                <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
                   {clients.length === 0 ? (
-                    <div className="p-8 text-center text-steel">
-                      <p className="text-sm">No clients found.</p>
+                    <div className="p-8 text-center text-steel font-light text-sm">
+                      <p>No clients found.</p>
                     </div>
                   ) : (
                     clients.map(client => (
                       <button
                         key={client.id}
                         onClick={() => setSelectedDocClient(client.id)}
-                        className={`w-full text-left p-4 rounded-lg mb-2 transition-colors flex items-center justify-between ${selectedDocClient === client.id ? 'bg-bronze/10 border border-bronze/30' : 'hover:bg-concrete border border-transparent'}`}
+                        className={`w-full text-left p-4 mb-2 transition-colors flex items-center justify-between ${selectedDocClient === client.id ? 'bg-bronze/5 border border-bronze/30' : 'hover:bg-concrete/50 border border-transparent'}`}
                       >
                         <div>
                           <p className="font-medium text-charcoal text-sm truncate">{client.email}</p>
-                          <p className="text-xs text-steel font-mono mt-1">ID: {client.id.substring(0, 8)}...</p>
+                          <p className="text-[10px] text-steel font-mono mt-1 uppercase tracking-widest">ID: {client.id.substring(0, 8)}...</p>
                         </div>
                       </button>
                     ))
@@ -1039,16 +1043,16 @@ export default function Admin() {
               </div>
 
               {/* Document List */}
-              <div className="lg:col-span-2 bg-white border border-steel/20 rounded-xl shadow-sm flex flex-col h-[600px]">
+              <div className="lg:col-span-2 bg-white border border-steel/20 flex flex-col h-[600px]">
                 {selectedDocClient ? (
                   <>
-                    <div className="p-4 border-b border-steel/20 flex justify-between items-center bg-concrete/50">
+                    <div className="p-6 border-b border-steel/20 flex justify-between items-center bg-concrete/50">
                       <div>
-                        <h3 className="font-bold text-charcoal flex items-center gap-2">
-                          <FileText size={18} className="text-bronze" />
+                        <h3 className="font-display text-xl font-light text-charcoal flex items-center gap-3">
+                          <FileText size={18} className="text-bronze" strokeWidth={1.5} />
                           Client Documents
                         </h3>
-                        <p className="text-xs text-steel mt-1">{clients.find(c => c.id === selectedDocClient)?.email}</p>
+                        <p className="text-[10px] text-steel mt-2 font-mono uppercase tracking-widest">{clients.find(c => c.id === selectedDocClient)?.email}</p>
                       </div>
                       <div>
                         <input 
@@ -1060,53 +1064,53 @@ export default function Admin() {
                         />
                         <label 
                           htmlFor="admin-doc-upload" 
-                          className={`cursor-pointer flex items-center gap-2 text-xs font-bold uppercase tracking-widest bg-charcoal text-concrete px-4 py-2 rounded shadow-sm hover:bg-bronze transition-colors ${uploadingDoc ? 'opacity-50 pointer-events-none' : ''}`}
+                          className={`cursor-pointer flex items-center gap-3 text-[10px] font-mono uppercase tracking-[0.2em] bg-charcoal text-concrete px-6 py-3 hover:bg-bronze transition-colors ${uploadingDoc ? 'opacity-50 pointer-events-none' : ''}`}
                         >
-                          <Upload size={14} />
+                          <Upload size={14} strokeWidth={1.5} />
                           {uploadingDoc ? 'Uploading...' : 'Upload Document'}
                         </label>
                       </div>
                     </div>
                     
-                    {uploadError && <div className="p-4 bg-red-50 text-red-600 text-sm border-b border-red-100">{uploadError}</div>}
+                    {uploadError && <div className="p-4 bg-red-50 text-red-600 text-xs font-mono uppercase tracking-widest border-b border-red-100">{uploadError}</div>}
 
-                    <div className="flex-1 overflow-y-auto p-6">
+                    <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
                       {documents.filter(d => d.clientId === selectedDocClient).length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-steel">
-                          <FileText size={48} className="mb-4 opacity-20" />
-                          <p className="font-medium text-charcoal mb-1">No Documents</p>
-                          <p className="text-sm">Upload documents to share with this client.</p>
+                          <FileText size={48} className="mb-6 opacity-20" strokeWidth={1} />
+                          <p className="font-display text-2xl font-light text-charcoal mb-2">No Documents</p>
+                          <p className="text-sm font-light">Upload documents to share with this client.</p>
                         </div>
                       ) : (
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                           {documents.filter(d => d.clientId === selectedDocClient).map(doc => (
-                            <div key={doc.id} className="flex items-center justify-between p-4 border border-steel/20 rounded-lg hover:border-bronze/30 transition-colors group">
-                              <div className="flex items-center gap-4 overflow-hidden">
-                                <div className="w-10 h-10 rounded bg-concrete flex items-center justify-center text-steel shrink-0">
-                                  <FileText size={20} />
+                            <div key={doc.id} className="flex items-center justify-between p-6 border border-steel/20 hover:border-bronze/30 transition-colors group bg-white">
+                              <div className="flex items-center gap-6 overflow-hidden">
+                                <div className="w-12 h-12 bg-concrete/50 flex items-center justify-center text-steel shrink-0">
+                                  <FileText size={24} strokeWidth={1} />
                                 </div>
                                 <div className="overflow-hidden">
                                   <p className="font-medium text-charcoal text-sm truncate" title={doc.fileName}>{doc.fileName}</p>
-                                  <p className="text-xs text-steel mt-1">
+                                  <p className="text-[10px] font-mono text-steel mt-2 uppercase tracking-widest">
                                     {doc.createdAt?.toDate ? doc.createdAt.toDate().toLocaleDateString() : 'Just now'} • 
-                                    {doc.uploadedBy === user?.uid ? 'Uploaded by you' : 'Uploaded by client'}
+                                    {doc.uploadedBy === user?.uid ? ' Uploaded by you' : ' Uploaded by client'}
                                   </p>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2 shrink-0">
+                              <div className="flex items-center gap-4 shrink-0">
                                 <button 
                                   onClick={() => handleDownload(doc)}
                                   className="p-2 text-steel hover:text-bronze transition-colors"
                                   title="Download"
                                 >
-                                  <Download size={18} />
+                                  <Download size={18} strokeWidth={1.5} />
                                 </button>
                                 <button 
                                   onClick={() => setDeleteConfirm({ type: 'document', id: doc.id })}
                                   className="p-2 text-steel hover:text-red-600 transition-colors"
                                   title="Delete"
                                 >
-                                  <Trash2 size={18} />
+                                  <Trash2 size={18} strokeWidth={1.5} />
                                 </button>
                               </div>
                             </div>
@@ -1117,9 +1121,9 @@ export default function Admin() {
                   </>
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-steel p-8 text-center">
-                    <FileText size={48} className="mb-4 opacity-20" />
-                    <p className="font-medium text-charcoal mb-1">No Client Selected</p>
-                    <p className="text-sm">Select a client from the list to view and manage their documents.</p>
+                    <FileText size={48} className="mb-6 opacity-20" strokeWidth={1} />
+                    <p className="font-display text-2xl font-light text-charcoal mb-2">No Client Selected</p>
+                    <p className="text-sm font-light">Select a client from the list to view and manage their documents.</p>
                   </div>
                 )}
               </div>

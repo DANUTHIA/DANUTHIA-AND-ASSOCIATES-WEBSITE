@@ -140,9 +140,47 @@
         }
       },
       "required": ["clientId", "fileName", "fileType", "fileData", "uploadedBy", "createdAt"]
+    },
+    "ClientLead": {
+      "title": "Client Lead",
+      "description": "A lead extracted by the AI Concierge.",
+      "type": "object",
+      "properties": {
+        "client": {
+          "type": "object",
+          "properties": {
+            "full_name": { "type": "string" },
+            "contact_preference": { "type": "string" }
+          }
+        },
+        "project": {
+          "type": "object",
+          "properties": {
+            "scope": { "type": "string" },
+            "location": { "type": "string" },
+            "budget_tier": { "type": "string" },
+            "urgency_flag": { "type": "boolean" }
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["new", "contacted", "archived"]
+        }
+      },
+      "required": ["client", "project", "createdAt", "status"]
     }
   },
   "firestore": {
+    "/clientLeads/{leadId}": {
+      "schema": {
+        "$ref": "#/entities/ClientLead"
+      },
+      "description": "Stores client leads extracted by the AI Concierge."
+    },
     "/bookingRequests/{requestId}": {
       "schema": {
         "$ref": "#/entities/BookingRequest"

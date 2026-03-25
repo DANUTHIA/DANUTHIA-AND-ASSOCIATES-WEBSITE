@@ -43,27 +43,34 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-concrete p-4">
+    <div className="min-h-[calc(100vh-6rem)] flex items-center justify-center bg-concrete p-6 relative overflow-hidden">
+      {/* Decorative Elements */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[60%] border-[1px] border-steel/10 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute bottom-[-10%] left-[-5%] w-[50%] h-[50%] border-[1px] border-bronze/10 rounded-full blur-3xl opacity-30"></div>
+      </div>
+
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full bg-charcoal text-concrete p-8 md:p-12 border border-steel/30 shadow-2xl"
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="max-w-md w-full bg-charcoal text-concrete p-10 md:p-16 relative z-10"
       >
-        <div className="flex justify-center mb-8">
-          <div className="w-16 h-16 rounded-full bg-steel/10 border border-bronze/30 flex items-center justify-center">
-            <Lock size={24} className="text-bronze" />
+        <div className="flex justify-center mb-10">
+          <div className="w-16 h-16 rounded-full border border-bronze/30 flex items-center justify-center bg-charcoal shadow-[0_0_30px_rgba(184,134,11,0.1)]">
+            <Lock size={20} className="text-bronze" strokeWidth={1.5} />
           </div>
         </div>
         
-        <h1 className="font-display text-3xl font-bold uppercase tracking-tighter text-center mb-2">
+        <h1 className="font-display text-4xl font-light tracking-tight text-center mb-4">
           Client Portal
         </h1>
-        <p className="text-steel font-mono text-xs uppercase tracking-widest text-center mb-12">
+        <p className="text-steel font-mono text-[10px] uppercase tracking-[0.3em] text-center mb-12">
           Secure Access
         </p>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/50 text-red-200 p-4 text-sm mb-6 text-center">
+          <div className="bg-red-900/20 border border-red-500/30 text-red-200 p-4 text-xs font-mono mb-8 text-center uppercase tracking-widest">
             {error}
           </div>
         )}
@@ -71,15 +78,17 @@ export default function Login() {
         <button
           onClick={handleLogin}
           disabled={isLoading}
-          className="w-full bg-bronze text-white py-4 font-bold uppercase tracking-widest hover:bg-bronze/90 hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
+          className="w-full bg-transparent border border-bronze text-bronze py-4 font-bold uppercase tracking-widest hover:bg-bronze hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed text-xs"
         >
           <span>{isLoading ? 'Authenticating...' : 'Sign in with Google'}</span>
-          {!isLoading && <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />}
+          {!isLoading && <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform duration-500" strokeWidth={1.5} />}
         </button>
 
-        <p className="text-center text-steel text-xs mt-8">
-          Access is restricted to active clients of Danuthia & Associates.
-        </p>
+        <div className="mt-12 pt-8 border-t border-steel/20">
+          <p className="text-center text-steel text-xs font-light leading-relaxed">
+            Access is restricted to active clients of Danuthia & Associates.
+          </p>
+        </div>
       </motion.div>
     </div>
   );
