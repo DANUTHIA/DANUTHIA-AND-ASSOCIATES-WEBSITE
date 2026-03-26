@@ -7,11 +7,11 @@ const projects = [
     id: 1,
     title: "Nairobi Tech Hub", 
     category: "Commercial", 
-    img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop",
+    img: "https://picsum.photos/seed/nairobi-tech-1/1600/1000",
     images: [
-      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=1600&auto=format&fit=crop"
+      "https://picsum.photos/seed/nairobi-tech-1/1600/1000",
+      "https://picsum.photos/seed/nairobi-tech-2/1600/1000",
+      "https://picsum.photos/seed/nairobi-tech-3/1600/1000"
     ],
     description: "A 15-story sustainable commercial center designed to foster innovation. Features passive cooling, rainwater harvesting, and a brutalist concrete facade softened by indigenous vertical gardens.",
     sustainablePrinciples: [
@@ -27,11 +27,11 @@ const projects = [
     id: 2,
     title: "Kisumu Waterfront", 
     category: "Master Plan", 
-    img: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?q=80&w=1600&auto=format&fit=crop",
+    img: "https://picsum.photos/seed/kisumu-waterfront-1/1600/1000",
     images: [
-      "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1505159940484-eb2b9f2588e2?q=80&w=1600&auto=format&fit=crop"
+      "https://picsum.photos/seed/kisumu-waterfront-1/1600/1000",
+      "https://picsum.photos/seed/kisumu-waterfront-2/1600/1000",
+      "https://picsum.photos/seed/kisumu-waterfront-3/1600/1000"
     ],
     description: "A comprehensive urban renewal project transforming the lakefront into a vibrant public space. Integrates flood mitigation infrastructure with pedestrian promenades and commercial zones.",
     sustainablePrinciples: [
@@ -47,11 +47,11 @@ const projects = [
     id: 3,
     title: "Rift Valley Eco-Lodge", 
     category: "Hospitality", 
-    img: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=1600&auto=format&fit=crop",
+    img: "https://picsum.photos/seed/rift-valley-1/1600/1000",
     images: [
-      "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1510798831971-661eb04b3739?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?q=80&w=1600&auto=format&fit=crop"
+      "https://picsum.photos/seed/rift-valley-1/1600/1000",
+      "https://picsum.photos/seed/rift-valley-2/1600/1000",
+      "https://picsum.photos/seed/rift-valley-3/1600/1000"
     ],
     description: "A luxury retreat designed to blend seamlessly with the dramatic topography of the Great Rift Valley. Constructed using locally sourced stone and timber, minimizing environmental impact.",
     sustainablePrinciples: [
@@ -67,11 +67,11 @@ const projects = [
     id: 4,
     title: "Mombasa Transit Center", 
     category: "Infrastructure", 
-    img: "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=1600&auto=format&fit=crop",
+    img: "https://picsum.photos/seed/mombasa-transit-1/1600/1000",
     images: [
-      "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1534430480872-3498386e7856?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1600&auto=format&fit=crop"
+      "https://picsum.photos/seed/mombasa-transit-1/1600/1000",
+      "https://picsum.photos/seed/mombasa-transit-2/1600/1000",
+      "https://picsum.photos/seed/mombasa-transit-3/1600/1000"
     ],
     description: "A modern, high-capacity transit hub designed to streamline regional mobility. The sweeping roof structure provides natural ventilation and shade for thousands of daily commuters.",
     sustainablePrinciples: [
@@ -87,11 +87,11 @@ const projects = [
     id: 5,
     title: "Konza City Phase 1", 
     category: "Construction Management", 
-    img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=1600&auto=format&fit=crop",
+    img: "https://picsum.photos/seed/konza-city-1/1600/1000",
     images: [
-      "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1541888087525-cebf96516254?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=1600&auto=format&fit=crop"
+      "https://picsum.photos/seed/konza-city-1/1600/1000",
+      "https://picsum.photos/seed/konza-city-2/1600/1000",
+      "https://picsum.photos/seed/konza-city-3/1600/1000"
     ],
     description: "End-to-end construction management for the first phase of the Konza Technopolis. Ensuring strict adherence to architectural blueprints, budget control, and sustainable building practices.",
     sustainablePrinciples: [
@@ -121,6 +121,13 @@ const staggerContainer: any = {
 export default function Portfolio() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [filter, setFilter] = useState('All');
+
+  const categories = ['All', ...Array.from(new Set(projects.map(p => p.category)))];
+
+  const filteredProjects = filter === 'All' 
+    ? projects 
+    : projects.filter(p => p.category === filter);
 
   const selectedProject = projects.find(p => p.id === selectedId);
 
@@ -161,44 +168,70 @@ export default function Portfolio() {
 
       {/* Grid Section */}
       <section className="p-8 md:p-16 max-w-7xl mx-auto py-24">
+        {/* Filter Buttons */}
         <motion.div 
-          initial="hidden"
-          animate="visible"
-          variants={staggerContainer}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="flex flex-wrap gap-4 mb-16 justify-center md:justify-start"
+        >
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setFilter(cat)}
+              className={`px-6 py-2 rounded-full text-xs font-mono uppercase tracking-widest transition-all duration-300 ${
+                filter === cat 
+                  ? 'bg-charcoal text-concrete' 
+                  : 'bg-transparent border border-charcoal/20 text-charcoal hover:border-charcoal'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </motion.div>
+
+        <motion.div 
+          layout
           className="grid grid-cols-1 md:grid-cols-2 gap-y-24 gap-x-12"
         >
-          {projects.map((project, index) => (
-            <motion.div 
-              variants={fadeInUp}
-              key={project.id} 
-              className={`group cursor-pointer relative ${index % 2 !== 0 ? 'md:mt-24' : ''}`}
-              onClick={() => { setSelectedId(project.id); setCurrentImageIndex(0); }}
-            >
-              <div className="aspect-[4/5] relative overflow-hidden bg-charcoal mb-6">
-                <img 
-                  src={project.img} 
-                  alt={project.title} 
-                  className="object-cover w-full h-full opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-1000 mix-blend-luminosity group-hover:mix-blend-normal"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 border border-steel/20 m-4 pointer-events-none group-hover:border-bronze/50 transition-colors duration-700"></div>
-                <div className="absolute bottom-6 right-6 bg-charcoal/90 p-4 text-concrete opacity-0 group-hover:opacity-100 transition-opacity duration-500 backdrop-blur-sm border border-steel/30 rounded-full">
-                  <Maximize2 size={20} />
+          <AnimatePresence mode="popLayout">
+            {filteredProjects.map((project, index) => (
+              <motion.div 
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.5 }}
+                key={project.id} 
+                className={`group cursor-pointer relative ${index % 2 !== 0 ? 'md:mt-24' : ''}`}
+                onClick={() => { setSelectedId(project.id); setCurrentImageIndex(0); }}
+              >
+                <div className="aspect-[4/5] relative overflow-hidden bg-charcoal mb-6">
+                  <img 
+                    src={project.img} 
+                    alt={project.title} 
+                    className="object-cover w-full h-full opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-1000 mix-blend-luminosity group-hover:mix-blend-normal"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 border border-steel/20 m-4 pointer-events-none group-hover:border-bronze/50 transition-colors duration-700"></div>
+                  <div className="absolute bottom-6 right-6 bg-charcoal/90 p-4 text-concrete opacity-0 group-hover:opacity-100 transition-opacity duration-500 backdrop-blur-sm border border-steel/30 rounded-full">
+                    <Maximize2 size={20} />
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-display font-bold text-3xl uppercase group-hover:text-bronze transition-colors mb-2">
-                    {project.title}
-                  </h3>
-                  <p className="text-sm font-mono text-charcoal/60 uppercase tracking-widest">{project.category}</p>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-display font-bold text-3xl uppercase group-hover:text-bronze transition-colors mb-2">
+                      {project.title}
+                    </h3>
+                    <p className="text-sm font-mono text-charcoal/60 uppercase tracking-widest">{project.category}</p>
+                  </div>
+                  <span className="font-display text-xl italic text-steel group-hover:text-bronze transition-colors">
+                    {project.year}
+                  </span>
                 </div>
-                <span className="font-display text-xl italic text-steel group-hover:text-bronze transition-colors">
-                  {project.year}
-                </span>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </motion.div>
       </section>
 

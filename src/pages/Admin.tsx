@@ -21,9 +21,10 @@ interface NewsletterSubscriber {
   createdAt: any;
 }
 
-interface ClientUser {
+interface AppUser {
   id: string;
   email: string;
+  role: string;
 }
 
 interface ProjectUpdate {
@@ -57,12 +58,13 @@ interface VaultDocument {
 export default function Admin() {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'newsletter' | 'updates' | 'messages' | 'documents'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'newsletter' | 'updates' | 'messages' | 'documents' | 'users'>('overview');
   
   const [requests, setRequests] = useState<BookingRequest[]>([]);
   const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
   const [updates, setUpdates] = useState<ProjectUpdate[]>([]);
-  const [clients, setClients] = useState<ClientUser[]>([]);
+  const [users, setUsers] = useState<AppUser[]>([]);
+  const clients = users.filter(u => u.role === 'client');
   const [messages, setMessages] = useState<Message[]>([]);
   const [documents, setDocuments] = useState<VaultDocument[]>([]);
   
@@ -139,7 +141,7 @@ export default function Admin() {
         fetchRequests(),
         fetchSubscribers(),
         fetchUpdates(),
-        fetchClients(),
+        fetchUsers(),
         fetchDocuments()
       ]);
     } catch (err: any) {
@@ -197,15 +199,15 @@ export default function Admin() {
     }
   };
 
-  const fetchClients = async () => {
+  const fetchUsers = async () => {
     try {
-      const q = query(collection(db, 'users'), where('role', '==', 'client'));
+      const q = query(collection(db, 'users'));
       const querySnapshot = await getDocs(q);
-      const cls: ClientUser[] = [];
+      const usrs: AppUser[] = [];
       querySnapshot.forEach((doc) => {
-        cls.push({ id: doc.id, email: doc.data().email } as ClientUser);
+        usrs.push({ id: doc.id, email: doc.data().email, role: doc.data().role } as AppUser);
       });
-      setClients(cls);
+      setUsers(usrs);
     } catch (error) {
       handleFirestoreError(error, OperationType.LIST, 'users');
     }
@@ -239,7 +241,7 @@ export default function Admin() {
       setRequests([]);
       setSubscribers([]);
       setUpdates([]);
-      setClients([]);
+      setUsers([]);
       setMessages([]);
       setInitialLoading(true);
     } catch (error) {
@@ -256,6 +258,18 @@ export default function Admin() {
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, 'bookingRequests');
       setError('Failed to update status. You may not have admin permissions.');
+    }
+  };
+
+  const updateUserRole = async (id: string, newRole: string) => {
+    try {
+      await updateDoc(doc(db, 'users', id), {
+        role: newRole
+      });
+      setUsers(users.map(u => u.id === id ? { ...u, role: newRole } : u));
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, 'users');
+      setError('Failed to update user role. You may not have admin permissions.');
     }
   };
 
@@ -532,6 +546,12 @@ export default function Admin() {
           className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'newsletter' ? 'text-charcoal border-b border-charcoal' : 'text-steel hover:text-charcoal'}`}
         >
           Subscribers
+        </button>
+        <button 
+          onClick={() => setActiveTab('users')}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'users' ? 'text-charcoal border-b border-charcoal' : 'text-steel hover:text-charcoal'}`}
+        >
+          Users
         </button>
         <button 
           onClick={() => setActiveTab('documents')}
@@ -1126,6 +1146,65 @@ export default function Admin() {
                     <p className="text-sm font-light">Select a client from the list to view and manage their documents.</p>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Users Tab */}
+          {activeTab === 'users' && (
+            <div className="bg-white border border-steel/20 overflow-hidden">
+              <div className="p-8 border-b border-steel/20 flex justify-between items-center bg-concrete/50">
+                <h3 className="font-display text-2xl font-light text-charcoal flex items-center gap-3">
+                  <Users size={24} className="text-bronze" strokeWidth={1.5} />
+                  User Management
+                </h3>
+              </div>
+              <div className="overflow-x-auto custom-scrollbar">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-concrete/30 border-b border-steel/20">
+                      <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-steel font-medium">Email</th>
+                      <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-steel font-medium">ID</th>
+                      <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-steel font-medium">Role</th>
+                      <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-steel font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="p-8 text-center text-steel font-light text-sm">No users found.</td>
+                      </tr>
+                    ) : (
+                      users.map((u) => (
+                        <tr key={u.id} className="border-b border-steel/10 hover:bg-concrete/20 transition-colors">
+                          <td className="p-6 font-medium text-charcoal text-sm">{u.email}</td>
+                          <td className="p-6 font-mono text-[10px] text-steel uppercase tracking-widest">{u.id}</td>
+                          <td className="p-6">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-widest ${
+                              u.role === 'admin' ? 'bg-charcoal text-white' :
+                              u.role === 'client' ? 'bg-bronze/10 text-bronze border border-bronze/20' :
+                              'bg-yellow-100 text-yellow-800 border border-yellow-200'
+                            }`}>
+                              {u.role}
+                            </span>
+                          </td>
+                          <td className="p-6 text-right">
+                            <select
+                              value={u.role}
+                              onChange={(e) => updateUserRole(u.id, e.target.value)}
+                              className="bg-transparent border border-steel/30 text-charcoal text-xs rounded px-2 py-1 focus:outline-none focus:border-bronze transition-colors"
+                              disabled={u.id === user?.uid}
+                            >
+                              <option value="pending">Pending</option>
+                              <option value="client">Client</option>
+                              <option value="admin">Admin</option>
+                            </select>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowDown, Box, Map, Building2, Quote, ArrowRight, Calendar, ChevronRight, Maximize, CheckCircle, HardHat } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useLocation, Link } from 'react-router-dom';
@@ -9,8 +9,8 @@ import Logo from '../components/Logo';
 const HERO_IMAGES = [
   "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2000&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2000&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2000&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2000&auto=format&fit=crop"
+  "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2000&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=2000&auto=format&fit=crop"
 ];
 
 const fadeInUp: any = {
@@ -30,6 +30,12 @@ const staggerContainer: any = {
 
 export default function Home() {
   const location = useLocation();
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"]
+  });
+  const y = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
   
   // Form State
   const [fullName, setFullName] = useState('');
@@ -102,7 +108,7 @@ export default function Home() {
   return (
     <main className="bg-concrete">
       {/* Section 1: Hero - Luxury Editorial Style */}
-      <section className="relative min-h-[calc(100vh-4rem)] flex flex-col lg:flex-row border-b border-charcoal/20">
+      <section ref={heroRef} className="relative min-h-[calc(100vh-4rem)] flex flex-col lg:flex-row border-b border-charcoal/20 overflow-hidden">
         
         {/* Left Content */}
         <div className="w-full lg:w-5/12 p-8 md:p-16 lg:p-24 flex flex-col justify-center relative z-10 bg-concrete">
@@ -133,19 +139,21 @@ export default function Home() {
 
         {/* Right Image Slider */}
         <div className="w-full lg:w-7/12 relative h-[60vh] lg:h-auto overflow-hidden">
-          <AnimatePresence mode="popLayout">
-            <motion.img
-              key={currentImageIndex}
-              src={HERO_IMAGES[currentImageIndex]}
-              alt="Architectural Showcase"
-              className="absolute inset-0 w-full h-full object-cover"
-              initial={{ opacity: 0, scale: 1.05 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.5, ease: "easeInOut" }}
-              referrerPolicy="no-referrer"
-            />
-          </AnimatePresence>
+          <motion.div style={{ y }} className="absolute inset-0 w-full h-[130%] -top-[15%]">
+            <AnimatePresence mode="popLayout">
+              <motion.img
+                key={currentImageIndex}
+                src={HERO_IMAGES[currentImageIndex]}
+                alt="Architectural Showcase"
+                className="absolute inset-0 w-full h-full object-cover"
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.5, ease: "easeInOut" }}
+                referrerPolicy="no-referrer"
+              />
+            </AnimatePresence>
+          </motion.div>
           <div className="absolute inset-0 bg-charcoal/10 mix-blend-multiply pointer-events-none"></div>
           
           {/* Vertical Text Accent */}
@@ -218,9 +226,9 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { title: "Ahero Flood Mitigation", category: "Topographical drainage analysis", img: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=800&auto=format&fit=crop" },
-              { title: "Maseno Environmental", category: "Land-use mapping", img: "https://images.unsplash.com/photo-1590486803833-1c5dc8ddd4c8?q=80&w=800&auto=format&fit=crop" },
-              { title: "Public Parks Network", category: "GIS Feature class mapping", img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=800&auto=format&fit=crop" }
+              { title: "Ahero Flood Mitigation", category: "Topographical drainage analysis", img: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=800&auto=format&fit=crop" },
+              { title: "Maseno Environmental", category: "Land-use mapping", img: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=800&auto=format&fit=crop" },
+              { title: "Public Parks Network", category: "GIS Feature class mapping", img: "https://images.unsplash.com/photo-1505159940484-eb2b9f2588e2?q=80&w=800&auto=format&fit=crop" }
             ].map((project, idx) => (
               <Link to="/portfolio" key={idx} className="group cursor-pointer block">
                 <motion.div variants={fadeInUp} className="flex flex-col">

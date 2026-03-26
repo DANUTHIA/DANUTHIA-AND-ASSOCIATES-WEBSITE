@@ -25,7 +25,7 @@ export default function Login() {
       if (!userDoc.exists()) {
         await setDoc(userDocRef, {
           email: user.email,
-          role: 'client'
+          role: 'pending'
         });
       }
 

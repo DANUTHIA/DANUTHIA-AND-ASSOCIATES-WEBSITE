@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db, handleFirestoreError, OperationType } from '../firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { collection, query, where, onSnapshot, orderBy, addDoc, serverTimestamp, or, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, addDoc, serverTimestamp, or, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { motion } from 'motion/react';
 import { LogOut, FileText, Calendar, Clock, Download, MessageSquare, Send, Upload } from 'lucide-react';
 
@@ -45,11 +45,24 @@ export default function ClientPortal() {
   }, [messages]);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
         navigate('/login');
       } else {
-        setUser(currentUser);
+        try {
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            setUser({ ...currentUser, role: userData.role });
+          } else {
+            setUser({ ...currentUser, role: 'pending' });
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error);
+          setUser({ ...currentUser, role: 'pending' });
+        }
         setLoading(false);
       }
     });
@@ -57,7 +70,7 @@ export default function ClientPortal() {
   }, [navigate]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || user.role === 'pending') return;
 
     const q = query(
       collection(db, 'projectUpdates'),
@@ -192,6 +205,31 @@ export default function ClientPortal() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-concrete">
         <div className="w-8 h-8 border-2 border-bronze border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (user?.role === 'pending') {
+    return (
+      <div className="min-h-[calc(100vh-6rem)] flex flex-col items-center justify-center bg-concrete p-6 text-center">
+        <div className="max-w-md w-full bg-charcoal text-concrete p-10 md:p-16 relative z-10">
+          <div className="flex justify-center mb-10">
+            <div className="w-16 h-16 rounded-full border border-bronze/30 flex items-center justify-center bg-charcoal shadow-[0_0_30px_rgba(184,134,11,0.1)]">
+              <Clock size={20} className="text-bronze" strokeWidth={1.5} />
+            </div>
+          </div>
+          <h1 className="font-display text-3xl font-light tracking-tight mb-4">Pending Approval</h1>
+          <p className="text-steel font-light leading-relaxed mb-8">
+            Your account is currently pending approval. Access to the client portal is restricted to active clients of Danuthia & Associates. We will notify you once your account has been verified.
+          </p>
+          <button 
+            onClick={handleSignOut}
+            className="w-full bg-transparent border border-bronze text-bronze py-4 font-bold uppercase tracking-widest hover:bg-bronze hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 text-xs"
+          >
+            <LogOut size={16} />
+            Sign Out
+          </button>
+        </div>
       </div>
     );
   }

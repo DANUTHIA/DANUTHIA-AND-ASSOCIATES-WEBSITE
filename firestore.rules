@@ -61,9 +61,10 @@ service cloud.firestore {
     
     function isAdmin() {
       return isAuthenticated() && 
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-        (request.auth.token.email == "machariag605@gmail.com" && request.auth.token.email_verified == true));
+        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+        (request.auth.token.email == "machariag605@gmail.com" && request.auth.token.email_verified == true) ||
+        (request.auth.token.email == "danuthiaandassociates@gmail.com" && request.auth.token.email_verified == true));
     }
 
     function hasOnlyAllowedFields(allowedFields) {
@@ -99,7 +100,7 @@ service cloud.firestore {
       return hasOnlyAllowedFields(['email', 'role']) &&
              hasRequiredFields(['email', 'role']) &&
              data.email is string && data.email.size() > 0 && data.email.size() <= 150 &&
-             data.role in ['client', 'admin'];
+             data.role in ['pending', 'client', 'admin'];
     }
 
     function isValidNewsletter() {
@@ -167,9 +168,9 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      // Only allow users to create their own profile with 'client' role, or admin can create any
+      // Only allow users to create their own profile with 'pending' role, or admin can create any
       allow create: if isAuthenticated() && isValidUser() && 
-                    ((isOwner(userId) && request.resource.data.role == 'client') || isAdmin());
+                    ((isOwner(userId) && request.resource.data.role == 'pending') || isAdmin());
       // Only admin can update roles
       allow update: if isAuthenticated() && isValidUser() && 
                     ((isOwner(userId) && request.resource.data.role == resource.data.role && request.resource.data.email == resource.data.email) || isAdmin());

@@ -90,7 +90,17 @@ export default function Layout() {
       </header>
 
       <div className="flex-grow pt-24">
-        <Outlet />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Footer */}
@@ -116,6 +126,8 @@ export default function Layout() {
                 <Link to="/portfolio" className="hover:text-bronze transition-colors w-fit">Portfolio</Link>
                 <Link to="/about" className="hover:text-bronze transition-colors w-fit">About Us</Link>
                 <Link to="/portal" className="hover:text-bronze transition-colors w-fit">Client Portal</Link>
+                <Link to="/careers" className="hover:text-bronze transition-colors w-fit">Work With Us</Link>
+                <Link to="/affiliate" className="hover:text-bronze transition-colors w-fit">Affiliate Program</Link>
               </nav>
             </div>
 

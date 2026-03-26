@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'motion/react';
+import React, { useRef } from 'react';
+import { motion, useScroll, useTransform } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -17,6 +17,13 @@ const staggerContainer: any = {
 };
 
 export default function About() {
+  const imageBreakRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: imageBreakRef,
+    offset: ["start end", "end start"]
+  });
+  const y = useTransform(scrollYProgress, [0, 1], ["-20%", "20%"]);
+
   return (
     <main className="bg-concrete min-h-screen">
       {/* Hero Section */}
@@ -53,17 +60,19 @@ export default function About() {
       </section>
 
       {/* Image Break */}
-      <section className="w-full h-[50vh] md:h-[70vh] relative overflow-hidden">
-        <motion.img 
-          initial={{ scale: 1.1 }}
-          whileInView={{ scale: 1 }}
-          transition={{ duration: 1.5 }}
-          viewport={{ once: true }}
-          src="https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=2000&auto=format&fit=crop" 
-          alt="Architectural detail" 
-          className="w-full h-full object-cover mix-blend-luminosity"
-          referrerPolicy="no-referrer"
-        />
+      <section ref={imageBreakRef} className="w-full h-[50vh] md:h-[70vh] relative overflow-hidden">
+        <motion.div style={{ y }} className="absolute inset-0 w-full h-[140%] -top-[20%]">
+          <motion.img 
+            initial={{ scale: 1.1 }}
+            whileInView={{ scale: 1 }}
+            transition={{ duration: 1.5 }}
+            viewport={{ once: true }}
+            src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?q=80&w=2000&auto=format&fit=crop" 
+            alt="Architectural detail" 
+            className="w-full h-full object-cover mix-blend-luminosity"
+            referrerPolicy="no-referrer"
+          />
+        </motion.div>
         <div className="absolute inset-0 bg-charcoal/20 mix-blend-multiply"></div>
       </section>
 
@@ -90,7 +99,7 @@ export default function About() {
               </p>
             </div>
             
-            <Link to="/#book" className="inline-flex items-center justify-between p-6 border border-charcoal hover:bg-charcoal hover:text-concrete transition-all duration-500 group mt-16 w-full md:w-auto min-w-[300px]">
+            <Link to="/careers" className="inline-flex items-center justify-between p-6 border border-charcoal hover:bg-charcoal hover:text-concrete transition-all duration-500 group mt-16 w-full md:w-auto min-w-[300px]">
               <span className="font-bold uppercase tracking-widest mr-8 text-sm">Work With Us</span>
               <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
             </Link>
@@ -134,6 +143,42 @@ export default function About() {
             </div>
           </motion.div>
         </motion.div>
+      </section>
+      {/* Founder Section */}
+      <section className="bg-charcoal text-concrete py-24 px-8 md:px-16">
+        <div className="max-w-7xl mx-auto">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center"
+          >
+            <motion.div variants={fadeInUp} className="relative aspect-[3/4] w-full max-w-md mx-auto lg:mx-0">
+              <div className="absolute inset-0 bg-bronze/20 translate-x-4 translate-y-4"></div>
+              <img 
+                src="/joseph-macharia.png" 
+                alt="Joseph Macharia - Founder" 
+                className="relative z-10 w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                referrerPolicy="no-referrer"
+              />
+            </motion.div>
+            
+            <motion.div variants={fadeInUp} className="flex flex-col justify-center">
+              <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-4">Joseph Macharia</h2>
+              <p className="text-bronze font-mono text-sm uppercase tracking-widest mb-8">Founder & Principal Architect</p>
+              
+              <div className="space-y-6 text-lg text-steel font-light leading-relaxed">
+                <p>
+                  "Architecture is more than just erecting buildings; it is about crafting the backdrop to people's lives. At Danuthia & Co., our vision has always been to bridge the gap between sustainable urban planning and innovative architectural design."
+                </p>
+                <p>
+                  "We strive to create spaces that not only serve their functional purpose but also enrich the communities they inhabit. Every project is an opportunity to respect our heritage while boldly designing for tomorrow."
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
       </section>
     </main>
   );

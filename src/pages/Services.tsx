@@ -85,7 +85,7 @@ export default function Services() {
             </div>
             <div className="lg:col-span-7 order-1 lg:order-2 h-[40vh] lg:h-[60vh] overflow-hidden relative">
               <img 
-                src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop" 
+                src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop" 
                 alt="Architectural Design" 
                 className="w-full h-full object-cover mix-blend-luminosity group-hover:mix-blend-normal group-hover:scale-105 transition-all duration-1000"
                 referrerPolicy="no-referrer"
@@ -98,7 +98,7 @@ export default function Services() {
           <motion.div variants={fadeInUp} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center group">
             <div className="lg:col-span-7 h-[40vh] lg:h-[60vh] overflow-hidden relative">
               <img 
-                src="https://images.unsplash.com/photo-1511818966892-d7d671e672a2?q=80&w=1600&auto=format&fit=crop" 
+                src="https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=1600&auto=format&fit=crop" 
                 alt="Urban Planning" 
                 className="w-full h-full object-cover mix-blend-luminosity group-hover:mix-blend-normal group-hover:scale-105 transition-all duration-1000"
                 referrerPolicy="no-referrer"
@@ -151,7 +151,7 @@ export default function Services() {
             </div>
             <div className="lg:col-span-7 order-1 lg:order-2 h-[40vh] lg:h-[60vh] overflow-hidden relative">
               <img 
-                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1600&auto=format&fit=crop" 
+                src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=1600&auto=format&fit=crop" 
                 alt="Spatial Analysis" 
                 className="w-full h-full object-cover mix-blend-luminosity group-hover:mix-blend-normal group-hover:scale-105 transition-all duration-1000"
                 referrerPolicy="no-referrer"
