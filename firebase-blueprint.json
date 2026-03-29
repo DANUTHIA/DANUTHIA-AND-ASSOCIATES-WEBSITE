@@ -172,6 +172,35 @@
         }
       },
       "required": ["client", "project", "createdAt", "status"]
+    },
+    "Milestone": {
+      "title": "Project Milestone",
+      "description": "A milestone in a client's project timeline.",
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "The UID of the client this milestone belongs to."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the milestone."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["completed", "in-progress", "upcoming"],
+          "description": "The current status of the milestone."
+        },
+        "order": {
+          "type": "number",
+          "description": "The order of the milestone in the timeline."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["clientId", "title", "status", "order", "createdAt"]
     }
   },
   "firestore": {
@@ -180,6 +209,12 @@
         "$ref": "#/entities/ClientLead"
       },
       "description": "Stores client leads extracted by the AI Concierge."
+    },
+    "/milestones/{milestoneId}": {
+      "schema": {
+        "$ref": "#/entities/Milestone"
+      },
+      "description": "Stores project milestones for clients."
     },
     "/bookingRequests/{requestId}": {
       "schema": {

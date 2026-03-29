@@ -1,18 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, CheckCircle } from 'lucide-react';
+import { Menu, X, CheckCircle, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Outlet, Link, NavLink, useLocation } from 'react-router-dom';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import Logo from './Logo';
 import Global3DBackground from './Global3DBackground';
+import Magnetic from './Magnetic';
+import ThemeToggle from './ThemeToggle';
 
 export default function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    // Check local storage or system preference on mount
+    const savedMode = localStorage.getItem('darkMode');
+    if (savedMode === 'true' || (!savedMode && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      setIsDarkMode(true);
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(prev => {
+      const newMode = !prev;
+      if (newMode) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('darkMode', 'true');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('darkMode', 'false');
+      }
+      return newMode;
+    });
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,32 +67,44 @@ export default function Layout() {
     isActive ? "text-bronze transition-colors relative after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[1px] after:bg-bronze" : "hover:text-bronze transition-colors relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[1px] after:bg-bronze hover:after:w-full after:transition-all after:duration-300";
 
   return (
-    <div className="min-h-screen bg-transparent text-charcoal selection:bg-bronze selection:text-white flex flex-col relative font-sans">
+    <div className="min-h-screen bg-concrete dark:bg-charcoal text-charcoal dark:text-concrete selection:bg-bronze selection:text-white flex flex-col relative font-sans transition-colors duration-500">
       <Global3DBackground />
       
       {/* Navigation */}
-      <header className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'bg-concrete/95 backdrop-blur-xl border-b border-steel/20 py-2' : 'bg-transparent py-6'}`}>
+      <header className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'bg-concrete/95 dark:bg-charcoal/95 backdrop-blur-xl border-b border-steel/20 py-2' : 'bg-transparent py-6'}`}>
         <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
-          <Link to="/" className="hover:opacity-80 transition-opacity cursor-pointer z-50" onClick={closeMenu}>
-            <Logo className="scale-90 origin-left" />
-          </Link>
+          <Magnetic>
+            <Link to="/" className="hover:opacity-80 transition-opacity cursor-pointer z-50 inline-block" onClick={closeMenu}>
+              <Logo className="scale-90 origin-left" />
+            </Link>
+          </Magnetic>
           
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-10 text-xs font-bold uppercase tracking-[0.2em]">
-            <NavLink to="/services" className={navLinkClass}>Services</NavLink>
-            <NavLink to="/portfolio" className={navLinkClass}>Portfolio</NavLink>
-            <NavLink to="/about" className={navLinkClass}>About</NavLink>
-            <NavLink to="/portal" className={navLinkClass}>Client Portal</NavLink>
-            <Link to="/#book" className="px-6 py-3 border border-charcoal hover:bg-charcoal hover:text-concrete transition-all duration-500 ml-4">Book Consultation</Link>
+            <Magnetic><NavLink to="/services" className={navLinkClass}>Services</NavLink></Magnetic>
+            <Magnetic><NavLink to="/portfolio" className={navLinkClass}>Portfolio</NavLink></Magnetic>
+            <Magnetic><NavLink to="/about" className={navLinkClass}>About</NavLink></Magnetic>
+            <Magnetic><NavLink to="/portal" className={navLinkClass}>Client Portal</NavLink></Magnetic>
+            <Magnetic>
+              <ThemeToggle isDarkMode={isDarkMode} toggle={toggleDarkMode} />
+            </Magnetic>
+            <Magnetic><Link to="/#book" className="px-6 py-3 border border-charcoal dark:border-concrete hover:bg-charcoal hover:text-concrete dark:hover:bg-concrete dark:hover:text-charcoal transition-all duration-500 ml-4">Book Consultation</Link></Magnetic>
           </nav>
 
           {/* Mobile Menu Toggle */}
-          <button 
-            className="md:hidden p-2 text-charcoal hover:text-bronze transition-colors z-50"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X size={28} strokeWidth={1.5} /> : <Menu size={28} strokeWidth={1.5} />}
-          </button>
+          <div className="md:hidden flex items-center gap-4 z-50">
+            <Magnetic>
+              <ThemeToggle isDarkMode={isDarkMode} toggle={toggleDarkMode} />
+            </Magnetic>
+            <Magnetic>
+              <button 
+                className="p-2 text-charcoal dark:text-concrete hover:text-bronze transition-colors"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? <X size={28} strokeWidth={1.5} /> : <Menu size={28} strokeWidth={1.5} />}
+              </button>
+            </Magnetic>
+          </div>
         </div>
 
         {/* Mobile Nav */}
@@ -77,13 +115,13 @@ export default function Layout() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="absolute top-full left-0 w-full h-screen bg-concrete/95 backdrop-blur-xl flex flex-col pt-12 px-8 uppercase tracking-[0.2em] text-sm font-bold"
+              className="absolute top-full left-0 w-full h-screen bg-concrete/95 dark:bg-charcoal/95 backdrop-blur-xl flex flex-col pt-12 px-8 uppercase tracking-[0.2em] text-sm font-bold"
             >
               <Link to="/services" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Services</Link>
               <Link to="/portfolio" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Portfolio</Link>
               <Link to="/about" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>About</Link>
               <Link to="/portal" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Client Portal</Link>
-              <Link to="/#book" className="mt-12 py-4 bg-charcoal text-concrete text-center hover:bg-bronze transition-colors" onClick={closeMenu}>Book Consultation</Link>
+              <Link to="/#book" className="mt-12 py-4 bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal text-center hover:bg-bronze dark:hover:bg-bronze transition-colors" onClick={closeMenu}>Book Consultation</Link>
             </motion.div>
           )}
         </AnimatePresence>
@@ -104,7 +142,7 @@ export default function Layout() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-charcoal text-concrete mt-auto border-t border-steel/20">
+      <footer className="bg-charcoal dark:bg-[#111111] text-concrete mt-auto border-t border-steel/20 transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-8 md:px-16 py-20">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-16 lg:gap-8">
             
@@ -160,9 +198,11 @@ export default function Layout() {
                     className="bg-transparent w-full focus:outline-none text-sm font-light placeholder:text-steel/50"
                     required
                   />
-                  <button type="submit" className="text-bronze hover:text-concrete transition-colors uppercase text-xs font-bold tracking-wider ml-4">
-                    Subscribe
-                  </button>
+                  <Magnetic>
+                    <button type="submit" className="text-bronze hover:text-concrete transition-colors uppercase text-xs font-bold tracking-wider ml-4">
+                      Subscribe
+                    </button>
+                  </Magnetic>
                 </form>
               )}
             </div>

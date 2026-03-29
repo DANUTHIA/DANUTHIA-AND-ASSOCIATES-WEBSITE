@@ -17,9 +17,9 @@ const staggerContainer: any = {
 
 export default function Affiliate() {
   return (
-    <main className="bg-concrete min-h-screen">
+    <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500">
       {/* Hero Section */}
-      <section className="relative bg-charcoal text-concrete p-8 md:p-16 flex flex-col justify-center overflow-hidden min-h-[60vh]">
+      <section className="relative bg-charcoal dark:bg-[#111111] text-concrete p-8 md:p-16 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.05, scale: 1 }}
@@ -54,34 +54,34 @@ export default function Affiliate() {
       <section className="p-8 md:p-16 max-w-7xl mx-auto py-24">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-24">
           <div className="text-center flex flex-col items-center">
-            <div className="w-16 h-16 rounded-full border border-charcoal/10 flex items-center justify-center mb-6 bg-bronze/5 text-bronze">
+            <div className="w-16 h-16 rounded-full border border-charcoal/10 dark:border-concrete/10 flex items-center justify-center mb-6 bg-bronze/5 text-bronze transition-colors duration-500">
               <Handshake size={24} />
             </div>
-            <h3 className="font-display text-2xl mb-4">Refer Clients</h3>
-            <p className="text-charcoal/70 font-light text-sm leading-relaxed">Introduce our premier services to your network of developers, investors, and property owners.</p>
+            <h3 className="font-display text-2xl mb-4 text-charcoal dark:text-concrete transition-colors duration-500">Refer Clients</h3>
+            <p className="text-charcoal/70 dark:text-concrete/70 font-light text-sm leading-relaxed transition-colors duration-500">Introduce our premier services to your network of developers, investors, and property owners.</p>
           </div>
           <div className="text-center flex flex-col items-center">
-            <div className="w-16 h-16 rounded-full border border-charcoal/10 flex items-center justify-center mb-6 bg-bronze/5 text-bronze">
+            <div className="w-16 h-16 rounded-full border border-charcoal/10 dark:border-concrete/10 flex items-center justify-center mb-6 bg-bronze/5 text-bronze transition-colors duration-500">
               <Award size={24} />
             </div>
-            <h3 className="font-display text-2xl mb-4">Premium Service</h3>
-            <p className="text-charcoal/70 font-light text-sm leading-relaxed">We guarantee exceptional architectural delivery, ensuring your referrals receive world-class treatment.</p>
+            <h3 className="font-display text-2xl mb-4 text-charcoal dark:text-concrete transition-colors duration-500">Premium Service</h3>
+            <p className="text-charcoal/70 dark:text-concrete/70 font-light text-sm leading-relaxed transition-colors duration-500">We guarantee exceptional architectural delivery, ensuring your referrals receive world-class treatment.</p>
           </div>
           <div className="text-center flex flex-col items-center">
-            <div className="w-16 h-16 rounded-full border border-charcoal/10 flex items-center justify-center mb-6 bg-bronze/5 text-bronze">
+            <div className="w-16 h-16 rounded-full border border-charcoal/10 dark:border-concrete/10 flex items-center justify-center mb-6 bg-bronze/5 text-bronze transition-colors duration-500">
               <TrendingUp size={24} />
             </div>
-            <h3 className="font-display text-2xl mb-4">Earn Commissions</h3>
-            <p className="text-charcoal/70 font-light text-sm leading-relaxed">Receive a competitive percentage of the project fee upon successful contract signing and commencement.</p>
+            <h3 className="font-display text-2xl mb-4 text-charcoal dark:text-concrete transition-colors duration-500">Earn Commissions</h3>
+            <p className="text-charcoal/70 dark:text-concrete/70 font-light text-sm leading-relaxed transition-colors duration-500">Receive a competitive percentage of the project fee upon successful contract signing and commencement.</p>
           </div>
         </div>
 
-        <div className="max-w-3xl mx-auto bg-white border border-steel/20 p-12 text-center">
-          <h2 className="font-display text-3xl mb-6">Join the Network</h2>
-          <p className="text-charcoal/70 mb-10 font-light leading-relaxed">
+        <div className="max-w-3xl mx-auto bg-white dark:bg-[#111111] border border-steel/20 dark:border-concrete/20 p-12 text-center transition-colors duration-500">
+          <h2 className="font-display text-3xl mb-6 text-charcoal dark:text-concrete transition-colors duration-500">Join the Network</h2>
+          <p className="text-charcoal/70 dark:text-concrete/70 mb-10 font-light leading-relaxed transition-colors duration-500">
             Our affiliate program is open to real estate agents, financial advisors, and industry professionals. Contact us to discuss partnership terms and register as an official affiliate.
           </p>
-          <a href="mailto:partnerships@danuthiaandassociates.com" className="inline-flex items-center justify-between p-6 bg-charcoal text-concrete hover:bg-bronze hover:text-charcoal transition-all duration-500 group w-full md:w-auto min-w-[300px]">
+          <a href="mailto:partnerships@danuthiaandassociates.com" className="inline-flex items-center justify-between p-6 bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal hover:bg-bronze dark:hover:bg-bronze hover:text-charcoal dark:hover:text-charcoal transition-all duration-500 group w-full md:w-auto min-w-[300px]">
             <span className="font-bold uppercase tracking-widest mr-8 text-sm">Apply Now</span>
             <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
           </a>

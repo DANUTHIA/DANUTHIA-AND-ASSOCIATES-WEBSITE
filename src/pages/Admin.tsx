@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { auth, db, provider, handleFirestoreError, OperationType } from '../firebase';
 import { signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { collection, query, orderBy, getDocs, updateDoc, doc, deleteDoc, addDoc, serverTimestamp, where, onSnapshot } from 'firebase/firestore';
-import { LogOut, RefreshCw, CheckCircle, Clock, Phone, Trash2, Mail, Plus, Calendar, Users, FileText, BarChart3, MessageSquare, Send, Upload, Download } from 'lucide-react';
+import { LogOut, RefreshCw, CheckCircle, Clock, Phone, Trash2, Mail, Plus, Calendar, Users, FileText, BarChart3, MessageSquare, Send, Upload, Download, Edit } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
 import { motion } from 'motion/react';
+import Magnetic from '../components/Magnetic';
 
 interface BookingRequest {
   id: string;
@@ -55,10 +56,19 @@ interface VaultDocument {
   createdAt: any;
 }
 
+interface Milestone {
+  id: string;
+  clientId: string;
+  title: string;
+  status: 'completed' | 'in-progress' | 'upcoming';
+  order: number;
+  createdAt: any;
+}
+
 export default function Admin() {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'newsletter' | 'updates' | 'messages' | 'documents' | 'users'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'newsletter' | 'updates' | 'messages' | 'documents' | 'users' | 'milestones'>('overview');
   
   const [requests, setRequests] = useState<BookingRequest[]>([]);
   const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
@@ -67,16 +77,23 @@ export default function Admin() {
   const clients = users.filter(u => u.role === 'client');
   const [messages, setMessages] = useState<Message[]>([]);
   const [documents, setDocuments] = useState<VaultDocument[]>([]);
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
   
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'booking' | 'newsletter' | 'update' | 'document', id: string } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'booking' | 'newsletter' | 'update' | 'document' | 'milestone', id: string } | null>(null);
 
   // New Update Form State
   const [newUpdate, setNewUpdate] = useState({ clientId: '', title: '', description: '', imageUrl: '' });
   const [isCreatingUpdate, setIsCreatingUpdate] = useState(false);
+  const [editingUpdateId, setEditingUpdateId] = useState<string | null>(null);
+
+  // New Milestone Form State
+  const [newMilestone, setNewMilestone] = useState<{clientId: string, title: string, status: 'completed' | 'in-progress' | 'upcoming', order: number}>({ clientId: '', title: '', status: 'upcoming', order: 1 });
+  const [isCreatingMilestone, setIsCreatingMilestone] = useState(false);
+  const [editingMilestoneId, setEditingMilestoneId] = useState<string | null>(null);
 
   // Messaging State
   const [selectedChatClient, setSelectedChatClient] = useState<string | null>(null);
@@ -142,7 +159,8 @@ export default function Admin() {
         fetchSubscribers(),
         fetchUpdates(),
         fetchUsers(),
-        fetchDocuments()
+        fetchDocuments(),
+        fetchMilestones()
       ]);
     } catch (err: any) {
       console.error(err);
@@ -154,6 +172,20 @@ export default function Admin() {
     } finally {
       setLoading(false);
       setInitialLoading(false);
+    }
+  };
+
+  const fetchMilestones = async () => {
+    try {
+      const q = query(collection(db, 'milestones'), orderBy('order', 'asc'));
+      const querySnapshot = await getDocs(q);
+      const mstones: Milestone[] = [];
+      querySnapshot.forEach((doc) => {
+        mstones.push({ id: doc.id, ...doc.data() } as Milestone);
+      });
+      setMilestones(mstones);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, 'milestones');
     }
   };
 
@@ -289,11 +321,15 @@ export default function Admin() {
       } else if (deleteConfirm.type === 'document') {
         await deleteDoc(doc(db, 'documents', deleteConfirm.id));
         setDocuments(documents.filter(d => d.id !== deleteConfirm.id));
+      } else if (deleteConfirm.type === 'milestone') {
+        await deleteDoc(doc(db, 'milestones', deleteConfirm.id));
+        setMilestones(milestones.filter(m => m.id !== deleteConfirm.id));
       }
     } catch (err) {
       const collectionName = deleteConfirm.type === 'booking' ? 'bookingRequests' : 
                              deleteConfirm.type === 'newsletter' ? 'newsletter' : 
-                             deleteConfirm.type === 'document' ? 'documents' : 'projectUpdates';
+                             deleteConfirm.type === 'document' ? 'documents' : 
+                             deleteConfirm.type === 'milestone' ? 'milestones' : 'projectUpdates';
       handleFirestoreError(err, OperationType.DELETE, collectionName);
       setError('Failed to delete item. You may not have admin permissions.');
     } finally {
@@ -314,17 +350,24 @@ export default function Admin() {
         clientId: newUpdate.clientId,
         title: newUpdate.title,
         description: newUpdate.description,
-        createdAt: serverTimestamp()
       };
       if (newUpdate.imageUrl) {
         updateData.imageUrl = newUpdate.imageUrl;
       }
-      await addDoc(collection(db, 'projectUpdates'), updateData);
+      
+      if (editingUpdateId) {
+        await updateDoc(doc(db, 'projectUpdates', editingUpdateId), updateData);
+      } else {
+        updateData.createdAt = serverTimestamp();
+        await addDoc(collection(db, 'projectUpdates'), updateData);
+      }
+      
       setNewUpdate({ clientId: '', title: '', description: '', imageUrl: '' });
+      setEditingUpdateId(null);
       await fetchUpdates(); // Refresh the list
     } catch (err: any) {
-      handleFirestoreError(err, OperationType.CREATE, 'projectUpdates');
-      setError('Failed to create project update. Ensure you have admin permissions and the data is valid.');
+      handleFirestoreError(err, editingUpdateId ? OperationType.UPDATE : OperationType.CREATE, 'projectUpdates');
+      setError(`Failed to ${editingUpdateId ? 'update' : 'create'} project update. Ensure you have admin permissions and the data is valid.`);
     } finally {
       setIsCreatingUpdate(false);
     }
@@ -430,12 +473,14 @@ export default function Admin() {
         <p className="text-charcoal/70 mb-8 max-w-md text-center">
           Please sign in with your administrator account to access the dashboard.
         </p>
-        <button 
-          onClick={handleLogin}
-          className="bg-charcoal text-concrete px-8 py-4 font-bold uppercase tracking-widest hover:bg-bronze transition-all duration-300"
-        >
-          Sign in with Google
-        </button>
+        <Magnetic>
+          <button 
+            onClick={handleLogin}
+            className="bg-charcoal text-concrete px-8 py-4 font-bold uppercase tracking-widest hover:bg-bronze transition-all duration-300"
+          >
+            Sign in with Google
+          </button>
+        </Magnetic>
       </div>
     );
   }
@@ -449,60 +494,64 @@ export default function Admin() {
           <p className="text-steel font-mono text-xs uppercase tracking-widest">Logged in as {user.email}</p>
         </div>
         <div className="flex items-center gap-4">
-          <button 
-            onClick={fetchAllData}
-            className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-charcoal hover:text-bronze transition-colors bg-white px-4 py-2 border border-steel/20 rounded shadow-sm"
-          >
-            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-            Refresh Data
-          </button>
-          <button 
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-red-600 hover:text-red-700 transition-colors bg-white px-4 py-2 border border-red-100 rounded shadow-sm"
-          >
-            <LogOut size={14} />
-            Sign Out
-          </button>
+          <Magnetic>
+            <button 
+              onClick={fetchAllData}
+              className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors bg-white dark:bg-charcoal px-4 py-2 border border-steel/20 dark:border-steel/40 rounded shadow-sm"
+            >
+              <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+              Refresh Data
+            </button>
+          </Magnetic>
+          <Magnetic>
+            <button 
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-red-600 hover:text-red-700 transition-colors bg-white dark:bg-charcoal px-4 py-2 border border-red-100 dark:border-red-900/30 rounded shadow-sm"
+            >
+              <LogOut size={14} />
+              Sign Out
+            </button>
+          </Magnetic>
         </div>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        <div className="bg-white p-8 border border-steel/20 flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+        <div className="bg-white dark:bg-charcoal p-8 border border-steel/20 dark:border-steel/40 flex flex-col justify-between relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 dark:bg-bronze/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div>
-            <p className="text-steel font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Total Bookings</p>
-            <h3 className="font-display text-5xl font-light text-charcoal">{initialLoading ? '-' : requests.length}</h3>
+            <p className="text-steel dark:text-steel/80 font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Total Bookings</p>
+            <h3 className="font-display text-5xl font-light text-charcoal dark:text-concrete">{initialLoading ? '-' : requests.length}</h3>
           </div>
           <div className="mt-6 flex justify-end">
             <Calendar size={20} className="text-bronze/50" strokeWidth={1} />
           </div>
         </div>
-        <div className="bg-white p-8 border border-steel/20 flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+        <div className="bg-white dark:bg-charcoal p-8 border border-steel/20 dark:border-steel/40 flex flex-col justify-between relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 dark:bg-bronze/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div>
-            <p className="text-steel font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Pending Requests</p>
+            <p className="text-steel dark:text-steel/80 font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Pending Requests</p>
             <h3 className="font-display text-5xl font-light text-bronze">{initialLoading ? '-' : pendingCount}</h3>
           </div>
           <div className="mt-6 flex justify-end">
             <Clock size={20} className="text-bronze/50" strokeWidth={1} />
           </div>
         </div>
-        <div className="bg-white p-8 border border-steel/20 flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+        <div className="bg-white dark:bg-charcoal p-8 border border-steel/20 dark:border-steel/40 flex flex-col justify-between relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 dark:bg-bronze/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div>
-            <p className="text-steel font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Subscribers</p>
-            <h3 className="font-display text-5xl font-light text-charcoal">{initialLoading ? '-' : subscribers.length}</h3>
+            <p className="text-steel dark:text-steel/80 font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Subscribers</p>
+            <h3 className="font-display text-5xl font-light text-charcoal dark:text-concrete">{initialLoading ? '-' : subscribers.length}</h3>
           </div>
           <div className="mt-6 flex justify-end">
             <Users size={20} className="text-bronze/50" strokeWidth={1} />
           </div>
         </div>
-        <div className="bg-white p-8 border border-steel/20 flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+        <div className="bg-white dark:bg-charcoal p-8 border border-steel/20 dark:border-steel/40 flex flex-col justify-between relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 dark:bg-bronze/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div>
-            <p className="text-steel font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Project Updates</p>
-            <h3 className="font-display text-5xl font-light text-charcoal">{initialLoading ? '-' : updates.length}</h3>
+            <p className="text-steel dark:text-steel/80 font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Project Updates</p>
+            <h3 className="font-display text-5xl font-light text-charcoal dark:text-concrete">{initialLoading ? '-' : updates.length}</h3>
           </div>
           <div className="mt-6 flex justify-end">
             <FileText size={20} className="text-bronze/50" strokeWidth={1} />
@@ -511,28 +560,34 @@ export default function Admin() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-8 mb-12 border-b border-steel/20 overflow-x-auto custom-scrollbar">
+      <div className="flex gap-8 mb-12 border-b border-steel/20 dark:border-steel/40 overflow-x-auto custom-scrollbar">
         <button 
           onClick={() => setActiveTab('overview')}
-          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'overview' ? 'text-charcoal border-b border-charcoal' : 'text-steel hover:text-charcoal'}`}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'overview' ? 'text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete' : 'text-steel hover:text-charcoal dark:hover:text-concrete'}`}
         >
           Overview
         </button>
         <button 
           onClick={() => setActiveTab('bookings')}
-          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'bookings' ? 'text-charcoal border-b border-charcoal' : 'text-steel hover:text-charcoal'}`}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'bookings' ? 'text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete' : 'text-steel hover:text-charcoal dark:hover:text-concrete'}`}
         >
           Booking Requests
         </button>
         <button 
           onClick={() => setActiveTab('updates')}
-          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'updates' ? 'text-charcoal border-b border-charcoal' : 'text-steel hover:text-charcoal'}`}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'updates' ? 'text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete' : 'text-steel hover:text-charcoal dark:hover:text-concrete'}`}
         >
           Project Updates
         </button>
         <button 
+          onClick={() => setActiveTab('milestones')}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'milestones' ? 'text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete' : 'text-steel hover:text-charcoal dark:hover:text-concrete'}`}
+        >
+          Milestones
+        </button>
+        <button 
           onClick={() => setActiveTab('messages')}
-          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap flex items-center gap-2 ${activeTab === 'messages' ? 'text-charcoal border-b border-charcoal' : 'text-steel hover:text-charcoal'}`}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap flex items-center gap-2 ${activeTab === 'messages' ? 'text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete' : 'text-steel hover:text-charcoal dark:hover:text-concrete'}`}
         >
           Messages
           {messages.filter(m => !m.read && m.receiverId === 'admin').length > 0 && (
@@ -543,19 +598,19 @@ export default function Admin() {
         </button>
         <button 
           onClick={() => setActiveTab('newsletter')}
-          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'newsletter' ? 'text-charcoal border-b border-charcoal' : 'text-steel hover:text-charcoal'}`}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'newsletter' ? 'text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete' : 'text-steel hover:text-charcoal dark:hover:text-concrete'}`}
         >
           Subscribers
         </button>
         <button 
           onClick={() => setActiveTab('users')}
-          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'users' ? 'text-charcoal border-b border-charcoal' : 'text-steel hover:text-charcoal'}`}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'users' ? 'text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete' : 'text-steel hover:text-charcoal dark:hover:text-concrete'}`}
         >
           Users
         </button>
         <button 
           onClick={() => setActiveTab('documents')}
-          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'documents' ? 'text-charcoal border-b border-charcoal' : 'text-steel hover:text-charcoal'}`}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'documents' ? 'text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete' : 'text-steel hover:text-charcoal dark:hover:text-concrete'}`}
         >
           Documents
         </button>
@@ -574,10 +629,10 @@ export default function Admin() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white p-8 max-w-md w-full rounded-2xl shadow-2xl"
+            className="bg-white dark:bg-charcoal p-8 max-w-md w-full rounded-2xl shadow-2xl border border-steel/20 dark:border-steel/40"
           >
-            <h3 className="font-display text-2xl font-bold uppercase tracking-tight mb-4 text-charcoal">Confirm Deletion</h3>
-            <p className="text-charcoal/70 mb-8 text-sm leading-relaxed">
+            <h3 className="font-display text-2xl font-bold uppercase tracking-tight mb-4 text-charcoal dark:text-concrete">Confirm Deletion</h3>
+            <p className="text-charcoal/70 dark:text-concrete/70 mb-8 text-sm leading-relaxed">
               Are you sure you want to delete this {deleteConfirm.type === 'booking' ? 'booking request' : deleteConfirm.type === 'newsletter' ? 'subscriber' : deleteConfirm.type === 'document' ? 'document' : 'project update'}? This action cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
@@ -604,8 +659,8 @@ export default function Admin() {
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Chart: Booking Statuses */}
-              <div className="bg-white border border-steel/20 p-8">
-                <h3 className="font-display text-2xl font-light text-charcoal mb-8 flex items-center gap-3">
+              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
+                <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
                   <BarChart3 size={20} className="text-bronze" strokeWidth={1.5} />
                   Booking Statuses
                 </h3>
@@ -637,8 +692,8 @@ export default function Admin() {
               </div>
 
               {/* Recent Activity (Updates & Bookings mixed) */}
-              <div className="bg-white border border-steel/20 p-8">
-                <h3 className="font-display text-2xl font-light text-charcoal mb-8 flex items-center gap-3">
+              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
+                <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
                   <Clock size={20} className="text-bronze" strokeWidth={1.5} />
                   Recent Activity
                 </h3>
@@ -653,8 +708,8 @@ export default function Admin() {
                           <Calendar size={14} strokeWidth={1.5} />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-charcoal">New Booking: {req.fullName}</p>
-                          <p className="text-[10px] font-mono text-steel mt-2 uppercase tracking-widest">{req.createdAt?.toDate ? req.createdAt.toDate().toLocaleDateString() : 'Just now'} • {req.projectScale}</p>
+                          <p className="text-sm font-medium text-charcoal dark:text-concrete">New Booking: {req.fullName}</p>
+                          <p className="text-[10px] font-mono text-steel dark:text-steel/80 mt-2 uppercase tracking-widest">{req.createdAt?.toDate ? req.createdAt.toDate().toLocaleDateString() : 'Just now'} • {req.projectScale}</p>
                         </div>
                       </div>
                     ))}
@@ -667,11 +722,11 @@ export default function Admin() {
 
           {/* Bookings Tab */}
           {activeTab === 'bookings' && (
-            <div className="bg-white border border-steel/20 overflow-hidden">
+            <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-concrete/50 border-b border-steel/20 text-[10px] font-mono text-steel uppercase tracking-[0.2em]">
+                    <tr className="bg-concrete/50 dark:bg-steel/10 border-b border-steel/20 dark:border-steel/40 text-[10px] font-mono text-steel dark:text-steel/80 uppercase tracking-[0.2em]">
                       <th className="p-6 font-normal">Date</th>
                       <th className="p-6 font-normal">Client Name</th>
                       <th className="p-6 font-normal">Project Scale</th>
@@ -692,18 +747,18 @@ export default function Admin() {
                       </tr>
                     ) : (
                       requests.map((req) => (
-                        <tr key={req.id} className="hover:bg-concrete/30 transition-colors group">
-                          <td className="p-6 text-xs font-mono text-charcoal/80">
+                        <tr key={req.id} className="hover:bg-concrete/30 dark:hover:bg-steel/10 transition-colors group">
+                          <td className="p-6 text-xs font-mono text-charcoal/80 dark:text-concrete/80">
                             {req.createdAt?.toDate ? req.createdAt.toDate().toLocaleDateString() : 'Just now'}
                           </td>
-                          <td className="p-6 font-medium text-charcoal text-sm">{req.fullName}</td>
-                          <td className="p-6 text-sm capitalize text-charcoal/80 font-light">{req.projectScale}</td>
-                          <td className="p-6 text-sm text-charcoal/80 font-light">{req.preferredDate}</td>
+                          <td className="p-6 font-medium text-charcoal dark:text-concrete text-sm">{req.fullName}</td>
+                          <td className="p-6 text-sm capitalize text-charcoal/80 dark:text-concrete/80 font-light">{req.projectScale}</td>
+                          <td className="p-6 text-sm text-charcoal/80 dark:text-concrete/80 font-light">{req.preferredDate}</td>
                           <td className="p-6">
                             <span className={`inline-flex items-center gap-2 px-3 py-1 text-[10px] font-mono uppercase tracking-widest border
-                              ${req.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 
-                                req.status === 'reviewed' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
-                                'bg-green-50 text-green-700 border-green-200'}`}
+                              ${req.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-900/50' : 
+                                req.status === 'reviewed' ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900/50' : 
+                                'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/50'}`}
                             >
                               {req.status === 'pending' && <Clock size={10} />}
                               {req.status === 'reviewed' && <CheckCircle size={10} />}
@@ -715,15 +770,15 @@ export default function Admin() {
                             <select 
                               value={req.status}
                               onChange={(e) => updateStatus(req.id, e.target.value)}
-                              className="text-[10px] font-mono uppercase tracking-widest bg-transparent border border-steel/20 px-3 py-1.5 outline-none focus:border-bronze cursor-pointer text-charcoal transition-all"
+                              className="text-[10px] font-mono uppercase tracking-widest bg-transparent border border-steel/20 dark:border-steel/40 px-3 py-1.5 outline-none focus:border-bronze dark:focus:border-bronze cursor-pointer text-charcoal dark:text-concrete transition-all"
                             >
-                              <option value="pending">Pending</option>
-                              <option value="reviewed">Reviewed</option>
-                              <option value="contacted">Contacted</option>
+                              <option value="pending" className="dark:bg-charcoal">Pending</option>
+                              <option value="reviewed" className="dark:bg-charcoal">Reviewed</option>
+                              <option value="contacted" className="dark:bg-charcoal">Contacted</option>
                             </select>
                             <button 
                               onClick={() => setDeleteConfirm({ type: 'booking', id: req.id })} 
-                              className="p-2 text-steel hover:text-red-600 transition-colors"
+                              className="p-2 text-steel hover:text-red-600 dark:hover:text-red-500 transition-colors"
                               title="Delete Request"
                             >
                               <Trash2 size={16} strokeWidth={1.5} />
@@ -741,12 +796,25 @@ export default function Admin() {
           {/* Project Updates Tab */}
           {activeTab === 'updates' && (
             <div className="space-y-12">
-              {/* Create Form */}
-              <div className="bg-white border border-steel/20 p-8 md:p-12">
-                <h2 className="font-display text-2xl font-light tracking-tight mb-8 flex items-center gap-3 text-charcoal">
-                  <Plus size={20} className="text-bronze" strokeWidth={1.5} />
-                  Post New Update
-                </h2>
+              {/* Create/Edit Form */}
+              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8 md:p-12">
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="font-display text-2xl font-light tracking-tight flex items-center gap-3 text-charcoal dark:text-concrete">
+                    {editingUpdateId ? <Edit size={20} className="text-bronze" strokeWidth={1.5} /> : <Plus size={20} className="text-bronze" strokeWidth={1.5} />}
+                    {editingUpdateId ? 'Edit Project Update' : 'Post New Update'}
+                  </h2>
+                  {editingUpdateId && (
+                    <button 
+                      onClick={() => {
+                        setEditingUpdateId(null);
+                        setNewUpdate({ clientId: '', title: '', description: '', imageUrl: '' });
+                      }}
+                      className="text-xs font-mono uppercase tracking-widest text-steel hover:text-charcoal dark:hover:text-concrete transition-colors"
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+                </div>
                 <form onSubmit={handleCreateUpdate} className="space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
@@ -754,12 +822,12 @@ export default function Admin() {
                       <select 
                         value={newUpdate.clientId}
                         onChange={e => setNewUpdate({...newUpdate, clientId: e.target.value})}
-                        className="w-full bg-transparent border-b border-steel/30 py-3 text-sm focus:outline-none focus:border-bronze transition-colors font-light"
+                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors font-light text-charcoal dark:text-concrete"
                         required
                       >
-                        <option value="">-- Select a Client --</option>
+                        <option value="" className="dark:bg-charcoal">-- Select a Client --</option>
                         {clients.map(c => (
-                          <option key={c.id} value={c.id}>{c.email}</option>
+                          <option key={c.id} value={c.id} className="dark:bg-charcoal">{c.email}</option>
                         ))}
                       </select>
                     </div>
@@ -769,7 +837,7 @@ export default function Admin() {
                         type="text"
                         value={newUpdate.title}
                         onChange={e => setNewUpdate({...newUpdate, title: e.target.value})}
-                        className="w-full bg-transparent border-b border-steel/30 py-3 text-sm focus:outline-none focus:border-bronze transition-colors font-light"
+                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors font-light text-charcoal dark:text-concrete placeholder:text-steel/50 dark:placeholder:text-steel/40"
                         placeholder="e.g., Foundation Poured"
                         required
                       />
@@ -780,7 +848,7 @@ export default function Admin() {
                     <textarea 
                       value={newUpdate.description}
                       onChange={e => setNewUpdate({...newUpdate, description: e.target.value})}
-                      className="w-full bg-transparent border-b border-steel/30 py-3 text-sm focus:outline-none focus:border-bronze transition-colors font-light min-h-[120px] resize-y"
+                      className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors font-light min-h-[120px] resize-y text-charcoal dark:text-concrete placeholder:text-steel/50 dark:placeholder:text-steel/40"
                       placeholder="Detailed progress report..."
                       required
                     />
@@ -791,26 +859,26 @@ export default function Admin() {
                       type="url"
                       value={newUpdate.imageUrl}
                       onChange={e => setNewUpdate({...newUpdate, imageUrl: e.target.value})}
-                      className="w-full bg-transparent border-b border-steel/30 py-3 text-sm focus:outline-none focus:border-bronze transition-colors font-light"
+                      className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors font-light text-charcoal dark:text-concrete placeholder:text-steel/50 dark:placeholder:text-steel/40"
                       placeholder="https://..."
                     />
                   </div>
                   <button 
                     type="submit"
                     disabled={isCreatingUpdate}
-                    className="bg-charcoal text-concrete px-8 py-4 font-mono text-[10px] uppercase tracking-[0.2em] hover:bg-bronze transition-colors disabled:opacity-50"
+                    className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-8 py-4 font-mono text-[10px] uppercase tracking-[0.2em] hover:bg-bronze dark:hover:bg-bronze transition-colors disabled:opacity-50"
                   >
-                    {isCreatingUpdate ? 'Posting...' : 'Post Update'}
+                    {isCreatingUpdate ? (editingUpdateId ? 'Updating...' : 'Posting...') : (editingUpdateId ? 'Update Project' : 'Post Update')}
                   </button>
                 </form>
               </div>
 
               {/* Updates List */}
-              <div className="bg-white border border-steel/20 overflow-hidden">
+              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-concrete/50 border-b border-steel/20 text-[10px] font-mono text-steel uppercase tracking-[0.2em]">
+                      <tr className="bg-concrete/50 dark:bg-steel/10 border-b border-steel/20 dark:border-steel/40 text-[10px] font-mono text-steel dark:text-steel/80 uppercase tracking-[0.2em]">
                         <th className="p-6 font-normal">Date</th>
                         <th className="p-6 font-normal">Client</th>
                         <th className="p-6 font-normal">Title</th>
@@ -831,17 +899,209 @@ export default function Admin() {
                         updates.map((upd) => {
                           const clientEmail = clients.find(c => c.id === upd.clientId)?.email || upd.clientId;
                           return (
-                            <tr key={upd.id} className="hover:bg-concrete/30 transition-colors group">
-                              <td className="p-6 text-xs font-mono text-charcoal/80">
+                            <tr key={upd.id} className="hover:bg-concrete/30 dark:hover:bg-steel/10 transition-colors group">
+                              <td className="p-6 text-xs font-mono text-charcoal/80 dark:text-concrete/80">
                                 {upd.createdAt?.toDate ? upd.createdAt.toDate().toLocaleDateString() : 'Just now'}
                               </td>
-                              <td className="p-6 font-medium text-charcoal text-sm">{clientEmail}</td>
-                              <td className="p-6 text-sm text-charcoal/80 font-light">{upd.title}</td>
-                              <td className="p-6 text-right">
+                              <td className="p-6 font-medium text-charcoal dark:text-concrete text-sm">{clientEmail}</td>
+                              <td className="p-6 text-sm text-charcoal/80 dark:text-concrete/80 font-light">{upd.title}</td>
+                              <td className="p-6 text-right space-x-2">
+                                <button 
+                                  onClick={() => {
+                                    setEditingUpdateId(upd.id);
+                                    setNewUpdate({
+                                      clientId: upd.clientId,
+                                      title: upd.title,
+                                      description: upd.description,
+                                      imageUrl: upd.imageUrl || ''
+                                    });
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                  }}
+                                  className="p-2 text-steel hover:text-bronze transition-colors inline-block"
+                                  title="Edit Update"
+                                >
+                                  <Edit size={16} strokeWidth={1.5} />
+                                </button>
                                 <button 
                                   onClick={() => setDeleteConfirm({ type: 'update', id: upd.id })} 
-                                  className="p-2 text-steel hover:text-red-600 transition-colors inline-block"
+                                  className="p-2 text-steel hover:text-red-600 dark:hover:text-red-500 transition-colors inline-block"
                                   title="Delete Update"
+                                >
+                                  <Trash2 size={16} strokeWidth={1.5} />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Milestones Tab */}
+          {activeTab === 'milestones' && (
+            <div className="space-y-8">
+              {/* Create/Edit Milestone Form */}
+              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="font-display text-2xl font-light tracking-tight flex items-center gap-3 text-charcoal dark:text-concrete">
+                    {editingMilestoneId ? <Edit className="text-bronze" size={24} strokeWidth={1.5} /> : <Calendar className="text-bronze" size={24} strokeWidth={1.5} />}
+                    {editingMilestoneId ? 'Edit Project Milestone' : 'Add Project Milestone'}
+                  </h2>
+                  {editingMilestoneId && (
+                    <button 
+                      onClick={() => {
+                        setEditingMilestoneId(null);
+                        setNewMilestone({ clientId: '', title: '', status: 'upcoming', order: milestones.length + 1 });
+                      }}
+                      className="text-xs font-mono uppercase tracking-widest text-steel hover:text-charcoal dark:hover:text-concrete transition-colors"
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+                </div>
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!newMilestone.clientId || !newMilestone.title) return;
+                  setIsCreatingMilestone(true);
+                  try {
+                    if (editingMilestoneId) {
+                      await updateDoc(doc(db, 'milestones', editingMilestoneId), {
+                        ...newMilestone
+                      });
+                    } else {
+                      await addDoc(collection(db, 'milestones'), {
+                        ...newMilestone,
+                        createdAt: serverTimestamp()
+                      });
+                    }
+                    setNewMilestone({ clientId: '', title: '', status: 'upcoming', order: milestones.length + 1 });
+                    setEditingMilestoneId(null);
+                    fetchMilestones();
+                  } catch (error) {
+                    handleFirestoreError(error, editingMilestoneId ? OperationType.UPDATE : OperationType.CREATE, 'milestones');
+                  } finally {
+                    setIsCreatingMilestone(false);
+                  }
+                }} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-steel mb-3">Select Client *</label>
+                      <select 
+                        value={newMilestone.clientId}
+                        onChange={e => setNewMilestone({...newMilestone, clientId: e.target.value})}
+                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors font-light text-charcoal dark:text-concrete"
+                        required
+                      >
+                        <option value="" className="dark:bg-charcoal">-- Select a Client --</option>
+                        {clients.map(c => (
+                          <option key={c.id} value={c.id} className="dark:bg-charcoal">{c.email}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-steel mb-3">Milestone Title *</label>
+                      <input 
+                        type="text"
+                        value={newMilestone.title}
+                        onChange={e => setNewMilestone({...newMilestone, title: e.target.value})}
+                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors font-light text-charcoal dark:text-concrete placeholder:text-steel/50 dark:placeholder:text-steel/40"
+                        placeholder="e.g., Phase 1: Design"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-steel mb-3">Status *</label>
+                      <select 
+                        value={newMilestone.status}
+                        onChange={e => setNewMilestone({...newMilestone, status: e.target.value as any})}
+                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors font-light text-charcoal dark:text-concrete"
+                        required
+                      >
+                        <option value="upcoming" className="dark:bg-charcoal">Upcoming</option>
+                        <option value="in-progress" className="dark:bg-charcoal">In Progress</option>
+                        <option value="completed" className="dark:bg-charcoal">Completed</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-steel mb-3">Order (Number) *</label>
+                      <input 
+                        type="number"
+                        value={newMilestone.order}
+                        onChange={e => setNewMilestone({...newMilestone, order: parseInt(e.target.value) || 0})}
+                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors font-light text-charcoal dark:text-concrete placeholder:text-steel/50 dark:placeholder:text-steel/40"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <button 
+                    type="submit"
+                    disabled={isCreatingMilestone}
+                    className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-8 py-4 font-mono text-[10px] uppercase tracking-[0.2em] hover:bg-bronze dark:hover:bg-bronze transition-colors disabled:opacity-50"
+                  >
+                    {isCreatingMilestone ? (editingMilestoneId ? 'Updating...' : 'Adding...') : (editingMilestoneId ? 'Update Milestone' : 'Add Milestone')}
+                  </button>
+                </form>
+              </div>
+
+              {/* Milestones List */}
+              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-concrete/50 dark:bg-steel/10 border-b border-steel/20 dark:border-steel/40 text-[10px] font-mono text-steel dark:text-steel/80 uppercase tracking-[0.2em]">
+                        <th className="p-6 font-normal">Order</th>
+                        <th className="p-6 font-normal">Client</th>
+                        <th className="p-6 font-normal">Title</th>
+                        <th className="p-6 font-normal">Status</th>
+                        <th className="p-6 font-normal text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-steel/10">
+                      {initialLoading ? (
+                        <tr><td colSpan={5}>{renderSkeleton()}</td></tr>
+                      ) : milestones.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="p-16 text-center text-steel font-light">
+                            <Calendar size={32} className="mx-auto mb-4 opacity-20" strokeWidth={1} />
+                            <p>No project milestones set yet.</p>
+                          </td>
+                        </tr>
+                      ) : (
+                        milestones.map((mstone) => {
+                          const clientEmail = clients.find(c => c.id === mstone.clientId)?.email || mstone.clientId;
+                          return (
+                            <tr key={mstone.id} className="hover:bg-concrete/30 dark:hover:bg-steel/10 transition-colors group">
+                              <td className="p-6 text-xs font-mono text-charcoal/80 dark:text-concrete/80">
+                                {mstone.order}
+                              </td>
+                              <td className="p-6 font-medium text-charcoal dark:text-concrete text-sm">{clientEmail}</td>
+                              <td className="p-6 text-sm text-charcoal/80 dark:text-concrete/80 font-light">{mstone.title}</td>
+                              <td className="p-6 text-xs font-mono text-charcoal/80 dark:text-concrete/80 capitalize">{mstone.status.replace('-', ' ')}</td>
+                              <td className="p-6 text-right space-x-2">
+                                <button 
+                                  onClick={() => {
+                                    setEditingMilestoneId(mstone.id);
+                                    setNewMilestone({
+                                      clientId: mstone.clientId,
+                                      title: mstone.title,
+                                      status: mstone.status,
+                                      order: mstone.order
+                                    });
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                  }}
+                                  className="p-2 text-steel hover:text-bronze transition-colors inline-block"
+                                  title="Edit Milestone"
+                                >
+                                  <Edit size={16} strokeWidth={1.5} />
+                                </button>
+                                <button 
+                                  onClick={() => setDeleteConfirm({ type: 'milestone', id: mstone.id })} 
+                                  className="p-2 text-steel hover:text-red-600 dark:hover:text-red-500 transition-colors inline-block"
+                                  title="Delete Milestone"
                                 >
                                   <Trash2 size={16} strokeWidth={1.5} />
                                 </button>
@@ -861,9 +1121,9 @@ export default function Admin() {
           {activeTab === 'messages' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[600px]">
               {/* Clients List */}
-              <div className="bg-white border border-steel/20 overflow-hidden flex flex-col">
-                <div className="p-6 border-b border-steel/20 bg-concrete/50">
-                  <h3 className="font-display text-xl font-light text-charcoal flex items-center gap-3">
+              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden flex flex-col">
+                <div className="p-6 border-b border-steel/20 dark:border-steel/40 bg-concrete/50 dark:bg-steel/10">
+                  <h3 className="font-display text-xl font-light text-charcoal dark:text-concrete flex items-center gap-3">
                     <Users size={18} className="text-bronze" strokeWidth={1.5} />
                     Clients
                   </h3>
@@ -882,10 +1142,10 @@ export default function Admin() {
                           <button
                             key={client.id}
                             onClick={() => setSelectedChatClient(client.id)}
-                            className={`w-full text-left p-6 hover:bg-concrete/50 transition-colors flex flex-col gap-2 ${selectedChatClient === client.id ? 'bg-bronze/5 border-l-2 border-bronze' : 'border-l-2 border-transparent'}`}
+                            className={`w-full text-left p-6 hover:bg-concrete/50 dark:hover:bg-steel/10 transition-colors flex flex-col gap-2 ${selectedChatClient === client.id ? 'bg-bronze/5 dark:bg-bronze/10 border-l-2 border-bronze' : 'border-l-2 border-transparent'}`}
                           >
                             <div className="flex justify-between items-center w-full">
-                              <span className="font-medium text-charcoal text-sm truncate pr-4">{client.email}</span>
+                              <span className="font-medium text-charcoal dark:text-concrete text-sm truncate pr-4">{client.email}</span>
                               {unreadCount > 0 && (
                                 <span className="bg-bronze text-white text-[10px] px-2 py-0.5 rounded-full shrink-0">
                                   {unreadCount}
@@ -893,7 +1153,7 @@ export default function Admin() {
                               )}
                             </div>
                             {lastMessage && (
-                              <p className="text-xs text-steel truncate font-light">
+                              <p className="text-xs text-steel dark:text-steel/80 truncate font-light">
                                 {lastMessage.senderId === user?.uid ? 'You: ' : ''}{lastMessage.text}
                               </p>
                             )}
@@ -906,18 +1166,18 @@ export default function Admin() {
               </div>
 
               {/* Chat Window */}
-              <div className="lg:col-span-2 bg-white border border-steel/20 flex flex-col">
+              <div className="lg:col-span-2 bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 flex flex-col">
                 {selectedChatClient ? (
                   <>
-                    <div className="p-6 border-b border-steel/20 bg-concrete/50 flex items-center gap-4">
+                    <div className="p-6 border-b border-steel/20 dark:border-steel/40 bg-concrete/50 dark:bg-steel/10 flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-bronze/10 flex items-center justify-center text-bronze">
                         <MessageSquare size={18} strokeWidth={1.5} />
                       </div>
                       <div>
-                        <h3 className="font-display text-xl font-light text-charcoal">
+                        <h3 className="font-display text-xl font-light text-charcoal dark:text-concrete">
                           {clients.find(c => c.id === selectedChatClient)?.email}
                         </h3>
-                        <p className="text-[10px] font-mono text-steel uppercase tracking-[0.2em] mt-1">Client Chat</p>
+                        <p className="text-[10px] font-mono text-steel dark:text-steel/80 uppercase tracking-[0.2em] mt-1">Client Chat</p>
                       </div>
                     </div>
                     
@@ -933,7 +1193,7 @@ export default function Admin() {
                             const isMine = msg.senderId === user?.uid;
                             return (
                               <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`max-w-[70%] p-4 ${isMine ? 'bg-charcoal text-concrete rounded-tl-xl rounded-tr-xl rounded-bl-xl' : 'bg-concrete text-charcoal border border-steel/20 rounded-tl-xl rounded-tr-xl rounded-br-xl'}`}>
+                                <div className={`max-w-[70%] p-4 ${isMine ? 'bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal rounded-tl-xl rounded-tr-xl rounded-bl-xl' : 'bg-concrete dark:bg-steel/10 text-charcoal dark:text-concrete border border-steel/20 dark:border-steel/40 rounded-tl-xl rounded-tr-xl rounded-br-xl'}`}>
                                   <p className="text-sm font-light leading-relaxed">{msg.text}</p>
                                   <span className="text-[10px] font-mono opacity-50 mt-2 block text-right uppercase tracking-widest">
                                     {msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Sending...'}
@@ -946,20 +1206,20 @@ export default function Admin() {
                       <div ref={messagesEndRef} />
                     </div>
 
-                    <div className="p-6 border-t border-steel/20 bg-concrete/30">
+                    <div className="p-6 border-t border-steel/20 dark:border-steel/40 bg-concrete/30 dark:bg-steel/10">
                       <form onSubmit={handleSendReply} className="flex gap-4">
                         <input
                           type="text"
                           value={adminReply}
                           onChange={(e) => setAdminReply(e.target.value)}
                           placeholder="Type your reply..."
-                          className="flex-1 bg-white border border-steel/20 px-4 py-3 text-sm font-light focus:outline-none focus:border-bronze transition-colors"
+                          className="flex-1 bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 px-4 py-3 text-sm font-light focus:outline-none focus:border-bronze dark:focus:border-bronze text-charcoal dark:text-concrete transition-colors"
                           disabled={sendingReply}
                         />
                         <button
                           type="submit"
                           disabled={!adminReply.trim() || sendingReply}
-                          className="bg-charcoal text-concrete px-6 py-3 hover:bg-bronze transition-colors duration-300 disabled:opacity-50 flex items-center justify-center"
+                          className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-6 py-3 hover:bg-bronze dark:hover:bg-bronze transition-colors duration-300 disabled:opacity-50 flex items-center justify-center"
                         >
                           <Send size={16} strokeWidth={1.5} />
                         </button>
@@ -969,7 +1229,7 @@ export default function Admin() {
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-steel p-8 text-center">
                     <MessageSquare size={48} className="mb-6 opacity-20" strokeWidth={1} />
-                    <p className="font-display text-2xl font-light text-charcoal mb-2">No Chat Selected</p>
+                    <p className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-2">No Chat Selected</p>
                     <p className="text-sm font-light">Select a client from the list to view and send messages.</p>
                   </div>
                 )}
@@ -979,11 +1239,11 @@ export default function Admin() {
 
           {/* Newsletter Tab */}
           {activeTab === 'newsletter' && (
-            <div className="bg-white border border-steel/20 overflow-hidden">
+            <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-concrete/50 border-b border-steel/20 text-[10px] font-mono text-steel uppercase tracking-[0.2em]">
+                    <tr className="bg-concrete/50 dark:bg-steel/10 border-b border-steel/20 dark:border-steel/40 text-[10px] font-mono text-steel dark:text-steel/80 uppercase tracking-[0.2em]">
                       <th className="p-6 font-normal">Date Subscribed</th>
                       <th className="p-6 font-normal">Email Address</th>
                       <th className="p-6 font-normal text-right">Actions</th>
@@ -1001,11 +1261,11 @@ export default function Admin() {
                       </tr>
                     ) : (
                       subscribers.map((sub) => (
-                        <tr key={sub.id} className="hover:bg-concrete/30 transition-colors group">
-                          <td className="p-6 text-xs font-mono text-charcoal/80">
+                        <tr key={sub.id} className="hover:bg-concrete/30 dark:hover:bg-steel/10 transition-colors group">
+                          <td className="p-6 text-xs font-mono text-charcoal/80 dark:text-concrete/80">
                             {sub.createdAt?.toDate ? sub.createdAt.toDate().toLocaleDateString() : 'Just now'}
                           </td>
-                          <td className="p-6 font-medium text-charcoal flex items-center gap-3 text-sm">
+                          <td className="p-6 font-medium text-charcoal dark:text-concrete flex items-center gap-3 text-sm">
                             <div className="w-8 h-8 rounded-full bg-bronze/10 flex items-center justify-center text-bronze">
                               <Mail size={14} strokeWidth={1.5} />
                             </div>
@@ -1014,7 +1274,7 @@ export default function Admin() {
                           <td className="p-6 text-right">
                             <button 
                               onClick={() => setDeleteConfirm({ type: 'newsletter', id: sub.id })} 
-                              className="p-2 text-steel hover:text-red-600 transition-colors inline-block"
+                              className="p-2 text-steel hover:text-red-600 dark:hover:text-red-500 transition-colors inline-block"
                               title="Delete Subscriber"
                             >
                               <Trash2 size={16} strokeWidth={1.5} />
@@ -1033,9 +1293,9 @@ export default function Admin() {
           {activeTab === 'documents' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Client List */}
-              <div className="lg:col-span-1 bg-white border border-steel/20 overflow-hidden flex flex-col h-[600px]">
-                <div className="p-6 border-b border-steel/20 bg-concrete/50">
-                  <h3 className="font-display text-xl font-light text-charcoal flex items-center gap-3">
+              <div className="lg:col-span-1 bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden flex flex-col h-[600px]">
+                <div className="p-6 border-b border-steel/20 dark:border-steel/40 bg-concrete/50 dark:bg-steel/10">
+                  <h3 className="font-display text-xl font-light text-charcoal dark:text-concrete flex items-center gap-3">
                     <Users size={18} className="text-bronze" strokeWidth={1.5} />
                     Clients
                   </h3>
@@ -1050,10 +1310,10 @@ export default function Admin() {
                       <button
                         key={client.id}
                         onClick={() => setSelectedDocClient(client.id)}
-                        className={`w-full text-left p-4 mb-2 transition-colors flex items-center justify-between ${selectedDocClient === client.id ? 'bg-bronze/5 border border-bronze/30' : 'hover:bg-concrete/50 border border-transparent'}`}
+                        className={`w-full text-left p-4 mb-2 transition-colors flex items-center justify-between ${selectedDocClient === client.id ? 'bg-bronze/5 dark:bg-bronze/10 border border-bronze/30' : 'hover:bg-concrete/50 dark:hover:bg-steel/10 border border-transparent'}`}
                       >
                         <div>
-                          <p className="font-medium text-charcoal text-sm truncate">{client.email}</p>
+                          <p className="font-medium text-charcoal dark:text-concrete text-sm truncate">{client.email}</p>
                           <p className="text-[10px] text-steel font-mono mt-1 uppercase tracking-widest">ID: {client.id.substring(0, 8)}...</p>
                         </div>
                       </button>
@@ -1063,12 +1323,12 @@ export default function Admin() {
               </div>
 
               {/* Document List */}
-              <div className="lg:col-span-2 bg-white border border-steel/20 flex flex-col h-[600px]">
+              <div className="lg:col-span-2 bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 flex flex-col h-[600px]">
                 {selectedDocClient ? (
                   <>
-                    <div className="p-6 border-b border-steel/20 flex justify-between items-center bg-concrete/50">
+                    <div className="p-6 border-b border-steel/20 dark:border-steel/40 flex justify-between items-center bg-concrete/50 dark:bg-steel/10">
                       <div>
-                        <h3 className="font-display text-xl font-light text-charcoal flex items-center gap-3">
+                        <h3 className="font-display text-xl font-light text-charcoal dark:text-concrete flex items-center gap-3">
                           <FileText size={18} className="text-bronze" strokeWidth={1.5} />
                           Client Documents
                         </h3>
@@ -1084,7 +1344,7 @@ export default function Admin() {
                         />
                         <label 
                           htmlFor="admin-doc-upload" 
-                          className={`cursor-pointer flex items-center gap-3 text-[10px] font-mono uppercase tracking-[0.2em] bg-charcoal text-concrete px-6 py-3 hover:bg-bronze transition-colors ${uploadingDoc ? 'opacity-50 pointer-events-none' : ''}`}
+                          className={`cursor-pointer flex items-center gap-3 text-[10px] font-mono uppercase tracking-[0.2em] bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-6 py-3 hover:bg-bronze dark:hover:bg-bronze transition-colors ${uploadingDoc ? 'opacity-50 pointer-events-none' : ''}`}
                         >
                           <Upload size={14} strokeWidth={1.5} />
                           {uploadingDoc ? 'Uploading...' : 'Upload Document'}
@@ -1098,19 +1358,19 @@ export default function Admin() {
                       {documents.filter(d => d.clientId === selectedDocClient).length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-steel">
                           <FileText size={48} className="mb-6 opacity-20" strokeWidth={1} />
-                          <p className="font-display text-2xl font-light text-charcoal mb-2">No Documents</p>
+                          <p className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-2">No Documents</p>
                           <p className="text-sm font-light">Upload documents to share with this client.</p>
                         </div>
                       ) : (
                         <div className="space-y-4">
                           {documents.filter(d => d.clientId === selectedDocClient).map(doc => (
-                            <div key={doc.id} className="flex items-center justify-between p-6 border border-steel/20 hover:border-bronze/30 transition-colors group bg-white">
+                            <div key={doc.id} className="flex items-center justify-between p-6 border border-steel/20 dark:border-steel/40 hover:border-bronze/30 dark:hover:border-bronze/50 transition-colors group bg-white dark:bg-charcoal">
                               <div className="flex items-center gap-6 overflow-hidden">
-                                <div className="w-12 h-12 bg-concrete/50 flex items-center justify-center text-steel shrink-0">
+                                <div className="w-12 h-12 bg-concrete/50 dark:bg-steel/10 flex items-center justify-center text-steel shrink-0">
                                   <FileText size={24} strokeWidth={1} />
                                 </div>
                                 <div className="overflow-hidden">
-                                  <p className="font-medium text-charcoal text-sm truncate" title={doc.fileName}>{doc.fileName}</p>
+                                  <p className="font-medium text-charcoal dark:text-concrete text-sm truncate" title={doc.fileName}>{doc.fileName}</p>
                                   <p className="text-[10px] font-mono text-steel mt-2 uppercase tracking-widest">
                                     {doc.createdAt?.toDate ? doc.createdAt.toDate().toLocaleDateString() : 'Just now'} • 
                                     {doc.uploadedBy === user?.uid ? ' Uploaded by you' : ' Uploaded by client'}
@@ -1127,7 +1387,7 @@ export default function Admin() {
                                 </button>
                                 <button 
                                   onClick={() => setDeleteConfirm({ type: 'document', id: doc.id })}
-                                  className="p-2 text-steel hover:text-red-600 transition-colors"
+                                  className="p-2 text-steel hover:text-red-600 dark:hover:text-red-500 transition-colors"
                                   title="Delete"
                                 >
                                   <Trash2 size={18} strokeWidth={1.5} />
@@ -1142,7 +1402,7 @@ export default function Admin() {
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-steel p-8 text-center">
                     <FileText size={48} className="mb-6 opacity-20" strokeWidth={1} />
-                    <p className="font-display text-2xl font-light text-charcoal mb-2">No Client Selected</p>
+                    <p className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-2">No Client Selected</p>
                     <p className="text-sm font-light">Select a client from the list to view and manage their documents.</p>
                   </div>
                 )}
@@ -1152,9 +1412,9 @@ export default function Admin() {
 
           {/* Users Tab */}
           {activeTab === 'users' && (
-            <div className="bg-white border border-steel/20 overflow-hidden">
-              <div className="p-8 border-b border-steel/20 flex justify-between items-center bg-concrete/50">
-                <h3 className="font-display text-2xl font-light text-charcoal flex items-center gap-3">
+            <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">
+              <div className="p-8 border-b border-steel/20 dark:border-steel/40 flex justify-between items-center bg-concrete/50 dark:bg-steel/10">
+                <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete flex items-center gap-3">
                   <Users size={24} className="text-bronze" strokeWidth={1.5} />
                   User Management
                 </h3>
@@ -1162,7 +1422,7 @@ export default function Admin() {
               <div className="overflow-x-auto custom-scrollbar">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-concrete/30 border-b border-steel/20">
+                    <tr className="bg-concrete/30 dark:bg-steel/10 border-b border-steel/20 dark:border-steel/40">
                       <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-steel font-medium">Email</th>
                       <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-steel font-medium">ID</th>
                       <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-steel font-medium">Role</th>
@@ -1176,12 +1436,12 @@ export default function Admin() {
                       </tr>
                     ) : (
                       users.map((u) => (
-                        <tr key={u.id} className="border-b border-steel/10 hover:bg-concrete/20 transition-colors">
-                          <td className="p-6 font-medium text-charcoal text-sm">{u.email}</td>
+                        <tr key={u.id} className="border-b border-steel/10 dark:border-steel/20 hover:bg-concrete/20 dark:hover:bg-steel/10 transition-colors">
+                          <td className="p-6 font-medium text-charcoal dark:text-concrete text-sm">{u.email}</td>
                           <td className="p-6 font-mono text-[10px] text-steel uppercase tracking-widest">{u.id}</td>
                           <td className="p-6">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-widest ${
-                              u.role === 'admin' ? 'bg-charcoal text-white' :
+                              u.role === 'admin' ? 'bg-charcoal dark:bg-concrete text-white dark:text-charcoal' :
                               u.role === 'client' ? 'bg-bronze/10 text-bronze border border-bronze/20' :
                               'bg-yellow-100 text-yellow-800 border border-yellow-200'
                             }`}>
@@ -1192,12 +1452,12 @@ export default function Admin() {
                             <select
                               value={u.role}
                               onChange={(e) => updateUserRole(u.id, e.target.value)}
-                              className="bg-transparent border border-steel/30 text-charcoal text-xs rounded px-2 py-1 focus:outline-none focus:border-bronze transition-colors"
+                              className="bg-transparent border border-steel/30 dark:border-steel/50 text-charcoal dark:text-concrete text-xs rounded px-2 py-1 focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors"
                               disabled={u.id === user?.uid}
                             >
-                              <option value="pending">Pending</option>
-                              <option value="client">Client</option>
-                              <option value="admin">Admin</option>
+                              <option value="pending" className="dark:bg-charcoal">Pending</option>
+                              <option value="client" className="dark:bg-charcoal">Client</option>
+                              <option value="admin" className="dark:bg-charcoal">Admin</option>
                             </select>
                           </td>
                         </tr>

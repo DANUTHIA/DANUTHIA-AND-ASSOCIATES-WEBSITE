@@ -25,9 +25,9 @@ export default function About() {
   const y = useTransform(scrollYProgress, [0, 1], ["-20%", "20%"]);
 
   return (
-    <main className="bg-concrete min-h-screen">
+    <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500">
       {/* Hero Section */}
-      <section className="relative bg-charcoal text-concrete p-8 md:p-16 flex flex-col justify-center overflow-hidden min-h-[60vh]">
+      <section className="relative bg-charcoal dark:bg-[#111111] text-concrete p-8 md:p-16 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.05, scale: 1 }}
@@ -86,8 +86,8 @@ export default function About() {
           className="grid grid-cols-1 lg:grid-cols-12 gap-16"
         >
           <motion.div variants={fadeInUp} className="lg:col-span-7">
-            <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-12">Our Philosophy</h2>
-            <div className="space-y-8 text-lg md:text-xl text-charcoal/80 leading-relaxed font-light">
+            <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-12 text-charcoal dark:text-concrete transition-colors duration-500">Our Philosophy</h2>
+            <div className="space-y-8 text-lg md:text-xl text-charcoal/80 dark:text-concrete/80 leading-relaxed font-light transition-colors duration-500">
               <p>
                 We approach every project with a deep understanding of local context, environmental sustainability, and human-centric design. Our data-driven methodology ensures that our master plans and architectural designs are not just visually striking, but highly functional and resilient.
               </p>
@@ -99,14 +99,14 @@ export default function About() {
               </p>
             </div>
             
-            <Link to="/careers" className="inline-flex items-center justify-between p-6 border border-charcoal hover:bg-charcoal hover:text-concrete transition-all duration-500 group mt-16 w-full md:w-auto min-w-[300px]">
+            <Link to="/careers" className="inline-flex items-center justify-between p-6 border border-charcoal dark:border-concrete hover:bg-charcoal hover:text-concrete dark:hover:bg-concrete dark:hover:text-charcoal text-charcoal dark:text-concrete transition-all duration-500 group mt-16 w-full md:w-auto min-w-[300px]">
               <span className="font-bold uppercase tracking-widest mr-8 text-sm">Work With Us</span>
               <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
             </Link>
           </motion.div>
 
           <motion.div variants={fadeInUp} className="lg:col-span-5">
-            <div className="bg-charcoal p-12 text-concrete flex flex-col justify-center relative overflow-hidden group h-full">
+            <div className="bg-charcoal dark:bg-[#111111] p-12 text-concrete flex flex-col justify-center relative overflow-hidden group h-full transition-colors duration-500">
               <div className="absolute top-0 right-0 w-64 h-64 bg-bronze opacity-10 rounded-full blur-3xl group-hover:opacity-20 transition-opacity duration-1000"></div>
               
               <h3 className="font-display text-3xl font-bold uppercase tracking-tight mb-12 relative z-10">Core Values</h3>
@@ -145,7 +145,7 @@ export default function About() {
         </motion.div>
       </section>
       {/* Founder Section */}
-      <section className="bg-charcoal text-concrete py-24 px-8 md:px-16">
+      <section className="bg-charcoal dark:bg-[#111111] text-concrete py-24 px-8 md:px-16 transition-colors duration-500">
         <div className="max-w-7xl mx-auto">
           <motion.div 
             initial="hidden"

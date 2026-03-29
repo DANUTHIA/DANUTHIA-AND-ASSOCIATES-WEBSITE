@@ -18,9 +18,9 @@ const staggerContainer: any = {
 
 export default function Services() {
   return (
-    <main className="bg-concrete min-h-screen">
+    <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500">
       {/* Hero Section */}
-      <section className="relative bg-charcoal text-concrete p-8 md:p-16 flex flex-col justify-center overflow-hidden min-h-[60vh]">
+      <section className="relative bg-charcoal dark:bg-[#111111] text-concrete p-8 md:p-16 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.05, scale: 1 }}
@@ -69,17 +69,17 @@ export default function Services() {
                 <div className="h-[1px] bg-steel/30 flex-grow"></div>
                 <Box size={24} className="text-steel group-hover:text-bronze transition-colors" />
               </div>
-              <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-6">Architectural Design</h2>
-              <p className="text-charcoal/70 mb-8 text-lg font-light leading-relaxed">
+              <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-6 text-charcoal dark:text-concrete transition-colors duration-500">Architectural Design</h2>
+              <p className="text-charcoal/70 dark:text-concrete/70 mb-8 text-lg font-light leading-relaxed transition-colors duration-500">
                 Full-service architectural design from concept to construction documentation. We specialize in residential, commercial, and institutional buildings that respond to their environment.
               </p>
-              <ul className="space-y-4 text-sm font-mono uppercase tracking-wider text-charcoal/80 mb-10">
-                <li className="flex items-center gap-4 border-b border-steel/20 pb-2"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Concept Design</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 pb-2"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> 3D Modeling & Rendering</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 pb-2"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Construction Drawings</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 pb-2"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Project Management</li>
+              <ul className="space-y-4 text-sm font-mono uppercase tracking-wider text-charcoal/80 dark:text-concrete/80 mb-10 transition-colors duration-500">
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Concept Design</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> 3D Modeling & Rendering</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Construction Drawings</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Project Management</li>
               </ul>
-              <Link to="/portfolio" className="inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-charcoal hover:text-bronze transition-colors">
+              <Link to="/portfolio" className="inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors">
                 View Related Projects <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
               </Link>
             </div>
@@ -111,17 +111,17 @@ export default function Services() {
                 <div className="h-[1px] bg-steel/30 flex-grow"></div>
                 <Building2 size={24} className="text-steel group-hover:text-bronze transition-colors" />
               </div>
-              <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-6">Urban Planning</h2>
-              <p className="text-charcoal/70 mb-8 text-lg font-light leading-relaxed">
+              <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-6 text-charcoal dark:text-concrete transition-colors duration-500">Urban Planning</h2>
+              <p className="text-charcoal/70 dark:text-concrete/70 mb-8 text-lg font-light leading-relaxed transition-colors duration-500">
                 Strategic planning for neighborhoods, cities, and regions. We focus on sustainable growth, mobility, and public space design to create vibrant, livable communities.
               </p>
-              <ul className="space-y-4 text-sm font-mono uppercase tracking-wider text-charcoal/80 mb-10">
-                <li className="flex items-center gap-4 border-b border-steel/20 pb-2"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Master Planning</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 pb-2"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Zoning & Land Use</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 pb-2"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Urban Design Guidelines</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 pb-2"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Feasibility Studies</li>
+              <ul className="space-y-4 text-sm font-mono uppercase tracking-wider text-charcoal/80 dark:text-concrete/80 mb-10 transition-colors duration-500">
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Master Planning</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Zoning & Land Use</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Urban Design Guidelines</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Feasibility Studies</li>
               </ul>
-              <Link to="/portfolio" className="inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-charcoal hover:text-bronze transition-colors">
+              <Link to="/portfolio" className="inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors">
                 View Related Projects <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
               </Link>
             </div>
@@ -135,17 +135,17 @@ export default function Services() {
                 <div className="h-[1px] bg-steel/30 flex-grow"></div>
                 <Map size={24} className="text-steel group-hover:text-bronze transition-colors" />
               </div>
-              <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-6">Spatial Analysis</h2>
-              <p className="text-charcoal/70 mb-8 text-lg font-light leading-relaxed">
+              <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-6 text-charcoal dark:text-concrete transition-colors duration-500">Spatial Analysis</h2>
+              <p className="text-charcoal/70 dark:text-concrete/70 mb-8 text-lg font-light leading-relaxed transition-colors duration-500">
                 Advanced GIS mapping and spatial data analysis to inform design decisions and policy making. We turn complex geographical data into actionable insights.
               </p>
-              <ul className="space-y-4 text-sm font-mono uppercase tracking-wider text-charcoal/80 mb-10">
-                <li className="flex items-center gap-4 border-b border-steel/20 pb-2"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Topographical Analysis</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 pb-2"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Environmental Mapping</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 pb-2"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Demographic Studies</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 pb-2"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Infrastructure Planning</li>
+              <ul className="space-y-4 text-sm font-mono uppercase tracking-wider text-charcoal/80 dark:text-concrete/80 mb-10 transition-colors duration-500">
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Topographical Analysis</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Environmental Mapping</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Demographic Studies</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Infrastructure Planning</li>
               </ul>
-              <Link to="/portfolio" className="inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-charcoal hover:text-bronze transition-colors">
+              <Link to="/portfolio" className="inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors">
                 View Related Projects <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
               </Link>
             </div>

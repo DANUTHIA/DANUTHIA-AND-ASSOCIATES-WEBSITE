@@ -4,6 +4,7 @@ import { MessageSquare, X, Send, Loader2 } from 'lucide-react';
 import { GoogleGenAI, Type, FunctionDeclaration } from '@google/genai';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useLocation } from 'react-router-dom';
 
 const clientProfileExtractionTool: FunctionDeclaration = {
   name: "client_profile_extraction",
@@ -56,14 +57,29 @@ const clientProfileExtractionTool: FunctionDeclaration = {
 
 export default function AIConcierge() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<{role: 'user' | 'ai', text: string}[]>([
-    { role: 'ai', text: 'Hello. I am the Danuthia & Associates AI Concierge. How can I assist you with your architectural or planning needs today?' }
-  ]);
+  const [messages, setMessages] = useState<{role: 'user' | 'ai', text: string}[]>(() => {
+    const saved = localStorage.getItem('aiConciergeMessages');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse saved messages', e);
+      }
+    }
+    return [
+      { role: 'ai', text: 'Hello. I am the Danuthia & Associates AI Concierge. How can I assist you with your architectural or planning needs today?' }
+    ];
+  });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
 
   const [hasApiKey, setHasApiKey] = useState(true);
+
+  useEffect(() => {
+    localStorage.setItem('aiConciergeMessages', JSON.stringify(messages));
+  }, [messages]);
 
   useEffect(() => {
     const checkApiKey = async () => {
@@ -123,6 +139,8 @@ export default function AIConcierge() {
 
 **Identity:** You are the lead autonomous agent for Danuthia & Associates, a premier architectural and urban planning firm. You speak with the authority, precision, and visionary foresight of a highly experienced architect and urban planner. 
 
+**Context:** The user is currently viewing the page at path: "${location.pathname}". Use this context to tailor your assistance. For example, if they are on the portfolio page, they might be asking about past projects. If they are on the services page, they might want to know more about what we offer.
+
 **Core Objective:** Your primary goal is to qualify incoming client leads, educate prospects on our capabilities in architecture, urban planning, and Geographic Information Systems (GIS), and seamlessly route high-value project inquiries to the principal architect.
 
 **Tone & Style:** 
@@ -169,7 +187,7 @@ export default function AIConcierge() {
     <>
       {/* Floating Button */}
       <motion.button
-        className="fixed bottom-6 right-6 w-14 h-14 bg-charcoal text-concrete rounded-full flex items-center justify-center shadow-2xl z-[9000] border border-bronze/30 hover:bg-bronze transition-colors duration-300"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal rounded-full flex items-center justify-center shadow-2xl z-[9000] border border-bronze/30 hover:bg-bronze dark:hover:bg-bronze transition-colors duration-300"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(true)}
@@ -185,16 +203,23 @@ export default function AIConcierge() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="fixed bottom-24 right-6 w-80 sm:w-96 bg-concrete border border-steel/30 shadow-2xl z-[9001] flex flex-col overflow-hidden"
+            className="fixed bottom-24 right-6 w-80 sm:w-96 bg-concrete dark:bg-charcoal border border-steel/30 dark:border-concrete/30 shadow-2xl z-[9001] flex flex-col overflow-hidden transition-colors duration-500"
             style={{ height: '500px', maxHeight: '80vh' }}
           >
             {/* Header */}
-            <div className="bg-charcoal text-concrete p-4 flex justify-between items-center border-b border-bronze/30">
+            <div className="bg-charcoal text-concrete dark:bg-[#111111] dark:text-concrete p-4 flex justify-between items-center border-b border-bronze/30 transition-colors duration-500">
               <div>
                 <h3 className="font-display font-bold uppercase tracking-widest text-sm">AI Concierge</h3>
                 <p className="text-xs text-steel font-mono">Danuthia & Associates</p>
               </div>
               <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setMessages([{ role: 'ai', text: 'Hello. I am the Danuthia & Associates AI Concierge. How can I assist you with your architectural or planning needs today?' }])}
+                  className="text-xs text-steel hover:text-bronze transition-colors"
+                  title="Clear Chat"
+                >
+                  Clear
+                </button>
                 {hasApiKey && (
                   <button onClick={handleSelectKey} className="text-xs text-steel hover:text-bronze transition-colors" title="Change API Key">
                     Key
@@ -207,11 +232,11 @@ export default function AIConcierge() {
             </div>
 
             {!hasApiKey ? (
-              <div className="flex-1 p-6 flex flex-col items-center justify-center text-center bg-concrete/50">
-                <p className="text-charcoal mb-4">To use the AI Concierge, please select a Gemini API key.</p>
+              <div className="flex-1 p-6 flex flex-col items-center justify-center text-center bg-concrete/50 dark:bg-charcoal/50 transition-colors duration-500">
+                <p className="text-charcoal dark:text-concrete mb-4">To use the AI Concierge, please select a Gemini API key.</p>
                 <button
                   onClick={handleSelectKey}
-                  className="bg-charcoal text-concrete px-4 py-2 rounded hover:bg-bronze transition-colors"
+                  className="bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal px-4 py-2 rounded hover:bg-bronze dark:hover:bg-bronze transition-colors"
                 >
                   Select API Key
                 </button>
@@ -219,13 +244,13 @@ export default function AIConcierge() {
             ) : (
               <>
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-concrete/50">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-concrete/50 dark:bg-charcoal/50 transition-colors duration-500">
                   {messages.map((msg, idx) => (
                     <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[80%] p-3 text-sm ${
                         msg.role === 'user' 
-                          ? 'bg-charcoal text-concrete rounded-tl-lg rounded-tr-lg rounded-bl-lg' 
-                          : 'bg-steel/10 text-charcoal border border-steel/20 rounded-tr-lg rounded-br-lg rounded-bl-lg'
+                          ? 'bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal rounded-tl-lg rounded-tr-lg rounded-bl-lg' 
+                          : 'bg-steel/10 text-charcoal dark:bg-[#111111] dark:text-concrete border border-steel/20 dark:border-concrete/10 rounded-tr-lg rounded-br-lg rounded-bl-lg'
                       }`}>
                         {msg.text}
                       </div>
@@ -233,7 +258,7 @@ export default function AIConcierge() {
                   ))}
                   {isLoading && (
                     <div className="flex justify-start">
-                      <div className="bg-steel/10 text-charcoal border border-steel/20 rounded-tr-lg rounded-br-lg rounded-bl-lg p-3">
+                      <div className="bg-steel/10 text-charcoal dark:bg-[#111111] dark:text-concrete border border-steel/20 dark:border-concrete/10 rounded-tr-lg rounded-br-lg rounded-bl-lg p-3">
                         <Loader2 size={16} className="animate-spin text-bronze" />
                       </div>
                     </div>
@@ -242,18 +267,18 @@ export default function AIConcierge() {
                 </div>
 
                 {/* Input */}
-                <form onSubmit={handleSubmit} className="p-3 bg-concrete border-t border-steel/30 flex gap-2">
+                <form onSubmit={handleSubmit} className="p-3 bg-concrete dark:bg-charcoal border-t border-steel/30 dark:border-concrete/30 flex gap-2 transition-colors duration-500">
                   <input
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Ask about our services..."
-                    className="flex-1 bg-transparent border border-steel/30 px-3 py-2 text-sm focus:outline-none focus:border-bronze transition-colors"
+                    className="flex-1 bg-transparent border border-steel/30 dark:border-concrete/30 px-3 py-2 text-sm text-charcoal dark:text-concrete focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors placeholder:text-steel"
                   />
                   <button 
                     type="submit" 
                     disabled={isLoading || !input.trim()}
-                    className="bg-charcoal text-concrete p-2 hover:bg-bronze transition-colors disabled:opacity-50 disabled:hover:bg-charcoal"
+                    className="bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal p-2 hover:bg-bronze dark:hover:bg-bronze transition-colors disabled:opacity-50 disabled:hover:bg-charcoal dark:disabled:hover:bg-concrete"
                   >
                     <Send size={18} />
                   </button>
