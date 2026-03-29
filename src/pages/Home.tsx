@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ArrowDown, Box, Map, Building2, Quote, ArrowRight, Calendar, ChevronRight, Maximize, CheckCircle, HardHat } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { db, handleFirestoreError, OperationType } from '../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { useLocation, Link } from 'react-router-dom';
 import Logo from '../components/Logo';
 import Magnetic from '../components/Magnetic';
@@ -43,10 +43,36 @@ export default function Home() {
   const [fullName, setFullName] = useState('');
   const [projectScale, setProjectScale] = useState('');
   const [preferredDate, setPreferredDate] = useState('');
+  const [contactPreference, setContactPreference] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [testimonials, setTestimonials] = useState<any[]>([]);
+  const [loadingTestimonials, setLoadingTestimonials] = useState(true);
+
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const q = query(
+          collection(db, 'testimonials'),
+          where('approved', '==', true),
+          orderBy('createdAt', 'desc')
+        );
+        const querySnapshot = await getDocs(q);
+        const tests: any[] = [];
+        querySnapshot.forEach((doc) => {
+          tests.push({ id: doc.id, ...doc.data() });
+        });
+        setTestimonials(tests);
+      } catch (error) {
+        console.error("Error fetching testimonials:", error);
+      } finally {
+        setLoadingTestimonials(false);
+      }
+    };
+    fetchTestimonials();
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -66,7 +92,7 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !projectScale || !preferredDate) {
+    if (!fullName || !projectScale || !preferredDate || !contactPreference) {
       setSubmitError('Please fill out all fields.');
       return;
     }
@@ -80,6 +106,7 @@ export default function Home() {
         fullName,
         projectScale,
         preferredDate,
+        contactPreference,
         status: 'pending',
         createdAt: serverTimestamp()
       });
@@ -89,8 +116,17 @@ export default function Home() {
         await fetch('/api/notify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fullName, projectScale, preferredDate })
+          body: JSON.stringify({ fullName, projectScale, preferredDate, contactPreference })
         });
+        
+        // Also send thank you to the user if they provided an email (contactPreference might be email)
+        if (contactPreference.includes('@')) {
+          await fetch('/api/send-thank-you', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: contactPreference, name: fullName })
+          });
+        }
       } catch (err) {
         console.error("Email notification failed, but booking was saved.", err);
       }
@@ -99,6 +135,7 @@ export default function Home() {
       setFullName('');
       setProjectScale('');
       setPreferredDate('');
+      setContactPreference('');
     } catch (error) {
       setSubmitError('Failed to submit request. Please try again.');
       handleFirestoreError(error, OperationType.CREATE, 'bookingRequests');
@@ -121,7 +158,7 @@ export default function Home() {
             className="max-w-xl"
           >
             <motion.p variants={fadeInUp} className="text-bronze tracking-[0.2em] text-xs font-bold uppercase mb-6">
-              Danuthia & Associates
+              Danuthia & Co.
             </motion.p>
             <motion.h1 variants={fadeInUp} className="font-display text-6xl md:text-7xl lg:text-[5.5rem] font-light leading-[0.9] tracking-tight mb-8 text-charcoal dark:text-concrete text-balance transition-colors duration-500">
               Designing the <span className="italic">Future</span> of African Urban Spaces.
@@ -284,20 +321,50 @@ export default function Home() {
       {/* Section 4: Vision & Philosophy - Minimalist Quote Slider */}
       <motion.section 
         id="reviews" 
-        className="py-24 md:py-32 px-4 md:px-8 max-w-5xl mx-auto text-center"
+        className="py-24 md:py-32 px-4 md:px-8 max-w-7xl mx-auto"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={staggerContainer}
       >
-        <motion.div variants={fadeInUp}>
+        <motion.div variants={fadeInUp} className="text-center mb-20">
           <Quote size={40} className="text-bronze/30 mx-auto mb-12" />
-          <h2 className="font-display text-3xl md:text-5xl font-light leading-tight mb-12 text-balance text-charcoal dark:text-concrete transition-colors duration-500">
+          <h2 className="font-display text-3xl md:text-5xl font-light leading-tight mb-8 text-balance text-charcoal dark:text-concrete transition-colors duration-500">
             "First life, then spaces, then buildings – the other way around never works."
           </h2>
           <p className="text-sm font-bold uppercase tracking-widest text-charcoal dark:text-concrete transition-colors duration-500">Jan Gehl</p>
           <p className="text-xs font-mono text-charcoal/50 dark:text-concrete/50 uppercase tracking-widest mt-2 transition-colors duration-500">Urban Designer</p>
+          <div className="w-12 h-px bg-bronze mx-auto mt-12"></div>
         </motion.div>
+
+        {/* Testimonials Grid */}
+        {!loadingTestimonials && testimonials.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {testimonials.map((test) => (
+              <motion.div 
+                key={test.id}
+                variants={fadeInUp}
+                className="bg-white dark:bg-charcoal p-8 border border-steel/10 dark:border-steel/40 relative group"
+              >
+                <div className="flex gap-1 mb-6">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className={i < test.rating ? 'text-bronze' : 'text-steel/20'}>★</span>
+                  ))}
+                </div>
+                <p className="text-charcoal/80 dark:text-concrete/80 font-light italic mb-8 leading-relaxed">
+                  "{test.comment}"
+                </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-charcoal dark:text-concrete">{test.clientName}</p>
+                    <p className="text-[10px] font-mono text-steel uppercase tracking-widest mt-1">{test.projectType}</p>
+                  </div>
+                  <CheckCircle size={16} className="text-bronze/40" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </motion.section>
 
       {/* Section 5: Booking & Contact - Split Luxury Layout */}
@@ -398,6 +465,22 @@ export default function Home() {
                     </select>
                     <label className="absolute left-0 -top-5 text-xs font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-bronze transition-colors">
                       Project Scale
+                    </label>
+                  </div>
+
+                  <div className="relative group">
+                    <select 
+                      value={contactPreference}
+                      onChange={(e) => setContactPreference(e.target.value)}
+                      className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg appearance-none cursor-pointer peer"
+                      required
+                    >
+                      <option value="" disabled className="text-charcoal">Select preference...</option>
+                      <option value="email" className="text-charcoal">Email</option>
+                      <option value="phone" className="text-charcoal">Phone</option>
+                    </select>
+                    <label className="absolute left-0 -top-5 text-xs font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-bronze transition-colors">
+                      Contact Preference
                     </label>
                   </div>
 

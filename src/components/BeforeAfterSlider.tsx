@@ -60,6 +60,7 @@ export default function BeforeAfterSlider({
           alt={afterLabel} 
           className="w-full h-full object-cover pointer-events-none"
           draggable={false}
+          referrerPolicy="no-referrer"
         />
         <div className="absolute top-4 right-4 bg-charcoal/80 text-concrete px-3 py-1 text-xs font-mono uppercase tracking-widest backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           {afterLabel}
@@ -76,6 +77,7 @@ export default function BeforeAfterSlider({
           alt={beforeLabel} 
           className="w-full h-full object-cover pointer-events-none filter grayscale contrast-125"
           draggable={false}
+          referrerPolicy="no-referrer"
         />
         <div className="absolute top-4 left-4 bg-concrete/80 text-charcoal px-3 py-1 text-xs font-mono uppercase tracking-widest backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           {beforeLabel}

@@ -127,7 +127,7 @@
         },
         "fileData": {
           "type": "string",
-          "description": "Base64 encoded file data."
+          "description": "The base64 encoded content of the file."
         },
         "uploadedBy": {
           "type": "string",
@@ -191,6 +191,10 @@
           "enum": ["completed", "in-progress", "upcoming"],
           "description": "The current status of the milestone."
         },
+        "date": {
+          "type": "string",
+          "description": "The scheduled or completion date (YYYY-MM-DD)."
+        },
         "order": {
           "type": "number",
           "description": "The order of the milestone in the timeline."
@@ -201,6 +205,74 @@
         }
       },
       "required": ["clientId", "title", "status", "order", "createdAt"]
+    },
+    "Invoice": {
+      "title": "Invoice",
+      "description": "A project invoice for a client.",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string" },
+        "amount": { "type": "number" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["unpaid", "paid"] },
+        "dueDate": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["clientId", "amount", "description", "status", "dueDate", "createdAt"]
+    },
+    "ProjectModel": {
+      "title": "3D Project Model",
+      "description": "A 3D model of a project for interactive viewing.",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string" },
+        "title": { "type": "string" },
+        "modelUrl": { "type": "string", "description": "URL to the 3D model file (e.g. .glb)." },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["clientId", "title", "modelUrl", "createdAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "An in-app notification for a user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "message", "read", "createdAt"]
+    },
+    "Annotation": {
+      "title": "Blueprint Annotation",
+      "description": "An annotation on a blueprint.",
+      "type": "object",
+      "properties": {
+        "blueprintId": { "type": "string" },
+        "authorId": { "type": "string" },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "comment": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["blueprintId", "authorId", "x", "y", "comment", "createdAt"]
+    },
+    "Testimonial": {
+      "title": "Client Testimonial",
+      "description": "A review submitted by a client.",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string" },
+        "clientName": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "approved": { "type": "boolean" },
+        "projectType": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["clientId", "clientName", "rating", "comment", "approved", "projectType", "createdAt"]
     }
   },
   "firestore": {
@@ -245,6 +317,36 @@
         "$ref": "#/entities/Document"
       },
       "description": "Stores secure documents for clients."
+    },
+    "/annotations/{annotationId}": {
+      "schema": {
+        "$ref": "#/entities/Annotation"
+      },
+      "description": "Stores annotations on blueprints."
+    },
+    "/invoices/{invoiceId}": {
+      "schema": {
+        "$ref": "#/entities/Invoice"
+      },
+      "description": "Stores project invoices for clients."
+    },
+    "/projectModels/{modelId}": {
+      "schema": {
+        "$ref": "#/entities/ProjectModel"
+      },
+      "description": "Stores 3D project models for interactive viewing."
+    },
+    "/notifications/{notificationId}": {
+      "schema": {
+        "$ref": "#/entities/Notification"
+      },
+      "description": "Stores in-app notifications for users."
+    },
+    "/testimonials/{testimonialId}": {
+      "schema": {
+        "$ref": "#/entities/Testimonial"
+      },
+      "description": "Stores client testimonials."
     }
   }
 }

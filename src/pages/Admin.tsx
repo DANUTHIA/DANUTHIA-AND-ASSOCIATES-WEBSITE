@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { auth, db, provider, handleFirestoreError, OperationType } from '../firebase';
 import { signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { collection, query, orderBy, getDocs, updateDoc, doc, deleteDoc, addDoc, serverTimestamp, where, onSnapshot } from 'firebase/firestore';
-import { LogOut, RefreshCw, CheckCircle, Clock, Phone, Trash2, Mail, Plus, Calendar, Users, FileText, BarChart3, MessageSquare, Send, Upload, Download, Edit } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
+import { LogOut, RefreshCw, CheckCircle, Clock, Phone, Trash2, Mail, Plus, Calendar, Users, FileText, BarChart3, MessageSquare, Send, Upload, Download, Edit, PieChart as PieChartIcon, FileText as FileTextIcon, TrendingUp } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, LineChart, Line, CartesianGrid } from 'recharts';
 import { motion } from 'motion/react';
 import Magnetic from '../components/Magnetic';
 
@@ -68,7 +68,7 @@ interface Milestone {
 export default function Admin() {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'newsletter' | 'updates' | 'messages' | 'documents' | 'users' | 'milestones'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'newsletter' | 'updates' | 'messages' | 'documents' | 'users' | 'milestones' | 'analytics' | 'testimonials'>('overview');
   
   const [requests, setRequests] = useState<BookingRequest[]>([]);
   const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
@@ -78,6 +78,8 @@ export default function Admin() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [documents, setDocuments] = useState<VaultDocument[]>([]);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [testimonials, setTestimonials] = useState<any[]>([]);
   
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -154,16 +156,29 @@ export default function Admin() {
     setLoading(true);
     setError('');
     try {
-      await Promise.all([
+      console.log('Starting fetchAllData');
+      const results = await Promise.allSettled([
         fetchRequests(),
         fetchSubscribers(),
         fetchUpdates(),
         fetchUsers(),
         fetchDocuments(),
-        fetchMilestones()
+        fetchMilestones(),
+        fetchInvoices(),
+        fetchTestimonials()
       ]);
+      
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          console.error(`Fetch ${index} failed:`, result.reason);
+        }
+      });
+      
+      if (results.some(r => r.status === 'rejected')) {
+        throw new Error('Some data fetches failed');
+      }
     } catch (err: any) {
-      console.error(err);
+      console.error('fetchAllData failed:', err);
       if (err.message?.includes('permission')) {
         setError('You do not have permission to view this dashboard. Access restricted to administrators.');
       } else {
@@ -256,6 +271,43 @@ export default function Admin() {
       setDocuments(docs);
     } catch (error) {
       handleFirestoreError(error, OperationType.LIST, 'documents');
+    }
+  };
+
+  const fetchInvoices = async () => {
+    try {
+      const q = query(collection(db, 'invoices'), orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      const invs: any[] = [];
+      querySnapshot.forEach((doc) => {
+        invs.push({ id: doc.id, ...doc.data() });
+      });
+      setInvoices(invs);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, 'invoices');
+    }
+  };
+
+  const fetchTestimonials = async () => {
+    try {
+      const q = query(collection(db, 'testimonials'), orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      const tests: any[] = [];
+      querySnapshot.forEach((doc) => {
+        tests.push({ id: doc.id, ...doc.data() });
+      });
+      setTestimonials(tests);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, 'testimonials');
+    }
+  };
+
+  const updateTestimonialStatus = async (id: string, approved: boolean) => {
+    try {
+      await updateDoc(doc(db, 'testimonials', id), { approved });
+      setTestimonials(prev => prev.map(t => t.id === id ? { ...t, approved } : t));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, 'testimonials');
     }
   };
 
@@ -360,6 +412,24 @@ export default function Admin() {
       } else {
         updateData.createdAt = serverTimestamp();
         await addDoc(collection(db, 'projectUpdates'), updateData);
+        
+        // Send reminder email to client
+        const client = users.find(u => u.id === newUpdate.clientId);
+        if (client && client.email) {
+          try {
+            await fetch('/api/send-reminder', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                email: client.email, 
+                name: client.email.split('@')[0], // Fallback name
+                projectTitle: newUpdate.title 
+              })
+            });
+          } catch (err) {
+            console.error("Failed to send reminder email", err);
+          }
+        }
       }
       
       setNewUpdate({ clientId: '', title: '', description: '', imageUrl: '' });
@@ -399,8 +469,8 @@ export default function Admin() {
     const file = e.target.files?.[0];
     if (!file || !user || !selectedDocClient) return;
 
-    if (file.size > 500 * 1024) { // 500KB limit
-      setUploadError('File size must be less than 500KB.');
+    if (file.size > 1024 * 1024) { // 1MB limit for Firestore
+      setUploadError('File size must be less than 1MB.');
       return;
     }
 
@@ -409,8 +479,9 @@ export default function Admin() {
 
     try {
       const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64String = reader.result as string;
+      reader.onload = async (event) => {
+        const base64String = event.target?.result as string;
+        
         await addDoc(collection(db, 'documents'), {
           clientId: selectedDocClient,
           fileName: file.name,
@@ -419,8 +490,13 @@ export default function Admin() {
           uploadedBy: user.uid,
           createdAt: serverTimestamp()
         });
+        
         setUploadingDoc(false);
-        fetchDocuments(); // Refresh documents
+        fetchDocuments();
+      };
+      reader.onerror = () => {
+        setUploadError('Failed to read file.');
+        setUploadingDoc(false);
       };
       reader.readAsDataURL(file);
     } catch (error) {
@@ -434,9 +510,7 @@ export default function Admin() {
     const link = document.createElement('a');
     link.href = doc.fileData;
     link.download = doc.fileName;
-    document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
   };
 
   // Derived Stats for Charts
@@ -568,6 +642,12 @@ export default function Admin() {
           Overview
         </button>
         <button 
+          onClick={() => setActiveTab('analytics')}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'analytics' ? 'text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete' : 'text-steel hover:text-charcoal dark:hover:text-concrete'}`}
+        >
+          Business Intelligence
+        </button>
+        <button 
           onClick={() => setActiveTab('bookings')}
           className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'bookings' ? 'text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete' : 'text-steel hover:text-charcoal dark:hover:text-concrete'}`}
         >
@@ -613,6 +693,12 @@ export default function Admin() {
           className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'documents' ? 'text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete' : 'text-steel hover:text-charcoal dark:hover:text-concrete'}`}
         >
           Documents
+        </button>
+        <button 
+          onClick={() => setActiveTab('testimonials')}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === 'testimonials' ? 'text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete' : 'text-steel hover:text-charcoal dark:hover:text-concrete'}`}
+        >
+          Testimonials
         </button>
       </div>
 
@@ -720,6 +806,184 @@ export default function Admin() {
             </div>
           )}
 
+          {/* Analytics Tab */}
+          {activeTab === 'analytics' && (
+            <div className="space-y-12">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Conversion Rate Chart */}
+                <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
+                  <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
+                    <BarChart3 size={20} className="text-bronze" strokeWidth={1.5} />
+                    Booking Conversion
+                  </h3>
+                  <div className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={[
+                        { name: 'Total Requests', value: requests.length },
+                        { name: 'Contacted', value: contactedCount },
+                        { name: 'Converted (Clients)', value: clients.length }
+                      ]}>
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#8C8C8C', fontFamily: 'JetBrains Mono' }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#8C8C8C', fontFamily: 'JetBrains Mono' }} />
+                        <Tooltip contentStyle={{ borderRadius: '0', border: '1px solid rgba(140, 140, 140, 0.2)', fontFamily: 'Montserrat', fontSize: '12px' }} />
+                        <Bar dataKey="value" fill="#B08D57" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Project Scale Popularity */}
+                <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
+                  <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
+                    <PieChartIcon size={20} className="text-bronze" strokeWidth={1.5} />
+                    Project Scale Popularity
+                  </h3>
+                  <div className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={[
+                            { name: 'Small', value: requests.filter(r => r.projectScale === 'small').length },
+                            { name: 'Medium', value: requests.filter(r => r.projectScale === 'medium').length },
+                            { name: 'Large', value: requests.filter(r => r.projectScale === 'large').length },
+                            { name: 'Mega', value: requests.filter(r => r.projectScale === 'mega').length }
+                          ]}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#B08D57"
+                          dataKey="value"
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          <Cell fill="#B08D57" />
+                          <Cell fill="#2C2C2C" />
+                          <Cell fill="#8C8C8C" />
+                          <Cell fill="#E4E4E4" />
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+
+              {/* Revenue Analytics */}
+              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
+                <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
+                  <FileText size={20} className="text-bronze" strokeWidth={1.5} />
+                  Revenue & Billing
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                  <div className="p-6 border border-steel/10">
+                    <p className="text-[10px] font-mono uppercase text-steel mb-2">Total Invoiced</p>
+                    <p className="text-3xl font-display font-light">${invoices.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}</p>
+                  </div>
+                  <div className="p-6 border border-steel/10">
+                    <p className="text-[10px] font-mono uppercase text-steel mb-2">Total Collected</p>
+                    <p className="text-3xl font-display font-light text-bronze">${invoices.filter(i => i.status === 'paid').reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}</p>
+                  </div>
+                  <div className="p-6 border border-steel/10">
+                    <p className="text-[10px] font-mono uppercase text-steel mb-2">Outstanding</p>
+                    <p className="text-3xl font-display font-light text-red-500">${invoices.filter(i => i.status === 'unpaid').reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Newsletter Growth Trends */}
+              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
+                <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
+                  <TrendingUp size={20} className="text-bronze" strokeWidth={1.5} />
+                  Newsletter Growth Trends
+                </h3>
+                <div className="h-80 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={Object.entries(
+                        subscribers.reduce((acc: any, sub) => {
+                          const date = sub.createdAt?.toDate ? sub.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', year: '2-digit' }) : 'Unknown';
+                          acc[date] = (acc[date] || 0) + 1;
+                          return acc;
+                        }, {})
+                      ).map(([name, value]) => ({ name, value })).reverse()}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#8C8C8C20" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#8C8C8C', fontFamily: 'JetBrains Mono' }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#8C8C8C', fontFamily: 'JetBrains Mono' }} />
+                      <Tooltip contentStyle={{ borderRadius: '0', border: '1px solid rgba(140, 140, 140, 0.2)', fontFamily: 'Montserrat', fontSize: '12px' }} />
+                      <Line type="monotone" dataKey="value" stroke="#B08D57" strokeWidth={2} dot={{ fill: '#B08D57', r: 4 }} activeDot={{ r: 6 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Testimonials Tab */}
+          {activeTab === 'testimonials' && (
+            <div className="space-y-8">
+              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
+                <h2 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
+                  <CheckCircle size={20} className="text-bronze" strokeWidth={1.5} />
+                  Manage Testimonials
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-concrete/50 dark:bg-steel/10 border-b border-steel/20 dark:border-steel/40 text-[10px] font-mono text-steel dark:text-steel/80 uppercase tracking-[0.2em]">
+                        <th className="p-6 font-normal">Client</th>
+                        <th className="p-6 font-normal">Project Type</th>
+                        <th className="p-6 font-normal">Rating</th>
+                        <th className="p-6 font-normal">Comment</th>
+                        <th className="p-6 font-normal">Status</th>
+                        <th className="p-6 font-normal text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-steel/10">
+                      {testimonials.length === 0 ? (
+                        <tr><td colSpan={6} className="p-12 text-center text-steel font-light">No testimonials found.</td></tr>
+                      ) : (
+                        testimonials.map(test => (
+                          <tr key={test.id} className="group hover:bg-concrete/30 dark:hover:bg-steel/5 transition-colors">
+                            <td className="p-6">
+                              <p className="text-sm font-medium text-charcoal dark:text-concrete">{test.clientName}</p>
+                              <p className="text-[10px] font-mono text-steel mt-1">{test.createdAt?.toDate().toLocaleDateString()}</p>
+                            </td>
+                            <td className="p-6">
+                              <span className="text-[10px] font-mono uppercase tracking-widest text-steel">{test.projectType}</span>
+                            </td>
+                            <td className="p-6">
+                              <div className="flex gap-0.5">
+                                {[...Array(5)].map((_, i) => (
+                                  <span key={i} className={i < test.rating ? 'text-bronze' : 'text-steel/20'}>★</span>
+                                ))}
+                              </div>
+                            </td>
+                            <td className="p-6 max-w-xs">
+                              <p className="text-xs text-steel line-clamp-2">{test.comment}</p>
+                            </td>
+                            <td className="p-6">
+                              <span className={`text-[8px] font-mono uppercase tracking-widest px-2 py-1 border ${test.approved ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}`}>
+                                {test.approved ? 'Approved' : 'Pending'}
+                              </span>
+                            </td>
+                            <td className="p-6 text-right">
+                              <button 
+                                onClick={() => updateTestimonialStatus(test.id, !test.approved)}
+                                className={`text-[10px] font-mono uppercase tracking-widest px-4 py-2 border transition-all ${test.approved ? 'border-yellow-600 text-yellow-600 hover:bg-yellow-600 hover:text-white' : 'border-green-600 text-green-600 hover:bg-green-600 hover:text-white'}`}
+                              >
+                                {test.approved ? 'Unapprove' : 'Approve'}
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
           {/* Bookings Tab */}
           {activeTab === 'bookings' && (
             <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">

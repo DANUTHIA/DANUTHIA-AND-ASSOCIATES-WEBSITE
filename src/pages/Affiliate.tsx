@@ -43,7 +43,7 @@ export default function Affiliate() {
             </div>
             <motion.div variants={fadeInUp} className="pb-2">
               <p className="text-lg md:text-xl text-concrete/80 font-light leading-relaxed border-l border-bronze pl-6">
-                Partner with Danuthia & Associates. Earn exclusive commissions by referring high-value architectural and urban planning projects.
+                Partner with Danuthia & Co. Earn exclusive commissions by referring high-value architectural and urban planning projects.
               </p>
             </motion.div>
           </div>

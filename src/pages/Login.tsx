@@ -89,7 +89,7 @@ export default function Login() {
 
         <div className="mt-12 pt-8 border-t border-steel/20 dark:border-concrete/20 transition-colors duration-500">
           <p className="text-center text-steel text-xs font-light leading-relaxed">
-            Access is restricted to active clients of Danuthia & Associates.
+            Access is restricted to active clients of Danuthia & Co.
           </p>
         </div>
       </motion.div>

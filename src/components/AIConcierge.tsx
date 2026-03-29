@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageSquare, X, Send, Loader2 } from 'lucide-react';
+import { MessageSquare, X, Send } from 'lucide-react';
 import { GoogleGenAI, Type, FunctionDeclaration } from '@google/genai';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -32,7 +32,7 @@ const clientProfileExtractionTool: FunctionDeclaration = {
         properties: {
           scope: {
             type: Type.STRING,
-            description: "A brief summary of the project (e.g., residential design, commercial development, regional GIS mapping)."
+            description: "A detailed description of the project scope, including specific requirements or design goals (e.g., 'sustainable residential design', 'large-scale commercial development', 'regional GIS mapping for urban planning')."
           },
           location: {
             type: Type.STRING,
@@ -67,7 +67,7 @@ export default function AIConcierge() {
       }
     }
     return [
-      { role: 'ai', text: 'Hello. I am the Danuthia & Associates AI Concierge. How can I assist you with your architectural or planning needs today?' }
+      { role: 'ai', text: 'Hello. I am the Danuthia & Co. AI Concierge. How can I assist you with your architectural or planning needs today?' }
     ];
   });
   const [input, setInput] = useState('');
@@ -75,32 +75,9 @@ export default function AIConcierge() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
 
-  const [hasApiKey, setHasApiKey] = useState(true);
-
   useEffect(() => {
     localStorage.setItem('aiConciergeMessages', JSON.stringify(messages));
   }, [messages]);
-
-  useEffect(() => {
-    const checkApiKey = async () => {
-      // @ts-ignore
-      if (window.aistudio) {
-        // @ts-ignore
-        const hasKey = await window.aistudio.hasSelectedApiKey();
-        setHasApiKey(hasKey);
-      }
-    };
-    checkApiKey();
-  }, []);
-
-  const handleSelectKey = async () => {
-    // @ts-ignore
-    if (window.aistudio) {
-      // @ts-ignore
-      await window.aistudio.openSelectKey();
-      setHasApiKey(true);
-    }
-  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -120,10 +97,10 @@ export default function AIConcierge() {
     setIsLoading(true);
 
     try {
-      const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY || '';
-      console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY);
-      console.log('API_KEY:', process.env.API_KEY);
-      console.log('API Key being used:', apiKey);
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error('GEMINI_API_KEY is not defined.');
+      }
       const ai = new GoogleGenAI({ apiKey });
       
       // Format history for context
@@ -131,13 +108,13 @@ export default function AIConcierge() {
       const fullPrompt = `${historyContext}\nClient: ${userMsg}\nConcierge:`;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.1-pro-preview',
+        model: 'gemini-3-flash-preview',
         contents: fullPrompt,
         config: {
           tools: [{ functionDeclarations: [clientProfileExtractionTool] }],
           systemInstruction: `**System Instructions: Principal Architect Persona**
 
-**Identity:** You are the lead autonomous agent for Danuthia & Associates, a premier architectural and urban planning firm. You speak with the authority, precision, and visionary foresight of a highly experienced architect and urban planner. 
+**Identity:** You are the lead autonomous agent for Danuthia & Co., a premier architectural and urban planning firm. You speak with the authority, precision, and visionary foresight of a highly experienced architect and urban planner. 
 
 **Context:** The user is currently viewing the page at path: "${location.pathname}". Use this context to tailor your assistance. For example, if they are on the portfolio page, they might be asking about past projects. If they are on the services page, they might want to know more about what we offer.
 
@@ -169,7 +146,7 @@ export default function AIConcierge() {
             setMessages(prev => [...prev, { role: 'ai', text: "Thank you for providing those details. I have successfully recorded your project inquiry and escalated it to our principal architect. They will review your requirements and reach out to you shortly to schedule a formal consultation." }]);
           } catch (dbError) {
             console.error('Failed to save lead:', dbError);
-            setMessages(prev => [...prev, { role: 'ai', text: "I have noted your details, but there was a slight issue saving them to our system. Please feel free to also reach out directly at 0715 795 589." }]);
+            setMessages(prev => [...prev, { role: 'ai', text: "I have noted your details, but I'm having trouble saving them to our system right now. Please feel free to also reach out directly at 0715 795 589." }]);
           }
         }
       } else {
@@ -177,7 +154,25 @@ export default function AIConcierge() {
       }
     } catch (error: any) {
       console.error('AI Error:', error);
-      setMessages(prev => [...prev, { role: 'ai', text: `I apologize, but I am experiencing a temporary connection issue (${error?.message || 'Unknown error'}). Please contact our office directly at 0715 795 589.` }]);
+      
+      let userFriendlyMessage = "I apologize, but I'm having trouble connecting to our services right now. Please try again in a moment, or contact our office directly at 0715 795 589.";
+      
+      const errorMessage = (error?.message || error?.error?.message || '').toLowerCase();
+      const errorStatus = error?.status || error?.error?.status || error?.response?.status || '';
+
+      if (errorMessage.includes('api key') || errorMessage.includes('gemini_api_key is not defined') || errorStatus === 401 || errorStatus === 403) {
+        userFriendlyMessage = "I'm currently experiencing configuration issues. Please contact our office directly at 0715 795 589.";
+      } else if (errorStatus === 429 || errorMessage.includes('too many requests') || errorMessage.includes('rate limit')) {
+        userFriendlyMessage = "I'm receiving too many requests right now. Please wait a moment and try again.";
+      } else if (errorStatus === 503 || errorStatus === 500 || errorMessage.includes('overloaded') || errorMessage.includes('service unavailable')) {
+        userFriendlyMessage = "Our AI service is temporarily overloaded. Please try again in a few moments.";
+      } else if (errorMessage.includes('network') || errorMessage.includes('fetch') || errorMessage.includes('failed to connect')) {
+        userFriendlyMessage = "It seems like there's a network issue. Please check your internet connection and try again.";
+      } else if (errorStatus === 400 || errorMessage.includes('invalid argument')) {
+        userFriendlyMessage = "I had trouble understanding that request. Could you please rephrase it?";
+      }
+      
+      setMessages(prev => [...prev, { role: 'ai', text: userFriendlyMessage }]);
     } finally {
       setIsLoading(false);
     }
@@ -210,81 +205,74 @@ export default function AIConcierge() {
             <div className="bg-charcoal text-concrete dark:bg-[#111111] dark:text-concrete p-4 flex justify-between items-center border-b border-bronze/30 transition-colors duration-500">
               <div>
                 <h3 className="font-display font-bold uppercase tracking-widest text-sm">AI Concierge</h3>
-                <p className="text-xs text-steel font-mono">Danuthia & Associates</p>
+                <p className="text-xs text-steel font-mono">Danuthia & Co.</p>
               </div>
               <div className="flex items-center gap-3">
                 <button 
-                  onClick={() => setMessages([{ role: 'ai', text: 'Hello. I am the Danuthia & Associates AI Concierge. How can I assist you with your architectural or planning needs today?' }])}
+                  onClick={() => setMessages([{ role: 'ai', text: 'Hello. I am the Danuthia & Co. AI Concierge. How can I assist you with your architectural or planning needs today?' }])}
                   className="text-xs text-steel hover:text-bronze transition-colors"
                   title="Clear Chat"
                 >
                   Clear
                 </button>
-                {hasApiKey && (
-                  <button onClick={handleSelectKey} className="text-xs text-steel hover:text-bronze transition-colors" title="Change API Key">
-                    Key
-                  </button>
-                )}
                 <button onClick={() => setIsOpen(false)} className="text-steel hover:text-bronze transition-colors">
                   <X size={20} />
                 </button>
               </div>
             </div>
 
-            {!hasApiKey ? (
-              <div className="flex-1 p-6 flex flex-col items-center justify-center text-center bg-concrete/50 dark:bg-charcoal/50 transition-colors duration-500">
-                <p className="text-charcoal dark:text-concrete mb-4">To use the AI Concierge, please select a Gemini API key.</p>
-                <button
-                  onClick={handleSelectKey}
-                  className="bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal px-4 py-2 rounded hover:bg-bronze dark:hover:bg-bronze transition-colors"
-                >
-                  Select API Key
-                </button>
-              </div>
-            ) : (
-              <>
-                {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-concrete/50 dark:bg-charcoal/50 transition-colors duration-500">
-                  {messages.map((msg, idx) => (
-                    <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[80%] p-3 text-sm ${
-                        msg.role === 'user' 
-                          ? 'bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal rounded-tl-lg rounded-tr-lg rounded-bl-lg' 
-                          : 'bg-steel/10 text-charcoal dark:bg-[#111111] dark:text-concrete border border-steel/20 dark:border-concrete/10 rounded-tr-lg rounded-br-lg rounded-bl-lg'
-                      }`}>
-                        {msg.text}
-                      </div>
-                    </div>
-                  ))}
-                  {isLoading && (
-                    <div className="flex justify-start">
-                      <div className="bg-steel/10 text-charcoal dark:bg-[#111111] dark:text-concrete border border-steel/20 dark:border-concrete/10 rounded-tr-lg rounded-br-lg rounded-bl-lg p-3">
-                        <Loader2 size={16} className="animate-spin text-bronze" />
-                      </div>
-                    </div>
-                  )}
-                  <div ref={messagesEndRef} />
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-concrete/50 dark:bg-charcoal/50 transition-colors duration-500">
+              {messages.map((msg, idx) => (
+                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[80%] p-3 text-sm ${
+                    msg.role === 'user' 
+                      ? 'bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal rounded-tl-lg rounded-tr-lg rounded-bl-lg' 
+                      : 'bg-steel/10 text-charcoal dark:bg-[#111111] dark:text-concrete border border-steel/20 dark:border-concrete/10 rounded-tr-lg rounded-br-lg rounded-bl-lg'
+                  }`}>
+                    {msg.text}
+                  </div>
                 </div>
+              ))}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-steel/10 text-charcoal dark:bg-[#111111] dark:text-concrete border border-steel/20 dark:border-concrete/10 rounded-tr-lg rounded-br-lg rounded-bl-lg p-4 flex gap-1 items-center">
+                    {[0, 1, 2].map((i) => (
+                      <motion.div
+                        key={i}
+                        className="w-1.5 h-1.5 bg-bronze rounded-full"
+                        animate={{ y: [0, -4, 0] }}
+                        transition={{
+                          duration: 0.6,
+                          repeat: Infinity,
+                          delay: i * 0.2,
+                          ease: "easeInOut"
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
 
-                {/* Input */}
-                <form onSubmit={handleSubmit} className="p-3 bg-concrete dark:bg-charcoal border-t border-steel/30 dark:border-concrete/30 flex gap-2 transition-colors duration-500">
-                  <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="Ask about our services..."
-                    className="flex-1 bg-transparent border border-steel/30 dark:border-concrete/30 px-3 py-2 text-sm text-charcoal dark:text-concrete focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors placeholder:text-steel"
-                  />
-                  <button 
-                    type="submit" 
-                    disabled={isLoading || !input.trim()}
-                    className="bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal p-2 hover:bg-bronze dark:hover:bg-bronze transition-colors disabled:opacity-50 disabled:hover:bg-charcoal dark:disabled:hover:bg-concrete"
-                  >
-                    <Send size={18} />
-                  </button>
-                </form>
-              </>
-            )}
+            {/* Input */}
+            <form onSubmit={handleSubmit} className="p-3 bg-concrete dark:bg-charcoal border-t border-steel/30 dark:border-concrete/30 flex gap-2 transition-colors duration-500">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask about our services..."
+                className="flex-1 bg-transparent border border-steel/30 dark:border-concrete/30 px-3 py-2 text-sm text-charcoal dark:text-concrete focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors placeholder:text-steel"
+              />
+              <button 
+                type="submit" 
+                disabled={isLoading || !input.trim()}
+                className="bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal p-2 hover:bg-bronze dark:hover:bg-bronze transition-colors disabled:opacity-50 disabled:hover:bg-charcoal dark:disabled:hover:bg-concrete"
+              >
+                <Send size={18} />
+              </button>
+            </form>
           </motion.div>
         )}
       </AnimatePresence>

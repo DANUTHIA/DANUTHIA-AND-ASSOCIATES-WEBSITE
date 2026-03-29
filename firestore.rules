@@ -41,6 +41,74 @@ service cloud.firestore {
     //   - createdAt: timestamp (required, immutable) - Creation time
     //   - read: boolean (required) - Whether the message has been read
     //
+    // Collection: milestones
+    // Document ID: Auto-generated
+    // Fields:
+    //   - clientId: string (required, immutable) - The UID of the client
+    //   - title: string (required) - Title of the milestone
+    //   - status: string (required) - 'completed', 'in-progress', or 'upcoming'
+    //   - date: string (optional) - YYYY-MM-DD format
+    //   - order: number (required) - Order of the milestone
+    //   - createdAt: timestamp (required, immutable) - Creation time
+    //
+    // Collection: invoices
+    // Document ID: Auto-generated
+    // Fields:
+    //   - clientId: string (required, immutable)
+    //   - amount: number (required)
+    //   - description: string (required)
+    //   - status: string (required) - 'unpaid', 'paid'
+    //   - dueDate: string (required) - YYYY-MM-DD format
+    //   - createdAt: timestamp (required, immutable)
+    //
+    // Collection: projectModels
+    // Document ID: Auto-generated
+    // Fields:
+    //   - clientId: string (required, immutable)
+    //   - title: string (required)
+    //   - modelUrl: string (required)
+    //   - createdAt: timestamp (required, immutable)
+    //
+    // Collection: notifications
+    // Document ID: Auto-generated
+    // Fields:
+    //   - userId: string (required, immutable)
+    //   - title: string (required)
+    //   - message: string (required)
+    //   - read: boolean (required)
+    //   - createdAt: timestamp (required, immutable)
+    //
+    // Collection: documents
+    // Document ID: Auto-generated
+    // Fields:
+    //   - clientId: string (required, immutable) - The UID of the client
+    //   - fileName: string (required) - The name of the file
+    //   - fileType: string (required) - The MIME type of the file
+    //   - fileData: string (required) - The base64 encoded content of the file
+    //   - uploadedBy: string (required, immutable) - The UID of the uploader
+    //   - createdAt: timestamp (required, immutable) - Creation time
+    //
+    // Collection: annotations
+    // Document ID: Auto-generated
+    // Fields:
+    //   - blueprintId: string (required, immutable) - ID of the blueprint
+    //   - authorId: string (required, immutable) - UID of the author
+    //   - x: number (required) - X coordinate
+    //   - y: number (required) - Y coordinate
+    //   - comment: string (required) - Annotation comment
+    //   - createdAt: timestamp (required, immutable) - Creation time
+    //
+    // Collection: testimonials
+    // Document ID: Auto-generated
+    // Fields:
+    //   - clientId: string (required, immutable)
+    //   - clientName: string (required)
+    //   - rating: number (required) - 1 to 5
+    //   - comment: string (required) - Max 1000 chars
+    //   - approved: boolean (required) - Admin controlled
+    //   - projectType: string (required)
+    //   - createdAt: timestamp (required, immutable)
+    //
     // ===============================================================
 
     // ===============================================================
@@ -162,6 +230,76 @@ service cloud.firestore {
              data.status in ['new', 'contacted', 'archived'];
     }
 
+    function isValidMilestone() {
+      let data = request.resource.data;
+      return hasOnlyAllowedFields(['clientId', 'title', 'status', 'date', 'order', 'createdAt']) &&
+             hasRequiredFields(['clientId', 'title', 'status', 'order', 'createdAt']) &&
+             data.clientId is string && data.clientId.size() > 0 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 150 &&
+             data.status in ['completed', 'in-progress', 'upcoming'] &&
+             (!('date' in data) || isValidDateString(data.date)) &&
+             data.order is number &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidInvoice() {
+      let data = request.resource.data;
+      return hasOnlyAllowedFields(['clientId', 'amount', 'description', 'status', 'dueDate', 'createdAt']) &&
+             hasRequiredFields(['clientId', 'amount', 'description', 'status', 'dueDate', 'createdAt']) &&
+             data.clientId is string && data.clientId.size() > 0 &&
+             data.amount is number && data.amount >= 0 &&
+             data.description is string && data.description.size() > 0 && data.description.size() <= 500 &&
+             data.status in ['unpaid', 'paid'] &&
+             isValidDateString(data.dueDate) &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidProjectModel() {
+      let data = request.resource.data;
+      return hasOnlyAllowedFields(['clientId', 'title', 'modelUrl', 'createdAt']) &&
+             hasRequiredFields(['clientId', 'title', 'modelUrl', 'createdAt']) &&
+             data.clientId is string && data.clientId.size() > 0 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 150 &&
+             data.modelUrl is string && data.modelUrl.size() > 0 && data.modelUrl.size() <= 1000 &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidNotification() {
+      let data = request.resource.data;
+      return hasOnlyAllowedFields(['userId', 'title', 'message', 'read', 'createdAt']) &&
+             hasRequiredFields(['userId', 'title', 'message', 'read', 'createdAt']) &&
+             data.userId is string && data.userId.size() > 0 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 150 &&
+             data.message is string && data.message.size() > 0 && data.message.size() <= 1000 &&
+             data.read is bool &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidAnnotation() {
+      let data = request.resource.data;
+      return hasOnlyAllowedFields(['blueprintId', 'authorId', 'x', 'y', 'comment', 'createdAt']) &&
+             hasRequiredFields(['blueprintId', 'authorId', 'x', 'y', 'comment', 'createdAt']) &&
+             data.blueprintId is string && data.blueprintId.size() > 0 &&
+             data.authorId is string && data.authorId.size() > 0 &&
+             data.x is number &&
+             data.y is number &&
+             data.comment is string && data.comment.size() > 0 && data.comment.size() <= 2000 &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidTestimonial() {
+      let data = request.resource.data;
+      return hasOnlyAllowedFields(['clientId', 'clientName', 'rating', 'comment', 'approved', 'projectType', 'createdAt']) &&
+             hasRequiredFields(['clientId', 'clientName', 'rating', 'comment', 'approved', 'projectType', 'createdAt']) &&
+             data.clientId is string && data.clientId.size() > 0 &&
+             data.clientName is string && data.clientName.size() > 0 && data.clientName.size() <= 100 &&
+             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+             data.comment is string && data.comment.size() > 0 && data.comment.size() <= 1000 &&
+             data.approved is bool &&
+             data.projectType is string && data.projectType.size() > 0 &&
+             data.createdAt is timestamp;
+    }
+
     // ===============================================================
     // Rules
     // ===============================================================
@@ -215,6 +353,22 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    match /milestones/{milestoneId} {
+      allow read: if isAuthenticated() && (resource.data.clientId == request.auth.uid || isAdmin());
+      allow create: if isAdmin() && isValidMilestone() && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin() && isValidMilestone() && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.clientId == resource.data.clientId;
+      allow delete: if isAdmin();
+    }
+
+    match /annotations/{annotationId} {
+      allow read: if isAuthenticated() && (resource.data.authorId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidAnnotation() && 
+                    request.resource.data.createdAt == request.time &&
+                    request.resource.data.authorId == request.auth.uid;
+      allow update: if false;
+      allow delete: if isAuthenticated() && (resource.data.authorId == request.auth.uid || isAdmin());
+    }
+
     match /messages/{messageId} {
       // Users can read messages where they are the sender or receiver, admins can read all
       allow read: if isAuthenticated() && (resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid || isAdmin());
@@ -253,6 +407,45 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow create: if isValidClientLead() && request.resource.data.createdAt == request.time;
       allow update: if isAdmin() && isValidClientLead() && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isAdmin();
+    }
+
+    match /invoices/{invoiceId} {
+      allow read: if isAuthenticated() && (resource.data.clientId == request.auth.uid || isAdmin());
+      allow create: if isAdmin() && isValidInvoice() && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin() && isValidInvoice() && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isAdmin();
+    }
+
+    match /projectModels/{modelId} {
+      allow read: if isAuthenticated() && (resource.data.clientId == request.auth.uid || isAdmin());
+      allow create: if isAdmin() && isValidProjectModel() && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin() && isValidProjectModel() && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isAdmin();
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAdmin() && isValidNotification() && request.resource.data.createdAt == request.time;
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin()) &&
+                    isValidNotification() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    match /testimonials/{testimonialId} {
+      // Anyone can read approved testimonials, admins can read all
+      allow read: if (resource.data.approved == true) || isAdmin();
+      
+      // Authenticated users can create their own testimonials (initially unapproved)
+      allow create: if isAuthenticated() && isValidTestimonial() && 
+                    request.resource.data.clientId == request.auth.uid &&
+                    request.resource.data.approved == false &&
+                    request.resource.data.createdAt == request.time;
+                    
+      // Only admins can update (approve) or delete testimonials
+      allow update: if isAdmin() && isValidTestimonial() && 
+                    request.resource.data.createdAt == resource.data.createdAt &&
+                    request.resource.data.clientId == resource.data.clientId;
       allow delete: if isAdmin();
     }
   }

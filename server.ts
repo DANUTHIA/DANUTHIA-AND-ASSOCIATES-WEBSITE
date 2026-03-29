@@ -4,72 +4,139 @@ import { createServer as createViteServer } from "vite";
 import { Resend } from "resend";
 import path from "path";
 import { fileURLToPath } from "url";
-import rateLimit from "express-rate-limit";
+import Stripe from "stripe";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Basic HTML sanitizer to prevent XSS in emails
-const sanitizeHtml = (str: string) => {
-  if (!str) return '';
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-};
-
-// Rate limiter: max 5 requests per IP per hour
-const notifyLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5,
-  message: { error: "Too many requests from this IP, please try again after an hour" },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 async function startServer() {
   const app = express();
-  app.set("trust proxy", 1);
   const PORT = 3000;
 
   app.use(express.json());
 
   // API Routes
-  app.post("/api/notify", notifyLimiter, async (req, res) => {
+  app.post("/api/notify", async (req, res) => {
     const { fullName, projectScale, preferredDate } = req.body;
     
-    if (!process.env.RESEND_API_KEY) {
+    if (!resend) {
       console.warn("RESEND_API_KEY is not set. Skipping email notification.");
       return res.json({ success: true, note: "No API key, email skipped." });
     }
-
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    
-    // Sanitize inputs
-    const safeName = sanitizeHtml(fullName);
-    const safeScale = sanitizeHtml(projectScale);
-    const safeDate = sanitizeHtml(preferredDate);
 
     try {
       await resend.emails.send({
         from: "Danuthia & Co. <onboarding@resend.dev>",
         to: "machariag605@gmail.com",
-        subject: `New Booking Request: ${safeName}`,
+        subject: `New Booking Request: ${fullName}`,
         html: `
-          <h2>New Consultation Request</h2>
-          <p><strong>Name:</strong> ${safeName}</p>
-          <p><strong>Project Scale:</strong> ${safeScale}</p>
-          <p><strong>Preferred Date:</strong> ${safeDate}</p>
-          <br/>
-          <p>Log in to your Admin Dashboard to view and manage this request.</p>
+          <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee;">
+            <h2 style="color: #B08D57;">New Consultation Request</h2>
+            <p><strong>Name:</strong> ${fullName}</p>
+            <p><strong>Project Scale:</strong> ${projectScale}</p>
+            <p><strong>Preferred Date:</strong> ${preferredDate}</p>
+            <br/>
+            <p>Log in to your Admin Dashboard to view and manage this request.</p>
+          </div>
         `
       });
       res.json({ success: true });
     } catch (error) {
       console.error("Failed to send email:", error);
       res.status(500).json({ error: "Failed to send email" });
+    }
+  });
+
+  app.post("/api/send-thank-you", async (req, res) => {
+    const { email, name } = req.body;
+    if (!resend) return res.json({ success: true });
+
+    try {
+      await resend.emails.send({
+        from: "Danuthia & Co. <onboarding@resend.dev>",
+        to: email,
+        subject: "Thank You for Your Booking",
+        html: `
+          <div style="font-family: sans-serif; padding: 20px;">
+            <h1 style="color: #B08D57;">Thank You, ${name}!</h1>
+            <p>We've received your booking request and our team will review it shortly.</p>
+            <p>We'll be in touch soon to confirm the details of your consultation.</p>
+            <br/>
+            <p>Best regards,<br/>The Danuthia & Co. Team</p>
+          </div>
+        `
+      });
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to send email" });
+    }
+  });
+
+  app.post("/api/send-reminder", async (req, res) => {
+    const { email, name, projectTitle } = req.body;
+    if (!resend) return res.json({ success: true });
+
+    try {
+      await resend.emails.send({
+        from: "Danuthia & Co. <onboarding@resend.dev>",
+        to: email,
+        subject: `Project Update: ${projectTitle}`,
+        html: `
+          <div style="font-family: sans-serif; padding: 20px;">
+            <h1 style="color: #B08D57;">Hello ${name},</h1>
+            <p>There's a new update available for your project: <strong>${projectTitle}</strong>.</p>
+            <p>Log in to your Client Portal to view the latest blueprints and project milestones.</p>
+            <br/>
+            <a href="${req.headers.origin}/portal" style="background-color: #B08D57; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">View Client Portal</a>
+            <br/><br/>
+            <p>Best regards,<br/>The Danuthia & Co. Team</p>
+          </div>
+        `
+      });
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to send email" });
+    }
+  });
+
+  app.post("/api/create-checkout-session", async (req, res) => {
+    const { invoiceId, amount, description, clientId } = req.body;
+
+    if (!stripe) {
+      return res.status(500).json({ error: "Stripe is not configured" });
+    }
+
+    try {
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: `Invoice: ${description}`,
+              },
+              unit_amount: Math.round(amount * 100),
+            },
+            quantity: 1,
+          },
+        ],
+        mode: "payment",
+        success_url: `${req.headers.origin}/portal?payment=success&invoiceId=${invoiceId}`,
+        cancel_url: `${req.headers.origin}/portal?payment=cancelled`,
+        metadata: {
+          invoiceId,
+          clientId,
+        },
+      });
+
+      res.json({ id: session.id, url: session.url });
+    } catch (error) {
+      console.error("Stripe error:", error);
+      res.status(500).json({ error: "Failed to create checkout session" });
     }
   });
 
