@@ -475,7 +475,7 @@ export default function ClientPortal() {
       <div className="min-h-[calc(100vh-6rem)] flex flex-col items-center justify-center bg-concrete dark:bg-charcoal p-6 text-center transition-colors duration-500">
         <div className="max-w-md w-full bg-charcoal dark:bg-[#111111] text-concrete p-10 md:p-16 relative z-10 transition-colors duration-500">
           <div className="flex justify-center mb-10">
-            <div className="w-16 h-16 rounded-full border border-bronze/30 flex items-center justify-center bg-charcoal dark:bg-[#111111] shadow-[0_0_30px_rgba(184,134,11,0.1)] transition-colors duration-500">
+            <div className="w-16 h-16 rounded-none border border-bronze/30 flex items-center justify-center bg-charcoal dark:bg-[#111111] shadow-[0_0_30px_rgba(184,134,11,0.1)] transition-colors duration-500">
               <Clock size={20} className="text-bronze" strokeWidth={1.5} />
             </div>
           </div>
@@ -526,7 +526,7 @@ export default function ClientPortal() {
               >
                 <Bell size={18} />
                 {notifications.filter(n => !n.read).length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-bronze text-concrete text-[10px] flex items-center justify-center rounded-full font-bold">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-bronze text-concrete text-[10px] flex items-center justify-center rounded-none font-bold">
                     {notifications.filter(n => !n.read).length}
                   </span>
                 )}
@@ -797,7 +797,7 @@ export default function ClientPortal() {
                               </h4>
                               <p className="text-[9px] font-mono text-steel/60 mt-1">{milestone.date || 'TBD'}</p>
                             </div>
-                            <div className="col-span-9 relative h-8 bg-steel/5 rounded-sm overflow-hidden">
+                            <div className="col-span-9 relative h-8 bg-steel/5 rounded-none overflow-hidden">
                               <motion.div 
                                 initial={{ width: 0 }}
                                 animate={{ 
@@ -806,7 +806,7 @@ export default function ClientPortal() {
                                   x: `${(idx % 4) * 20}%` // Mocking horizontal position
                                 }}
                                 transition={{ duration: 1, ease: "easeOut" }}
-                                className={`absolute h-full rounded-sm ${
+                                className={`absolute h-full rounded-none ${
                                   milestone.status === 'completed' ? 'bg-bronze' : 
                                   milestone.status === 'in-progress' ? 'bg-charcoal dark:bg-concrete' : 
                                   'bg-transparent'
@@ -1109,7 +1109,7 @@ export default function ClientPortal() {
                               <td className="py-6 text-xs text-steel">{invoice.dueDate}</td>
                               <td className="py-6 font-display text-lg">${invoice.amount.toLocaleString()}</td>
                               <td className="py-6">
-                                <span className={`text-[8px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full ${
+                                <span className={`text-[8px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-none ${
                                   invoice.status === 'paid' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
                                 }`}>
                                   {invoice.status}
@@ -1184,7 +1184,7 @@ export default function ClientPortal() {
                         const isMine = msg.senderId === user?.uid;
                         return (
                           <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`max-w-[85%] p-4 ${isMine ? 'bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal rounded-tl-xl rounded-tr-xl rounded-bl-xl transition-colors duration-500' : 'bg-concrete dark:bg-charcoal text-charcoal dark:text-concrete border border-steel/20 dark:border-concrete/20 rounded-tl-xl rounded-tr-xl rounded-br-xl transition-colors duration-500'}`}>
+                            <div className={`max-w-[85%] p-4 ${isMine ? 'bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal rounded-none transition-colors duration-500' : 'bg-concrete dark:bg-charcoal text-charcoal dark:text-concrete border border-steel/20 dark:border-concrete/20 rounded-none transition-colors duration-500'}`}>
                               <p className="text-sm font-light leading-relaxed">{msg.text}</p>
                               <span className="text-[10px] font-mono opacity-50 mt-2 block text-right uppercase tracking-widest">
                                 {msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Sending...'}

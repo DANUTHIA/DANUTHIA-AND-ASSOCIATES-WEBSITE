@@ -75,7 +75,7 @@ export default function BeforeAfterSlider({
         <img 
           src={beforeImage} 
           alt={beforeLabel} 
-          className="w-full h-full object-cover pointer-events-none filter grayscale contrast-125"
+          className="w-full h-full object-cover pointer-events-none"
           draggable={false}
           referrerPolicy="no-referrer"
         />
@@ -86,14 +86,11 @@ export default function BeforeAfterSlider({
 
       {/* Slider Line & Handle */}
       <div 
-        className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize flex items-center justify-center shadow-[0_0_10px_rgba(0,0,0,0.5)]"
-        style={{ left: `calc(${sliderPosition}% - 2px)` }}
+        className="absolute top-0 bottom-0 w-0.5 bg-bronze cursor-ew-resize flex items-center justify-center shadow-[0_0_15px_rgba(184,134,11,0.5)] z-10"
+        style={{ left: `calc(${sliderPosition}% - 1px)` }}
       >
-        <div className="w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center transition-transform duration-200 hover:scale-110">
-          <div className="flex gap-1">
-            <div className="w-0.5 h-3 bg-charcoal/40 rounded-full"></div>
-            <div className="w-0.5 h-3 bg-charcoal/40 rounded-full"></div>
-          </div>
+        <div className="w-6 h-20 bg-[#111111] border-2 border-bronze shadow-2xl flex items-center justify-center transition-transform duration-200 hover:scale-105">
+          <div className="w-0.5 h-12 bg-bronze"></div>
         </div>
       </div>
     </div>

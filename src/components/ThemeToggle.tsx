@@ -11,7 +11,7 @@ export default function ThemeToggle({ isDarkMode, toggle }: ThemeToggleProps) {
   return (
     <button
       onClick={toggle}
-      className={`relative flex items-center w-16 h-8 rounded-full p-1 transition-colors duration-500 border ${
+      className={`relative flex items-center w-16 h-8 rounded-none p-1 transition-colors duration-500 border ${
         isDarkMode ? 'bg-charcoal border-steel/40' : 'bg-concrete border-steel/30 shadow-inner'
       }`}
       aria-label="Toggle Theme"
@@ -24,7 +24,7 @@ export default function ThemeToggle({ isDarkMode, toggle }: ThemeToggleProps) {
       
       {/* Animated Handle */}
       <motion.div
-        className={`relative z-10 flex items-center justify-center w-6 h-6 rounded-full shadow-md ${
+        className={`relative z-10 flex items-center justify-center w-6 h-6 rounded-none shadow-md ${
           isDarkMode ? 'bg-concrete text-charcoal' : 'bg-charcoal text-concrete'
         }`}
         transition={{ type: "spring", stiffness: 500, damping: 30 }}

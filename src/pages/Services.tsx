@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Box, Building2, Map, ArrowRight } from 'lucide-react';
+import { Box, Building2, Map, ArrowRight, ClipboardList } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const fadeInUp: any = {
@@ -20,7 +20,7 @@ export default function Services() {
   return (
     <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500">
       {/* Hero Section */}
-      <section className="relative bg-charcoal dark:bg-[#111111] text-concrete p-8 md:p-16 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
+      <section className="relative bg-charcoal dark:bg-[#111111] text-concrete p-8 md:p-16 pt-32 md:pt-40 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.05, scale: 1 }}
@@ -40,7 +40,7 @@ export default function Services() {
             <div>
               <motion.h1 variants={fadeInUp} className="font-display text-5xl md:text-7xl font-bold leading-[0.9] tracking-tighter mb-8 uppercase">
                 Comprehensive.<br/>
-                <span className="text-bronze font-light italic">Precision-driven.</span>
+                <span className="text-bronze">Precision-driven.</span>
               </motion.h1>
             </div>
             <motion.div variants={fadeInUp} className="pb-2">
@@ -65,7 +65,7 @@ export default function Services() {
           <motion.div variants={fadeInUp} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center group">
             <div className="lg:col-span-5 order-2 lg:order-1">
               <div className="flex items-center gap-4 mb-6">
-                <span className="text-bronze font-display text-3xl italic">01</span>
+                <span className="text-bronze font-display text-3xl font-bold">01</span>
                 <div className="h-[1px] bg-steel/30 flex-grow"></div>
                 <Box size={24} className="text-steel group-hover:text-bronze transition-colors" />
               </div>
@@ -74,10 +74,10 @@ export default function Services() {
                 Full-service architectural design from concept to construction documentation. We specialize in residential, commercial, and institutional buildings that respond to their environment.
               </p>
               <ul className="space-y-4 text-sm font-mono uppercase tracking-wider text-charcoal/80 dark:text-concrete/80 mb-10 transition-colors duration-500">
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Concept Design</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> 3D Modeling & Rendering</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Construction Drawings</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Project Management</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-none"></span> Concept Design</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-none"></span> 3D Modeling & Rendering</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-none"></span> Construction Drawings</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-none"></span> Project Management</li>
               </ul>
               <Link to="/portfolio" className="inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors">
                 View Related Projects <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
@@ -107,7 +107,7 @@ export default function Services() {
             </div>
             <div className="lg:col-span-5">
               <div className="flex items-center gap-4 mb-6">
-                <span className="text-bronze font-display text-3xl italic">02</span>
+                <span className="text-bronze font-display text-3xl font-bold">02</span>
                 <div className="h-[1px] bg-steel/30 flex-grow"></div>
                 <Building2 size={24} className="text-steel group-hover:text-bronze transition-colors" />
               </div>
@@ -116,10 +116,10 @@ export default function Services() {
                 Strategic planning for neighborhoods, cities, and regions. We focus on sustainable growth, mobility, and public space design to create vibrant, livable communities.
               </p>
               <ul className="space-y-4 text-sm font-mono uppercase tracking-wider text-charcoal/80 dark:text-concrete/80 mb-10 transition-colors duration-500">
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Master Planning</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Zoning & Land Use</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Urban Design Guidelines</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Feasibility Studies</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-none"></span> Master Planning</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-none"></span> Zoning & Land Use</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-none"></span> Urban Design Guidelines</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-none"></span> Feasibility Studies</li>
               </ul>
               <Link to="/portfolio" className="inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors">
                 View Related Projects <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
@@ -131,7 +131,7 @@ export default function Services() {
           <motion.div variants={fadeInUp} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center group">
             <div className="lg:col-span-5 order-2 lg:order-1">
               <div className="flex items-center gap-4 mb-6">
-                <span className="text-bronze font-display text-3xl italic">03</span>
+                <span className="text-bronze font-display text-3xl font-bold">03</span>
                 <div className="h-[1px] bg-steel/30 flex-grow"></div>
                 <Map size={24} className="text-steel group-hover:text-bronze transition-colors" />
               </div>
@@ -140,10 +140,10 @@ export default function Services() {
                 Advanced GIS mapping and spatial data analysis to inform design decisions and policy making. We turn complex geographical data into actionable insights.
               </p>
               <ul className="space-y-4 text-sm font-mono uppercase tracking-wider text-charcoal/80 dark:text-concrete/80 mb-10 transition-colors duration-500">
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Topographical Analysis</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Environmental Mapping</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Demographic Studies</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-full"></span> Infrastructure Planning</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-none"></span> Topographical Analysis</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-none"></span> Environmental Mapping</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-none"></span> Demographic Studies</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-none"></span> Infrastructure Planning</li>
               </ul>
               <Link to="/portfolio" className="inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors">
                 View Related Projects <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
@@ -160,7 +160,110 @@ export default function Services() {
             </div>
           </motion.div>
 
+          {/* Service 4 */}
+          <motion.div variants={fadeInUp} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center group">
+            <div className="lg:col-span-7 h-[40vh] lg:h-[60vh] overflow-hidden relative">
+              <img 
+                src="https://images.unsplash.com/photo-1454165833767-027ff33027ef?q=80&w=1600&auto=format&fit=crop" 
+                alt="Project Management" 
+                className="w-full h-full object-cover mix-blend-luminosity group-hover:mix-blend-normal group-hover:scale-105 transition-all duration-1000"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute inset-0 border border-steel/20 m-4 pointer-events-none"></div>
+            </div>
+            <div className="lg:col-span-5">
+              <div className="flex items-center gap-4 mb-6">
+                <span className="text-bronze font-display text-3xl font-bold">04</span>
+                <div className="h-[1px] bg-steel/30 flex-grow"></div>
+                <ClipboardList size={24} className="text-steel group-hover:text-bronze transition-colors" />
+              </div>
+              <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-6 text-charcoal dark:text-concrete transition-colors duration-500">Project Management</h2>
+              <p className="text-charcoal/70 dark:text-concrete/70 mb-8 text-lg font-light leading-relaxed transition-colors duration-500">
+                End-to-end management of complex architectural and planning projects. We ensure that every milestone is met with precision, on time, and within budget.
+              </p>
+              <ul className="space-y-4 text-sm font-mono uppercase tracking-wider text-charcoal/80 dark:text-concrete/80 mb-10 transition-colors duration-500">
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-none"></span> Agile Project Delivery</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-none"></span> Stakeholder Coordination</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-none"></span> Quality Assurance</li>
+                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-bronze rounded-none"></span> Risk Mitigation</li>
+              </ul>
+              <Link to="/portfolio" className="inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors">
+                View Related Projects <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
+              </Link>
+            </div>
+          </motion.div>
+
         </motion.div>
+      </section>
+
+      {/* R&D / Technical Capabilities Section */}
+      <section className="bg-charcoal dark:bg-[#111111] text-concrete py-24 md:py-32 transition-colors duration-500 border-t border-concrete/20">
+        <div className="max-w-7xl mx-auto px-8 md:px-16">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="flex flex-col md:flex-row gap-16"
+          >
+            <div className="w-full md:w-1/3">
+              <motion.div variants={fadeInUp} className="sticky top-32">
+                <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4">Research & Development</p>
+                <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-8">Technical<br/>Capabilities</h2>
+                <p className="text-concrete/70 font-mono text-sm leading-relaxed mb-8">
+                  Our dedicated R&D lab explores the intersection of material science, parametric modeling, and sustainable engineering to push the boundaries of architectural feasibility.
+                </p>
+                <div className="w-16 h-1 bg-bronze"></div>
+              </motion.div>
+            </div>
+            
+            <div className="w-full md:w-2/3 flex flex-col border-t border-concrete/20">
+              {[
+                {
+                  id: "01",
+                  title: "Low-Carbon Concrete Formulations",
+                  desc: "Investigating supplementary cementitious materials (SCMs) and optimized aggregate grading to reduce embodied carbon by up to 40% without compromising structural integrity.",
+                  tags: ["Material Science", "Sustainability", "Structural"]
+                },
+                {
+                  id: "02",
+                  title: "Parametric Environmental Modeling",
+                  desc: "Utilizing algorithmic design tools to simulate solar radiation, wind flow, and thermal performance, enabling data-driven optimization of building massing and facade articulation.",
+                  tags: ["Computational Design", "Environmental", "Simulation"]
+                },
+                {
+                  id: "03",
+                  title: "Advanced Passive Cooling Systems",
+                  desc: "Developing site-specific natural ventilation strategies and thermal mass utilization techniques to minimize reliance on mechanical cooling in tropical and subtropical climates.",
+                  tags: ["HVAC", "Passive Design", "Thermodynamics"]
+                }
+              ].map((item, idx) => (
+                <motion.div 
+                  key={idx}
+                  variants={fadeInUp}
+                  className="border-b border-concrete/20 py-8 group hover:bg-concrete/5 transition-colors px-6 -mx-6"
+                >
+                  <div className="flex flex-col md:flex-row md:items-baseline gap-4 md:gap-8 mb-4">
+                    <span className="font-mono text-bronze text-sm">{item.id}</span>
+                    <h3 className="font-display text-2xl font-bold uppercase tracking-tight group-hover:text-bronze transition-colors">{item.title}</h3>
+                  </div>
+                  <div className="md:pl-12">
+                    <p className="text-concrete/70 font-mono text-sm leading-relaxed mb-6 max-w-2xl">
+                      {item.desc}
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                      {item.tags.map((tag, tIdx) => (
+                        <span key={tIdx} className="text-[9px] font-mono uppercase tracking-widest border border-concrete/30 px-2 py-1 text-concrete/60 group-hover:border-bronze/50 group-hover:text-bronze transition-colors">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
       </section>
     </main>
   );

@@ -10,8 +10,11 @@ import Login from './pages/Login';
 import ClientPortal from './pages/ClientPortal';
 import Careers from './pages/Careers';
 import Affiliate from './pages/Affiliate';
+import Terms from './pages/Terms';
 import ScrollToTop from './components/ScrollToTop';
 import CustomCursor from './components/CustomCursor';
+import KineticDataTicker from './components/KineticDataTicker';
+import CommandPalette from './components/CommandPalette';
 import NoiseOverlay from './components/NoiseOverlay';
 import AIConcierge from './components/AIConcierge';
 import Loader from './components/Loader';
@@ -22,6 +25,8 @@ export default function App() {
       <Loader />
       <ScrollToTop />
       <CustomCursor />
+      <KineticDataTicker />
+      <CommandPalette />
       <NoiseOverlay />
       <AIConcierge />
       <Routes>
@@ -35,6 +40,7 @@ export default function App() {
           <Route path="portal" element={<ClientPortal />} />
           <Route path="careers" element={<Careers />} />
           <Route path="affiliate" element={<Affiliate />} />
+          <Route path="terms" element={<Terms />} />
         </Route>
       </Routes>
     </BrowserRouter>

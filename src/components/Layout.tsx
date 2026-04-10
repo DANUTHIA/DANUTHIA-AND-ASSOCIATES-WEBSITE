@@ -80,15 +80,13 @@ export default function Layout() {
           </Magnetic>
           
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-10 text-xs font-bold uppercase tracking-[0.2em]">
+          <nav className="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-[0.2em]">
             <Magnetic><NavLink to="/services" className={navLinkClass}>Services</NavLink></Magnetic>
             <Magnetic><NavLink to="/portfolio" className={navLinkClass}>Portfolio</NavLink></Magnetic>
             <Magnetic><NavLink to="/about" className={navLinkClass}>About</NavLink></Magnetic>
-            <Magnetic><NavLink to="/portal" className={navLinkClass}>Client Portal</NavLink></Magnetic>
             <Magnetic>
               <ThemeToggle isDarkMode={isDarkMode} toggle={toggleDarkMode} />
             </Magnetic>
-            <Magnetic><Link to="/#book" className="px-6 py-3 border border-charcoal dark:border-concrete hover:bg-charcoal hover:text-concrete dark:hover:bg-concrete dark:hover:text-charcoal transition-all duration-500 ml-4">Book Consultation</Link></Magnetic>
           </nav>
 
           {/* Mobile Menu Toggle */}
@@ -127,96 +125,99 @@ export default function Layout() {
         </AnimatePresence>
       </header>
 
-      <div className="flex-grow pt-24">
+      <div className="flex-grow pt-24 overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '-100%' }}
+            transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
+            className="w-full"
           >
             <Outlet />
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Footer */}
-      <footer className="bg-charcoal dark:bg-[#111111] text-concrete mt-auto border-t border-steel/20 transition-colors duration-500">
-        <div className="max-w-7xl mx-auto px-8 md:px-16 py-20">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-16 lg:gap-8">
+      {/* Footer - Blueprint Title Block Aesthetic */}
+      <footer className="bg-charcoal dark:bg-[#111111] text-concrete mt-auto border-t-4 border-bronze transition-colors duration-500">
+        <div className="max-w-7xl mx-auto px-8 md:px-16 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-0 border border-steel/30 dark:border-concrete/20">
             
-            {/* Brand */}
-            <div className="lg:col-span-4 flex flex-col">
-              <Link to="/" className="mb-8 hover:opacity-80 transition-opacity cursor-pointer inline-block">
-                <Logo className="scale-100 origin-left text-concrete" />
-              </Link>
-              <p className="text-steel font-light leading-relaxed max-w-sm">
-                Shaping the future of the African urban landscape through sustainable, context-driven architectural design and master planning.
-              </p>
+            {/* Block 1: Brand & Desc */}
+            <div className="md:col-span-5 p-8 border-b md:border-b-0 md:border-r border-steel/30 dark:border-concrete/20 flex flex-col justify-between">
+              <div>
+                <Link to="/" className="mb-8 hover:opacity-80 transition-opacity cursor-pointer inline-block">
+                  <Logo className="scale-100 origin-left text-concrete" />
+                </Link>
+                <p className="text-steel font-mono text-xs leading-relaxed max-w-sm uppercase tracking-widest">
+                  Shaping the future of the African urban landscape through sustainable, context-driven architectural design and master planning.
+                </p>
+              </div>
+              <div className="mt-12 text-[9px] font-mono text-bronze uppercase tracking-[0.2em]">
+                DOC.REF: FT-2026-04 // REV.A
+              </div>
             </div>
 
-            {/* Links */}
-            <div className="lg:col-span-2 lg:col-start-6">
-              <p className="text-xs font-mono text-bronze uppercase tracking-widest mb-6">Explore</p>
-              <nav className="flex flex-col gap-4 font-medium uppercase text-xs tracking-wider">
+            {/* Block 2: Links */}
+            <div className="md:col-span-2 p-8 border-b md:border-b-0 md:border-r border-steel/30 dark:border-concrete/20">
+              <p className="text-[10px] font-mono text-bronze uppercase tracking-widest mb-6 border-b border-bronze/30 pb-2">Index</p>
+              <nav className="flex flex-col gap-3 font-mono uppercase text-[10px] tracking-widest">
                 <Link to="/services" className="hover:text-bronze transition-colors w-fit">Services</Link>
                 <Link to="/portfolio" className="hover:text-bronze transition-colors w-fit">Portfolio</Link>
                 <Link to="/about" className="hover:text-bronze transition-colors w-fit">About Us</Link>
                 <Link to="/portal" className="hover:text-bronze transition-colors w-fit">Client Portal</Link>
-                <Link to="/careers" className="hover:text-bronze transition-colors w-fit">Work With Us</Link>
-                <Link to="/affiliate" className="hover:text-bronze transition-colors w-fit">Affiliate Program</Link>
               </nav>
             </div>
 
-            {/* Social */}
-            <div className="lg:col-span-2">
-              <p className="text-xs font-mono text-bronze uppercase tracking-widest mb-6">Connect</p>
-              <nav className="flex flex-col gap-4 font-medium uppercase text-xs tracking-wider">
+            {/* Block 3: Connect */}
+            <div className="md:col-span-2 p-8 border-b md:border-b-0 md:border-r border-steel/30 dark:border-concrete/20">
+              <p className="text-[10px] font-mono text-bronze uppercase tracking-widest mb-6 border-b border-bronze/30 pb-2">Network</p>
+              <nav className="flex flex-col gap-3 font-mono uppercase text-[10px] tracking-widest">
                 <a href="https://www.linkedin.com/in/danuthiaandassociates-344b353b7/" target="_blank" rel="noopener noreferrer" className="hover:text-bronze transition-colors w-fit">LinkedIn</a>
                 <a href="https://www.instagram.com/danuthiaandassociates/" target="_blank" rel="noopener noreferrer" className="hover:text-bronze transition-colors w-fit">Instagram</a>
                 <a href="https://x.com/DanuthiaandCo" target="_blank" rel="noopener noreferrer" className="hover:text-bronze transition-colors w-fit">Twitter / X</a>
               </nav>
             </div>
 
-            {/* Newsletter */}
-            <div className="lg:col-span-3">
-              <p className="text-xs font-mono text-bronze uppercase tracking-widest mb-6">Journal</p>
-              <p className="text-steel font-light text-sm mb-6">Subscribe to our newsletter for insights on architecture and urbanism.</p>
-              {subscribed ? (
-                <div className="flex items-center gap-2 text-bronze font-medium text-sm p-3 border border-bronze/30 bg-bronze/5">
-                  <CheckCircle size={16} />
-                  <span>Subscribed successfully.</span>
+            {/* Block 4: Newsletter & Meta */}
+            <div className="md:col-span-3 p-8 flex flex-col justify-between bg-charcoal/50 dark:bg-[#0a0a0a]">
+              <div>
+                <p className="text-[10px] font-mono text-bronze uppercase tracking-widest mb-6 border-b border-bronze/30 pb-2">Data Stream</p>
+                {subscribed ? (
+                  <div className="flex items-center gap-2 text-bronze font-mono text-[10px] uppercase tracking-widest p-3 border border-bronze/30 bg-bronze/5">
+                    <CheckCircle size={14} />
+                    <span>Connection Est.</span>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubscribe} className="flex flex-col gap-4">
+                    <input 
+                      type="email" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="ENTER EMAIL..." 
+                      className="bg-transparent w-full border-b border-steel/30 focus:border-bronze outline-none text-[10px] font-mono uppercase tracking-widest placeholder:text-steel/50 pb-2 transition-colors"
+                      required
+                    />
+                    <Magnetic>
+                      <button type="submit" className="text-charcoal bg-bronze hover:bg-concrete transition-colors uppercase text-[10px] font-bold tracking-widest py-2 px-4 w-full">
+                        Initialize
+                      </button>
+                    </Magnetic>
+                  </form>
+                )}
+              </div>
+              <div className="mt-12 pt-4 border-t border-steel/30 flex flex-col gap-2 text-[9px] font-mono text-steel uppercase tracking-widest">
+                <p>© {new Date().getFullYear()} Danuthia & Co.</p>
+                <div className="flex gap-4">
+                  <Link to="/terms" className="hover:text-bronze transition-colors">Privacy</Link>
+                  <Link to="/terms" className="hover:text-bronze transition-colors">Terms</Link>
+                  <Link to="/admin" className="hover:text-bronze transition-colors">Admin</Link>
                 </div>
-              ) : (
-                <form onSubmit={handleSubscribe} className="flex border-b border-steel/50 pb-2 group focus-within:border-bronze transition-colors">
-                  <input 
-                    type="email" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Email address" 
-                    className="bg-transparent w-full focus:outline-none text-sm font-light placeholder:text-steel/50"
-                    required
-                  />
-                  <Magnetic>
-                    <button type="submit" className="text-bronze hover:text-concrete transition-colors uppercase text-xs font-bold tracking-wider ml-4">
-                      Subscribe
-                    </button>
-                  </Magnetic>
-                </form>
-              )}
+              </div>
             </div>
 
-          </div>
-
-          {/* Bottom Bar */}
-          <div className="mt-24 pt-8 border-t border-steel/20 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-mono text-steel uppercase tracking-widest">
-            <p>© {new Date().getFullYear()} Danuthia & Co. All rights reserved.</p>
-            <div className="flex gap-8">
-              <Link to="/about" className="hover:text-concrete transition-colors">Privacy Policy</Link>
-              <Link to="/about" className="hover:text-concrete transition-colors">Terms of Service</Link>
-              <Link to="/admin" className="hover:text-concrete transition-colors">Admin</Link>
-            </div>
           </div>
         </div>
       </footer>

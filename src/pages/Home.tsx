@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowDown, Box, Map, Building2, Quote, ArrowRight, Calendar, ChevronRight, Maximize, CheckCircle, HardHat } from 'lucide-react';
+import { ArrowDown, Box, Map, Building2, Quote, ArrowRight, Calendar, ChevronRight, Maximize, CheckCircle, HardHat, ClipboardList } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy } from 'firebase/firestore';
@@ -8,12 +8,7 @@ import Logo from '../components/Logo';
 import Magnetic from '../components/Magnetic';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 
-const HERO_IMAGES = [
-  "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2000&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2000&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2000&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=2000&auto=format&fit=crop"
-];
+const HERO_VIDEO = "https://cdn.coverr.co/videos/coverr-architectural-structure-of-a-modern-building-4217/1080p.mp4";
 
 const fadeInUp: any = {
   hidden: { opacity: 0, y: 40 },
@@ -47,7 +42,6 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState('');
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [testimonials, setTestimonials] = useState<any[]>([]);
   const [loadingTestimonials, setLoadingTestimonials] = useState(true);
 
@@ -72,13 +66,6 @@ export default function Home() {
       }
     };
     fetchTestimonials();
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % HERO_IMAGES.length);
-    }, 6000);
-    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -146,63 +133,48 @@ export default function Home() {
 
   return (
     <main className="bg-concrete dark:bg-charcoal transition-colors duration-500">
-      {/* Section 1: Hero - Luxury Editorial Style */}
-      <section ref={heroRef} className="relative min-h-[calc(100vh-4rem)] flex flex-col lg:flex-row border-b border-charcoal/20 dark:border-concrete/20 overflow-hidden">
+      {/* Section 1: Hero - Full Bleed Brutalist */}
+      <section ref={heroRef} className="relative h-screen w-full overflow-hidden bg-charcoal">
+        <motion.div style={{ y }} className="absolute inset-0 w-full h-[130%] -top-[15%]">
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-60"
+          >
+            <source src={HERO_VIDEO} type="video/mp4" />
+          </video>
+        </motion.div>
         
-        {/* Left Content */}
-        <div className="w-full lg:w-5/12 p-8 md:p-16 lg:p-24 flex flex-col justify-center relative z-10 bg-concrete dark:bg-charcoal transition-colors duration-500">
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-charcoal/50 pointer-events-none"></div>
+        
+        <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-16 lg:p-24 z-10">
           <motion.div 
             initial="hidden"
             animate="visible"
             variants={staggerContainer}
-            className="max-w-xl"
+            className="max-w-5xl"
           >
-            <motion.p variants={fadeInUp} className="text-bronze tracking-[0.2em] text-xs font-bold uppercase mb-6">
-              Danuthia & Co.
-            </motion.p>
-            <motion.h1 variants={fadeInUp} className="font-display text-6xl md:text-7xl lg:text-[5.5rem] font-light leading-[0.9] tracking-tight mb-8 text-charcoal dark:text-concrete text-balance transition-colors duration-500">
-              Designing the <span className="italic">Future</span> of African Urban Spaces.
+            <motion.h1 variants={fadeInUp} className="font-display text-6xl md:text-8xl lg:text-[8rem] font-bold leading-[0.85] tracking-tighter mb-8 text-concrete uppercase">
+              Danuthia <br/> & Co.
             </motion.h1>
-            <motion.p variants={fadeInUp} className="text-base md:text-lg text-charcoal/70 dark:text-concrete/70 font-light leading-relaxed mb-16 max-w-md transition-colors duration-500">
-              Agile, data-driven planning and architectural precision for the next generation of sustainable development in Kenya and beyond.
-            </motion.p>
-            
-            <motion.div variants={fadeInUp} className="flex items-center gap-6">
-              <Link to="/#book" className="group flex items-center justify-center w-16 h-16 rounded-full border border-charcoal/30 dark:border-concrete/30 hover:border-bronze dark:hover:border-bronze transition-colors duration-500">
-                <ArrowDown size={20} className="text-charcoal dark:text-concrete group-hover:text-bronze dark:group-hover:text-bronze group-hover:translate-y-1 transition-all duration-500" />
-              </Link>
-              <span className="text-xs font-mono uppercase tracking-widest text-charcoal/50 dark:text-concrete/50 transition-colors duration-500">Scroll to Explore</span>
+            <motion.div variants={fadeInUp} className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-t border-concrete/20 pt-8">
+              <p className="text-lg md:text-2xl text-concrete/80 font-light leading-relaxed max-w-xl">
+                Agile, data-driven planning and architectural precision for the next generation of sustainable development.
+              </p>
+              <div className="flex items-center gap-6">
+                <Link to="/portfolio" className="group flex items-center justify-center w-16 h-16 rounded-none border border-concrete/30 hover:border-bronze hover:bg-bronze transition-all duration-500">
+                  <ArrowRight size={20} className="text-concrete group-hover:translate-x-1 transition-transform duration-500" />
+                </Link>
+                <span className="text-xs font-mono uppercase tracking-widest text-concrete/50">Explore Work</span>
+              </div>
             </motion.div>
           </motion.div>
         </div>
-
-        {/* Right Image Slider */}
-        <div className="w-full lg:w-7/12 relative h-[60vh] lg:h-auto overflow-hidden">
-          <motion.div style={{ y }} className="absolute inset-0 w-full h-[130%] -top-[15%]">
-            <AnimatePresence mode="popLayout">
-              <motion.img
-                key={currentImageIndex}
-                src={HERO_IMAGES[currentImageIndex]}
-                alt="Architectural Showcase"
-                className="absolute inset-0 w-full h-full object-cover"
-                initial={{ opacity: 0, scale: 1.05 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 1.5, ease: "easeInOut" }}
-                referrerPolicy="no-referrer"
-              />
-            </AnimatePresence>
-          </motion.div>
-          <div className="absolute inset-0 bg-charcoal/10 mix-blend-multiply pointer-events-none"></div>
-          
-          {/* Vertical Text Accent */}
-          <div className="absolute right-8 top-1/2 -translate-y-1/2 vertical-text text-xs font-mono uppercase tracking-[0.3em] text-concrete/80 mix-blend-difference z-20 pointer-events-none">
-            Est. 2024 — Nairobi, Kenya
-          </div>
-        </div>
       </section>
 
-      {/* Section 2: Expertise - Elegant Grid */}
+      {/* Section 2: Expertise - Brutalist Grid */}
       <motion.section 
         id="expertise" 
         className="py-24 md:py-32 px-4 md:px-8 max-w-7xl mx-auto"
@@ -211,26 +183,26 @@ export default function Home() {
         viewport={{ once: true, margin: "-100px" }}
         variants={staggerContainer}
       >
-        <motion.div variants={fadeInUp} className="mb-20 text-center">
-          <h2 className="font-display text-4xl md:text-5xl font-light text-charcoal dark:text-concrete mb-4 transition-colors duration-500">Our <span className="italic">Expertise</span></h2>
-          <div className="w-12 h-px bg-bronze mx-auto"></div>
+        <motion.div variants={fadeInUp} className="mb-16 border-b border-charcoal dark:border-concrete pb-8">
+          <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete transition-colors duration-500">Core Capabilities</h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-0 border-l border-t border-charcoal dark:border-concrete">
           {[
             { title: "Architectural Drafting", icon: Box, tags: ['ArchiCAD', 'Revit', 'AutoCAD'] },
             { title: "Urban & Regional Planning", icon: Building2, tags: ['Master Planning', 'Zoning'] },
             { title: "Spatial Analysis", icon: Map, tags: ['QGIS', 'Geodatabase Design'] },
-            { title: "Construction Management", icon: HardHat, tags: ['Site Supervision', 'Cost Control'] }
+            { title: "Construction Management", icon: HardHat, tags: ['Site Supervision', 'Cost Control'] },
+            { title: "Project Management", icon: ClipboardList, tags: ['Agile', 'Scheduling', 'Quality Assurance'] }
           ].map((item, idx) => (
-            <motion.div key={idx} variants={fadeInUp} className="group flex flex-col items-center text-center">
-              <div className="w-20 h-20 rounded-full border border-charcoal/10 dark:border-concrete/10 flex items-center justify-center mb-8 group-hover:border-bronze group-hover:bg-bronze/5 transition-all duration-500">
-                <item.icon size={28} className="text-charcoal/50 dark:text-concrete/50 group-hover:text-bronze dark:group-hover:text-bronze transition-colors duration-500" />
+            <motion.div key={idx} variants={fadeInUp} className="group flex flex-col p-8 border-r border-b border-charcoal dark:border-concrete hover:bg-charcoal hover:text-concrete dark:hover:bg-concrete dark:hover:text-charcoal transition-colors duration-300">
+              <div className="mb-8 text-bronze">
+                <item.icon size={32} strokeWidth={1.5} />
               </div>
-              <h3 className="font-display text-2xl font-medium mb-4 text-charcoal dark:text-concrete group-hover:text-bronze dark:group-hover:text-bronze transition-colors duration-300">{item.title}</h3>
-              <div className="flex flex-wrap justify-center gap-2 mt-auto">
-                {item.tags.map(tag => (
-                  <span key={tag} className="text-[10px] font-mono uppercase tracking-widest text-charcoal/50 dark:text-concrete/50 transition-colors duration-500">
+              <h3 className="font-display text-xl font-bold uppercase tracking-tight mb-4">{item.title}</h3>
+              <div className="flex flex-wrap gap-2 mt-auto">
+                {item.tags.map((tag, i) => (
+                  <span key={i} className="text-[10px] font-mono uppercase tracking-widest border border-current px-2 py-1">
                     {tag}
                   </span>
                 ))}
@@ -242,33 +214,70 @@ export default function Home() {
 
       {/* Section 2.5: Blueprint to Reality */}
       <motion.section 
-        className="py-24 md:py-32 px-4 md:px-8 max-w-7xl mx-auto border-t border-charcoal/10 dark:border-concrete/10 transition-colors duration-500"
+        className="py-24 md:py-32 px-4 md:px-8 max-w-7xl mx-auto border-t border-charcoal dark:border-concrete transition-colors duration-500"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={staggerContainer}
       >
-        <motion.div variants={fadeInUp} className="mb-16 text-center max-w-3xl mx-auto">
-          <p className="text-bronze tracking-[0.2em] text-xs font-bold uppercase mb-4">The Process</p>
-          <h2 className="font-display text-4xl md:text-5xl font-light text-charcoal dark:text-concrete mb-6 transition-colors duration-500">
-            Blueprint to <span className="italic">Reality</span>
+        <motion.div variants={fadeInUp} className="mb-16 max-w-3xl">
+          <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4">The Process</p>
+          <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete mb-6 transition-colors duration-500">
+            Blueprint to Reality
           </h2>
-          <p className="text-charcoal/70 dark:text-concrete/70 font-light leading-relaxed transition-colors duration-500">
+          <p className="text-charcoal/70 dark:text-concrete/70 font-mono text-sm leading-relaxed transition-colors duration-500">
             Experience our journey from raw architectural concepts to photorealistic finished environments. Drag the slider to reveal the transformation.
           </p>
         </motion.div>
 
-        <motion.div variants={fadeInUp} className="rounded-xl overflow-hidden shadow-2xl">
+        <motion.div variants={fadeInUp} className="overflow-hidden border border-charcoal dark:border-concrete">
           <BeforeAfterSlider 
-            beforeImage="https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2000&auto=format&fit=crop"
-            afterImage="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2000&auto=format&fit=crop"
-            beforeLabel="Blueprint"
-            afterLabel="Reality"
+            beforeImage="https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=2000&auto=format&fit=crop"
+            afterImage="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?q=80&w=2000&auto=format&fit=crop"
+            beforeLabel="Raw Space"
+            afterLabel="Finished Interior"
           />
         </motion.div>
       </motion.section>
 
-      {/* Section 3: Project Archive - Luxury Editorial */}
+      {/* Section 2.75: Global Impact Metrics */}
+      <motion.section 
+        className="py-24 md:py-32 px-4 md:px-8 max-w-7xl mx-auto border-t border-charcoal dark:border-concrete transition-colors duration-500"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={staggerContainer}
+      >
+        <motion.div variants={fadeInUp} className="mb-16">
+          <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4">Firm Impact</p>
+          <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete mb-6 transition-colors duration-500">
+            Global Scale & Metrics
+          </h2>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 border-t border-l border-charcoal/20 dark:border-concrete/20">
+          {[
+            { label: "Total SQM Developed", value: "130,200", suffix: "+" },
+            { label: "Active Sites", value: "04", suffix: "" },
+            { label: "Sustainable Certifications", value: "12", suffix: "" },
+            { label: "Years of Excellence", value: "15", suffix: "+" }
+          ].map((metric, idx) => (
+            <motion.div 
+              key={idx}
+              variants={fadeInUp} 
+              className="border-r border-b border-charcoal/20 dark:border-concrete/20 p-8 flex flex-col justify-between min-h-[200px] hover:bg-charcoal/5 dark:hover:bg-concrete/5 transition-colors"
+            >
+              <p className="text-[10px] font-mono uppercase tracking-widest text-charcoal/60 dark:text-concrete/60 mb-8">{metric.label}</p>
+              <div className="flex items-baseline gap-1">
+                <span className="font-display text-6xl font-bold text-charcoal dark:text-concrete tracking-tighter">{metric.value}</span>
+                <span className="font-display text-3xl font-bold text-bronze">{metric.suffix}</span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.section>
+
+      {/* Section 3: Project Archive - Brutalist Grid */}
       <motion.section 
         id="research" 
         className="bg-charcoal dark:bg-[#111111] text-concrete py-24 md:py-32 transition-colors duration-500"
@@ -278,39 +287,39 @@ export default function Home() {
         variants={staggerContainer}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8 border-b border-concrete/20 pb-8">
             <motion.div variants={fadeInUp} className="max-w-2xl">
-              <p className="text-bronze tracking-[0.2em] text-xs font-bold uppercase mb-4">Selected Works</p>
-              <h2 className="font-display text-5xl md:text-6xl font-light">Project & <span className="italic">Research</span> Archive</h2>
+              <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4">Selected Works</p>
+              <h2 className="font-display text-5xl md:text-6xl font-bold uppercase tracking-tight">Project & Research Archive</h2>
             </motion.div>
             <motion.div variants={fadeInUp}>
-              <Link to="/portfolio" className="inline-flex items-center gap-4 text-xs font-mono uppercase tracking-widest hover:text-bronze transition-colors group">
+              <Link to="/portfolio" className="inline-flex items-center gap-4 text-xs font-mono uppercase tracking-widest hover:text-bronze transition-colors group border border-concrete px-6 py-3">
                 View All Projects
                 <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
               </Link>
             </motion.div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border-l border-t border-concrete/20">
             {[
               { title: "Ahero Flood Mitigation", category: "Topographical drainage analysis", img: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=800&auto=format&fit=crop" },
               { title: "Maseno Environmental", category: "Land-use mapping", img: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=800&auto=format&fit=crop" },
               { title: "Public Parks Network", category: "GIS Feature class mapping", img: "https://images.unsplash.com/photo-1505159940484-eb2b9f2588e2?q=80&w=800&auto=format&fit=crop" }
             ].map((project, idx) => (
-              <Link to="/portfolio" key={idx} className="group cursor-pointer block">
-                <motion.div variants={fadeInUp} className="flex flex-col">
-                  <div className="aspect-[3/4] relative overflow-hidden mb-6">
+              <Link to="/portfolio" key={idx} className="group cursor-pointer block border-r border-b border-concrete/20 p-8 hover:bg-concrete hover:text-charcoal transition-colors duration-300">
+                <motion.div variants={fadeInUp} className="flex flex-col h-full">
+                  <div className="aspect-[3/4] relative overflow-hidden mb-6 border border-current">
                     <motion.img 
                       whileHover={{ scale: 1.05 }}
                       transition={{ duration: 1.2, ease: "easeOut" }}
                       src={project.img} 
                       alt={project.title} 
-                      className="object-cover w-full h-full opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+                      className="object-cover w-full h-full opacity-80 group-hover:opacity-100 transition-opacity duration-500 grayscale group-hover:grayscale-0"
                       referrerPolicy="no-referrer"
                     />
                   </div>
-                  <h3 className="font-display text-2xl font-medium mb-2 group-hover:text-bronze transition-colors">{project.title}</h3>
-                  <p className="text-xs font-mono text-concrete/50 uppercase tracking-widest">{project.category}</p>
+                  <h3 className="font-display text-2xl font-bold uppercase tracking-tight mb-2">{project.title}</h3>
+                  <p className="text-[10px] font-mono uppercase tracking-widest mt-auto pt-4 border-t border-current/20">{project.category}</p>
                 </motion.div>
               </Link>
             ))}
@@ -318,7 +327,7 @@ export default function Home() {
         </div>
       </motion.section>
 
-      {/* Section 4: Vision & Philosophy - Minimalist Quote Slider */}
+      {/* Section 4: Vision & Philosophy - Stark Quote */}
       <motion.section 
         id="reviews" 
         className="py-24 md:py-32 px-4 md:px-8 max-w-7xl mx-auto"
@@ -327,39 +336,40 @@ export default function Home() {
         viewport={{ once: true, margin: "-100px" }}
         variants={staggerContainer}
       >
-        <motion.div variants={fadeInUp} className="text-center mb-20">
-          <Quote size={40} className="text-bronze/30 mx-auto mb-12" />
-          <h2 className="font-display text-3xl md:text-5xl font-light leading-tight mb-8 text-balance text-charcoal dark:text-concrete transition-colors duration-500">
+        <motion.div variants={fadeInUp} className="text-center mb-20 max-w-4xl mx-auto border border-charcoal dark:border-concrete p-12 md:p-24">
+          <Quote size={40} className="text-bronze mx-auto mb-12" />
+          <h2 className="font-display text-3xl md:text-5xl font-bold uppercase tracking-tight leading-tight mb-12 text-balance text-charcoal dark:text-concrete transition-colors duration-500">
             "First life, then spaces, then buildings – the other way around never works."
           </h2>
-          <p className="text-sm font-bold uppercase tracking-widest text-charcoal dark:text-concrete transition-colors duration-500">Jan Gehl</p>
-          <p className="text-xs font-mono text-charcoal/50 dark:text-concrete/50 uppercase tracking-widest mt-2 transition-colors duration-500">Urban Designer</p>
-          <div className="w-12 h-px bg-bronze mx-auto mt-12"></div>
+          <div className="flex flex-col items-center border-t border-charcoal/20 dark:border-concrete/20 pt-8">
+            <p className="text-sm font-bold uppercase tracking-widest text-charcoal dark:text-concrete transition-colors duration-500">Jan Gehl</p>
+            <p className="text-[10px] font-mono text-charcoal/50 dark:text-concrete/50 uppercase tracking-widest mt-2 transition-colors duration-500">Urban Designer</p>
+          </div>
         </motion.div>
 
         {/* Testimonials Grid */}
         {!loadingTestimonials && testimonials.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 border-l border-t border-charcoal dark:border-concrete">
             {testimonials.map((test) => (
               <motion.div 
                 key={test.id}
                 variants={fadeInUp}
-                className="bg-white dark:bg-charcoal p-8 border border-steel/10 dark:border-steel/40 relative group"
+                className="bg-concrete dark:bg-charcoal p-8 border-r border-b border-charcoal dark:border-concrete relative group"
               >
                 <div className="flex gap-1 mb-6">
                   {[...Array(5)].map((_, i) => (
-                    <span key={i} className={i < test.rating ? 'text-bronze' : 'text-steel/20'}>★</span>
+                    <span key={i} className={i < test.rating ? 'text-bronze' : 'text-charcoal/20 dark:text-concrete/20'}>★</span>
                   ))}
                 </div>
-                <p className="text-charcoal/80 dark:text-concrete/80 font-light italic mb-8 leading-relaxed">
+                <p className="text-charcoal dark:text-concrete font-mono text-sm mb-8 leading-relaxed uppercase">
                   "{test.comment}"
                 </p>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between border-t border-charcoal/20 dark:border-concrete/20 pt-4">
                   <div>
-                    <p className="text-sm font-medium text-charcoal dark:text-concrete">{test.clientName}</p>
-                    <p className="text-[10px] font-mono text-steel uppercase tracking-widest mt-1">{test.projectType}</p>
+                    <p className="text-sm font-bold uppercase text-charcoal dark:text-concrete">{test.clientName}</p>
+                    <p className="text-[10px] font-mono text-charcoal/50 dark:text-concrete/50 uppercase tracking-widest mt-1">{test.projectType}</p>
                   </div>
-                  <CheckCircle size={16} className="text-bronze/40" />
+                  <CheckCircle size={16} className="text-bronze" />
                 </div>
               </motion.div>
             ))}
@@ -367,10 +377,10 @@ export default function Home() {
         )}
       </motion.section>
 
-      {/* Section 5: Booking & Contact - Split Luxury Layout */}
+      {/* Section 5: Booking & Contact - Brutalist Split Layout */}
       <motion.section 
         id="support" 
-        className="border-t border-charcoal/10 dark:border-concrete/10 transition-colors duration-500"
+        className="border-t border-charcoal dark:border-concrete transition-colors duration-500"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
@@ -378,25 +388,25 @@ export default function Home() {
       >
         <div className="grid grid-cols-1 lg:grid-cols-2">
           {/* Left Column: Contact Info */}
-          <motion.div variants={fadeInUp} className="p-12 md:p-24 bg-concrete dark:bg-charcoal flex flex-col justify-center border-b lg:border-b-0 lg:border-r border-charcoal/10 dark:border-concrete/10 transition-colors duration-500">
-            <h2 className="font-display text-5xl md:text-6xl font-light mb-16 text-charcoal dark:text-concrete transition-colors duration-500">
-              Partner <span className="italic">With Us.</span>
+          <motion.div variants={fadeInUp} className="p-12 md:p-24 bg-concrete dark:bg-charcoal flex flex-col justify-center border-b lg:border-b-0 lg:border-r border-charcoal dark:border-concrete transition-colors duration-500">
+            <h2 className="font-display text-5xl md:text-6xl font-bold uppercase tracking-tight mb-16 text-charcoal dark:text-concrete transition-colors duration-500">
+              Partner With Us
             </h2>
             
             <div className="space-y-12">
-              <div>
-                <p className="text-xs font-mono text-charcoal/50 dark:text-concrete/50 uppercase tracking-widest mb-3 transition-colors duration-500">Headquarters</p>
-                <p className="font-display text-2xl text-charcoal dark:text-concrete transition-colors duration-500">Nairobi, Kenya</p>
+              <div className="border-t border-charcoal/20 dark:border-concrete/20 pt-4">
+                <p className="text-[10px] font-mono text-charcoal/50 dark:text-concrete/50 uppercase tracking-widest mb-1 transition-colors duration-500">Headquarters</p>
+                <p className="font-display text-2xl font-bold uppercase text-charcoal dark:text-concrete transition-colors duration-500">Nairobi, Kenya</p>
               </div>
               
-              <div>
-                <p className="text-xs font-mono text-charcoal/50 dark:text-concrete/50 uppercase tracking-widest mb-3 transition-colors duration-500">Direct Line</p>
-                <a href="tel:0715795589" className="font-display text-2xl text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors duration-500">0715 795 589</a>
+              <div className="border-t border-charcoal/20 dark:border-concrete/20 pt-4">
+                <p className="text-[10px] font-mono text-charcoal/50 dark:text-concrete/50 uppercase tracking-widest mb-1 transition-colors duration-500">Direct Line</p>
+                <a href="tel:0715795589" className="font-display text-2xl font-bold uppercase text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors duration-500">0715 795 589</a>
               </div>
               
-              <div>
-                <p className="text-xs font-mono text-charcoal/50 dark:text-concrete/50 uppercase tracking-widest mb-3 transition-colors duration-500">Official Email</p>
-                <a href="mailto:danuthiaandassociates@gmail.com" className="font-display text-2xl text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors duration-500 break-all">danuthiaandassociates@gmail.com</a>
+              <div className="border-t border-charcoal/20 dark:border-concrete/20 pt-4">
+                <p className="text-[10px] font-mono text-charcoal/50 dark:text-concrete/50 uppercase tracking-widest mb-1 transition-colors duration-500">Official Email</p>
+                <a href="mailto:danuthiaandassociates@gmail.com" className="font-display text-2xl font-bold uppercase text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors duration-500 break-all">danuthiaandassociates@gmail.com</a>
               </div>
             </div>
           </motion.div>
@@ -404,25 +414,25 @@ export default function Home() {
           {/* Right Column: Booking Form */}
           <motion.div variants={fadeInUp} id="book" className="p-12 md:p-24 bg-charcoal dark:bg-[#111111] text-concrete flex flex-col justify-center transition-colors duration-500">
             <div className="max-w-md w-full mx-auto">
-              <h3 className="font-display text-4xl font-light mb-12">
-                Consultation <span className="italic">Booking</span>
+              <h3 className="font-display text-4xl font-bold uppercase tracking-tight mb-12">
+                Consultation Booking
               </h3>
               
               {submitSuccess ? (
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-center py-12"
+                  className="text-center py-12 border border-concrete p-8"
                 >
                   <CheckCircle size={48} className="text-bronze mx-auto mb-6" />
-                  <h4 className="font-display text-3xl font-light mb-4">Request Received</h4>
-                  <p className="text-concrete/70 font-light mb-12">
+                  <h4 className="font-display text-3xl font-bold uppercase tracking-tight mb-4">Request Received</h4>
+                  <p className="text-concrete/70 font-mono text-sm mb-12">
                     Thank you. We have received your consultation request and will be in touch shortly to confirm the details.
                   </p>
                   <Magnetic>
                     <button 
                       onClick={() => setSubmitSuccess(false)}
-                      className="text-xs font-mono uppercase tracking-widest text-bronze hover:text-white transition-colors pb-1 border-b border-bronze/30 hover:border-white"
+                      className="text-[10px] font-mono uppercase tracking-widest text-bronze hover:text-white transition-colors pb-1 border-b border-bronze/30 hover:border-white"
                     >
                       Submit Another Request
                     </button>
@@ -431,7 +441,7 @@ export default function Home() {
               ) : (
                 <form className="space-y-10" onSubmit={handleSubmit}>
                   {submitError && (
-                    <div className="text-red-400 text-sm font-mono">
+                    <div className="text-bronze text-[10px] font-mono uppercase border border-bronze p-4">
                       {submitError}
                     </div>
                   )}
@@ -441,12 +451,12 @@ export default function Home() {
                       type="text" 
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg peer placeholder-transparent"
+                      className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg peer placeholder-transparent rounded-none"
                       placeholder="Full Name"
                       id="fullName"
                       required
                     />
-                    <label htmlFor="fullName" className="absolute left-0 -top-5 text-xs font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-xs peer-focus:text-bronze">
+                    <label htmlFor="fullName" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-bronze">
                       Full Name
                     </label>
                   </div>
@@ -455,15 +465,15 @@ export default function Home() {
                     <select 
                       value={projectScale}
                       onChange={(e) => setProjectScale(e.target.value)}
-                      className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg appearance-none cursor-pointer peer"
+                      className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg appearance-none cursor-pointer peer rounded-none"
                       required
                     >
-                      <option value="" disabled className="text-charcoal">Select scale...</option>
-                      <option value="residential" className="text-charcoal">Residential</option>
-                      <option value="commercial" className="text-charcoal">Commercial</option>
-                      <option value="regional" className="text-charcoal">Regional / Master Plan</option>
+                      <option value="" disabled className="text-charcoal bg-concrete">Select scale...</option>
+                      <option value="residential" className="text-charcoal bg-concrete">Residential</option>
+                      <option value="commercial" className="text-charcoal bg-concrete">Commercial</option>
+                      <option value="regional" className="text-charcoal bg-concrete">Regional / Master Plan</option>
                     </select>
-                    <label className="absolute left-0 -top-5 text-xs font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-bronze transition-colors">
+                    <label className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-bronze transition-colors">
                       Project Scale
                     </label>
                   </div>
@@ -472,14 +482,14 @@ export default function Home() {
                     <select 
                       value={contactPreference}
                       onChange={(e) => setContactPreference(e.target.value)}
-                      className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg appearance-none cursor-pointer peer"
+                      className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg appearance-none cursor-pointer peer rounded-none"
                       required
                     >
-                      <option value="" disabled className="text-charcoal">Select preference...</option>
-                      <option value="email" className="text-charcoal">Email</option>
-                      <option value="phone" className="text-charcoal">Phone</option>
+                      <option value="" disabled className="text-charcoal bg-concrete">Select preference...</option>
+                      <option value="email" className="text-charcoal bg-concrete">Email</option>
+                      <option value="phone" className="text-charcoal bg-concrete">Phone</option>
                     </select>
-                    <label className="absolute left-0 -top-5 text-xs font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-bronze transition-colors">
+                    <label className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-bronze transition-colors">
                       Contact Preference
                     </label>
                   </div>
@@ -489,10 +499,10 @@ export default function Home() {
                       type="date" 
                       value={preferredDate}
                       onChange={(e) => setPreferredDate(e.target.value)}
-                      className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full peer"
+                      className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full peer rounded-none"
                       required
                     />
-                    <label className="absolute left-0 -top-5 text-xs font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-bronze transition-colors">
+                    <label className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-bronze transition-colors">
                       Preferred Date
                     </label>
                     <Calendar size={20} className="absolute right-0 top-3 text-concrete/30 pointer-events-none peer-focus:text-bronze transition-colors" />
@@ -502,7 +512,7 @@ export default function Home() {
                     <button 
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full border border-bronze text-bronze py-4 font-mono text-xs uppercase tracking-widest hover:bg-bronze hover:text-charcoal transition-all duration-500 mt-12 flex items-center justify-center gap-4 group disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full border border-bronze text-bronze py-4 font-mono text-[10px] uppercase tracking-widest hover:bg-bronze hover:text-charcoal transition-all duration-500 mt-12 flex items-center justify-center gap-4 group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span>{isSubmitting ? 'Submitting...' : 'Submit Request'}</span>
                       {!isSubmitting && <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />}

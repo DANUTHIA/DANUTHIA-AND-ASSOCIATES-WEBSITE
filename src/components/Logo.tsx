@@ -10,7 +10,7 @@ export default function Logo({ className = "" }: { className?: string }) {
           viewBox="0 0 300 120" 
           fill="none" 
           xmlns="http://www.w3.org/2000/svg" 
-          className="w-full h-full text-charcoal dark:text-concrete transition-colors duration-500"
+          className="w-full h-full transition-colors duration-500"
         >
           {/* Stylized 'D' with Bridge */}
           <path 
@@ -76,7 +76,7 @@ export default function Logo({ className = "" }: { className?: string }) {
       </div>
       
       <div className="flex flex-col items-center md:items-start leading-none mt-2">
-        <span className="font-display font-bold text-xl md:text-2xl tracking-tighter text-charcoal dark:text-concrete transition-colors duration-500">
+        <span className="font-display font-bold text-xl md:text-2xl tracking-tighter transition-colors duration-500">
           DANUTHIA & CO.
         </span>
       </div>

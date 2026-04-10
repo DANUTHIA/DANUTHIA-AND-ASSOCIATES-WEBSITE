@@ -210,7 +210,7 @@ export default function BlueprintAnnotation({ blueprintId, imageUrl, userId, ini
           <h4 className="font-mono text-[10px] uppercase tracking-widest text-steel">Existing Notes</h4>
           <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
             {annotations.length === 0 ? (
-              <p className="text-xs text-steel font-light italic">No annotations yet.</p>
+              <p className="text-xs text-steel font-mono uppercase">No annotations yet.</p>
             ) : (
               annotations.map(ann => (
                 <div key={ann.id} className="p-4 bg-white dark:bg-charcoal border border-steel/10 flex justify-between items-start group">

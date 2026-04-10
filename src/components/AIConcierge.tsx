@@ -118,12 +118,12 @@ export default function AIConcierge() {
 
 **Context:** The user is currently viewing the page at path: "${location.pathname}". Use this context to tailor your assistance. For example, if they are on the portfolio page, they might be asking about past projects. If they are on the services page, they might want to know more about what we offer.
 
-**Core Objective:** Your primary goal is to qualify incoming client leads, educate prospects on our capabilities in architecture, urban planning, and Geographic Information Systems (GIS), and seamlessly route high-value project inquiries to the principal architect.
+**Core Objective:** Your primary goal is to qualify incoming client leads, educate prospects on our capabilities in architecture, urban planning, project management, and Geographic Information Systems (GIS), and seamlessly route high-value project inquiries to the principal architect.
 
 **Tone & Style:** 
 * Maintain a professional, empathetic, yet technically rigorous demeanor. 
 * Use precise industry terminology where appropriate, but ensure it remains accessible to prospective clients.
-* Highlight our deep expertise in sustainable urban planning, regional environmental considerations, and localized spatial analysis (e.g., drawing upon our established methodologies in environmental conservation and flood mitigation strategies when relevant to client inquiries).
+* Highlight our deep expertise in sustainable urban planning, regional environmental considerations, localized spatial analysis, and end-to-end project management.
 
 **Operational Guardrails (CRITICAL):**
 1. **No Binding Estimates:** You are strictly prohibited from providing final cost estimates or binding financial quotes. Always state that comprehensive pricing requires a formal site evaluation and detailed project brief.
@@ -182,7 +182,7 @@ export default function AIConcierge() {
     <>
       {/* Floating Button */}
       <motion.button
-        className="fixed bottom-6 right-6 w-14 h-14 bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal rounded-full flex items-center justify-center shadow-2xl z-[9000] border border-bronze/30 hover:bg-bronze dark:hover:bg-bronze transition-colors duration-300"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal rounded-none flex items-center justify-center shadow-2xl z-[9000] border border-bronze/30 hover:bg-bronze dark:hover:bg-bronze transition-colors duration-300"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(true)}
@@ -227,8 +227,8 @@ export default function AIConcierge() {
                 <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] p-3 text-sm ${
                     msg.role === 'user' 
-                      ? 'bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal rounded-tl-lg rounded-tr-lg rounded-bl-lg' 
-                      : 'bg-steel/10 text-charcoal dark:bg-[#111111] dark:text-concrete border border-steel/20 dark:border-concrete/10 rounded-tr-lg rounded-br-lg rounded-bl-lg'
+                      ? 'bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal rounded-none' 
+                      : 'bg-steel/10 text-charcoal dark:bg-[#111111] dark:text-concrete border border-steel/20 dark:border-concrete/10 rounded-none'
                   }`}>
                     {msg.text}
                   </div>
@@ -236,11 +236,11 @@ export default function AIConcierge() {
               ))}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-steel/10 text-charcoal dark:bg-[#111111] dark:text-concrete border border-steel/20 dark:border-concrete/10 rounded-tr-lg rounded-br-lg rounded-bl-lg p-4 flex gap-1 items-center">
+                  <div className="bg-steel/10 text-charcoal dark:bg-[#111111] dark:text-concrete border border-steel/20 dark:border-concrete/10 rounded-none p-4 flex gap-1 items-center">
                     {[0, 1, 2].map((i) => (
                       <motion.div
                         key={i}
-                        className="w-1.5 h-1.5 bg-bronze rounded-full"
+                        className="w-1.5 h-1.5 bg-bronze rounded-none"
                         animate={{ y: [0, -4, 0] }}
                         transition={{
                           duration: 0.6,

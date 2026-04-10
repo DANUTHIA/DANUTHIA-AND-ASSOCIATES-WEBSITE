@@ -19,7 +19,7 @@ export default function Careers() {
   return (
     <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500">
       {/* Hero Section */}
-      <section className="relative bg-charcoal dark:bg-[#111111] text-concrete p-8 md:p-16 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
+      <section className="relative bg-charcoal dark:bg-[#111111] text-concrete p-8 md:p-16 pt-32 md:pt-40 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.05, scale: 1 }}
@@ -38,7 +38,7 @@ export default function Careers() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-end">
             <div>
               <motion.h1 variants={fadeInUp} className="font-display text-5xl md:text-7xl font-bold leading-[0.9] tracking-tighter mb-8 uppercase">
-                Work With <span className="text-bronze font-light italic">Us.</span>
+                Work With <span className="text-bronze">Us.</span>
               </motion.h1>
             </div>
             <motion.div variants={fadeInUp} className="pb-2">

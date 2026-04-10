@@ -58,7 +58,7 @@ export default function Login() {
         className="max-w-md w-full bg-charcoal dark:bg-[#111111] text-concrete p-10 md:p-16 relative z-10 transition-colors duration-500"
       >
         <div className="flex justify-center mb-10">
-          <div className="w-16 h-16 rounded-full border border-bronze/30 flex items-center justify-center bg-charcoal dark:bg-[#111111] shadow-[0_0_30px_rgba(184,134,11,0.1)] transition-colors duration-500">
+          <div className="w-16 h-16 rounded-none border border-bronze/30 flex items-center justify-center bg-charcoal dark:bg-[#111111] shadow-[0_0_30px_rgba(184,134,11,0.1)] transition-colors duration-500">
             <Lock size={20} className="text-bronze" strokeWidth={1.5} />
           </div>
         </div>

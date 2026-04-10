@@ -19,7 +19,7 @@ export default function Affiliate() {
   return (
     <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500">
       {/* Hero Section */}
-      <section className="relative bg-charcoal dark:bg-[#111111] text-concrete p-8 md:p-16 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
+      <section className="relative bg-charcoal dark:bg-[#111111] text-concrete p-8 md:p-16 pt-32 md:pt-40 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.05, scale: 1 }}
@@ -38,7 +38,7 @@ export default function Affiliate() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-end">
             <div>
               <motion.h1 variants={fadeInUp} className="font-display text-5xl md:text-7xl font-bold leading-[0.9] tracking-tighter mb-8 uppercase">
-                Become an <span className="text-bronze font-light italic">Affiliate.</span>
+                Become an <span className="text-bronze">Affiliate.</span>
               </motion.h1>
             </div>
             <motion.div variants={fadeInUp} className="pb-2">
@@ -54,21 +54,21 @@ export default function Affiliate() {
       <section className="p-8 md:p-16 max-w-7xl mx-auto py-24">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-24">
           <div className="text-center flex flex-col items-center">
-            <div className="w-16 h-16 rounded-full border border-charcoal/10 dark:border-concrete/10 flex items-center justify-center mb-6 bg-bronze/5 text-bronze transition-colors duration-500">
+            <div className="w-16 h-16 rounded-none border border-charcoal/10 dark:border-concrete/10 flex items-center justify-center mb-6 bg-bronze/5 text-bronze transition-colors duration-500">
               <Handshake size={24} />
             </div>
             <h3 className="font-display text-2xl mb-4 text-charcoal dark:text-concrete transition-colors duration-500">Refer Clients</h3>
             <p className="text-charcoal/70 dark:text-concrete/70 font-light text-sm leading-relaxed transition-colors duration-500">Introduce our premier services to your network of developers, investors, and property owners.</p>
           </div>
           <div className="text-center flex flex-col items-center">
-            <div className="w-16 h-16 rounded-full border border-charcoal/10 dark:border-concrete/10 flex items-center justify-center mb-6 bg-bronze/5 text-bronze transition-colors duration-500">
+            <div className="w-16 h-16 rounded-none border border-charcoal/10 dark:border-concrete/10 flex items-center justify-center mb-6 bg-bronze/5 text-bronze transition-colors duration-500">
               <Award size={24} />
             </div>
             <h3 className="font-display text-2xl mb-4 text-charcoal dark:text-concrete transition-colors duration-500">Premium Service</h3>
             <p className="text-charcoal/70 dark:text-concrete/70 font-light text-sm leading-relaxed transition-colors duration-500">We guarantee exceptional architectural delivery, ensuring your referrals receive world-class treatment.</p>
           </div>
           <div className="text-center flex flex-col items-center">
-            <div className="w-16 h-16 rounded-full border border-charcoal/10 dark:border-concrete/10 flex items-center justify-center mb-6 bg-bronze/5 text-bronze transition-colors duration-500">
+            <div className="w-16 h-16 rounded-none border border-charcoal/10 dark:border-concrete/10 flex items-center justify-center mb-6 bg-bronze/5 text-bronze transition-colors duration-500">
               <TrendingUp size={24} />
             </div>
             <h3 className="font-display text-2xl mb-4 text-charcoal dark:text-concrete transition-colors duration-500">Earn Commissions</h3>

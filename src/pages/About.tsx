@@ -27,7 +27,7 @@ export default function About() {
   return (
     <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500">
       {/* Hero Section */}
-      <section className="relative bg-charcoal dark:bg-[#111111] text-concrete p-8 md:p-16 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
+      <section className="relative bg-charcoal dark:bg-[#111111] text-concrete p-8 md:p-16 pt-32 md:pt-40 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.05, scale: 1 }}
@@ -47,7 +47,7 @@ export default function About() {
             <div>
               <motion.h1 variants={fadeInUp} className="font-display text-5xl md:text-7xl font-bold leading-[0.9] tracking-tighter mb-8 uppercase">
                 Rooted in context.<br/>
-                <span className="text-bronze font-light italic">Designing for tomorrow.</span>
+                <span className="text-bronze">Designing for tomorrow.</span>
               </motion.h1>
             </div>
             <motion.div variants={fadeInUp} className="pb-2">
@@ -112,31 +112,38 @@ export default function About() {
               <h3 className="font-display text-3xl font-bold uppercase tracking-tight mb-12 relative z-10">Core Values</h3>
               <ul className="space-y-10 font-mono text-sm uppercase tracking-widest relative z-10">
                 <li className="flex items-start gap-6 group/item">
-                  <span className="text-bronze font-display text-2xl leading-none italic">01</span>
+                  <span className="text-bronze font-display text-2xl leading-none font-bold">01</span>
                   <div>
                     <span className="block font-bold mb-2 text-concrete">Sustainable Development</span>
                     <span className="text-steel text-xs normal-case tracking-normal font-sans leading-relaxed block">Minimizing footprint, maximizing efficiency through intelligent material selection and passive design.</span>
                   </div>
                 </li>
                 <li className="flex items-start gap-6 group/item">
-                  <span className="text-bronze font-display text-2xl leading-none italic">02</span>
+                  <span className="text-bronze font-display text-2xl leading-none font-bold">02</span>
                   <div>
                     <span className="block font-bold mb-2 text-concrete">Data-Driven Planning</span>
                     <span className="text-steel text-xs normal-case tracking-normal font-sans leading-relaxed block">Evidence over intuition. Utilizing advanced spatial analysis to inform every design decision.</span>
                   </div>
                 </li>
                 <li className="flex items-start gap-6 group/item">
-                  <span className="text-bronze font-display text-2xl leading-none italic">03</span>
+                  <span className="text-bronze font-display text-2xl leading-none font-bold">03</span>
                   <div>
                     <span className="block font-bold mb-2 text-concrete">Cultural Context</span>
                     <span className="text-steel text-xs normal-case tracking-normal font-sans leading-relaxed block">Honoring local heritage and climate, creating spaces that resonate with their surroundings.</span>
                   </div>
                 </li>
                 <li className="flex items-start gap-6 group/item">
-                  <span className="text-bronze font-display text-2xl leading-none italic">04</span>
+                  <span className="text-bronze font-display text-2xl leading-none font-bold">04</span>
                   <div>
                     <span className="block font-bold mb-2 text-concrete">Architectural Excellence</span>
                     <span className="text-steel text-xs normal-case tracking-normal font-sans leading-relaxed block">Uncompromising quality in every detail, from conceptual sketches to final construction.</span>
+                  </div>
+                </li>
+                <li className="flex items-start gap-6 group/item">
+                  <span className="text-bronze font-display text-2xl leading-none font-bold">05</span>
+                  <div>
+                    <span className="block font-bold mb-2 text-concrete">Project Management</span>
+                    <span className="text-steel text-xs normal-case tracking-normal font-sans leading-relaxed block">Precision-driven management ensuring every project milestone is met on time and within budget.</span>
                   </div>
                 </li>
               </ul>

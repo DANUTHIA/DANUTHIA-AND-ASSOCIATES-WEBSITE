@@ -1,17 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Montserrat:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Cormorant Garamond", ui-serif, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  --color-concrete: #F5F2ED; /* Warmer, more luxurious off-white */
-  --color-charcoal: #1F1E1C; /* Warmer off-black */
-  --color-bronze: #B8860B; /* Dark goldenrod / brassy bronze */
-  --color-steel: #8C8C8C; /* Neutral medium gray */
+  --color-concrete: #FFFFFF; /* Pure white */
+  --color-charcoal: #000000; /* Pure black */
+  --color-bronze: #FF3300; /* Safety Orange / Brutalist Accent */
+  --color-steel: #888888; /* Neutral medium gray */
 }
 
 html {
