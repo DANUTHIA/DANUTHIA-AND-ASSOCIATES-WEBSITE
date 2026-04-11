@@ -25,7 +25,7 @@ export default function About() {
   const y = useTransform(scrollYProgress, [0, 1], ["-20%", "20%"]);
 
   return (
-    <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500">
+    <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500 bg-blueprint-grid">
       {/* Hero Section */}
       <section className="relative bg-charcoal dark:bg-charcoal text-concrete p-8 md:p-16 pt-32 md:pt-40 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
         <motion.div 
@@ -151,7 +151,78 @@ export default function About() {
           </motion.div>
         </motion.div>
       </section>
+      {/* Core Values Section */}
+      <section className="bg-charcoal text-concrete py-24 md:py-32">
+        <div className="max-w-7xl mx-auto px-8 md:px-16">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
+            <div className="mb-16">
+              <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4">Our Culture</p>
+              <h2 className="font-display text-4xl md:text-6xl font-bold uppercase tracking-tight">Core Values.</h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+              {[
+                { title: "Innovation", desc: "We constantly push the boundaries of what's possible through R&D and computational design." },
+                { title: "Integrity", desc: "Our commitment to ethical practice and structural honesty is unwavering." },
+                { title: "Inclusion", desc: "We design for everyone, ensuring our spaces are accessible and equitable." }
+              ].map((value, idx) => (
+                <motion.div key={idx} variants={fadeInUp} className="border-l border-bronze pl-8">
+                  <h3 className="font-display text-2xl font-bold uppercase mb-4">{value.title}</h3>
+                  <p className="text-concrete/60 font-light leading-relaxed">{value.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Global Network Section */}
+      <section className="p-8 md:p-16 max-w-7xl mx-auto py-24 border-b border-charcoal/10 dark:border-concrete/10">
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={staggerContainer}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center"
+        >
+          <motion.div variants={fadeInUp}>
+            <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4">Our Reach</p>
+            <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete mb-8">A Global Network of Expertise.</h2>
+            <p className="text-charcoal/60 dark:text-concrete/60 mb-12 text-lg leading-relaxed">
+              While rooted in Nairobi, our influence and collaborations span across three continents. We leverage a global network of specialists to bring world-class innovation to local challenges.
+            </p>
+            <div className="grid grid-cols-2 gap-8">
+              <div>
+                <div className="text-4xl font-display font-bold text-bronze mb-2">03</div>
+                <div className="text-xs font-mono uppercase tracking-widest text-charcoal/60 dark:text-concrete/60">Continents</div>
+              </div>
+              <div>
+                <div className="text-4xl font-display font-bold text-bronze mb-2">15+</div>
+                <div className="text-xs font-mono uppercase tracking-widest text-charcoal/60 dark:text-concrete/60">Global Partners</div>
+              </div>
+            </div>
+          </motion.div>
+          <motion.div variants={fadeInUp} className="relative aspect-video bg-charcoal overflow-hidden">
+            <img 
+              src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200&auto=format&fit=crop" 
+              alt="Global Network" 
+              className="w-full h-full object-cover opacity-50 grayscale"
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-full h-full border border-bronze/20 m-8"></div>
+            </div>
+          </motion.div>
+        </motion.div>
+      </section>
+
       {/* Founder Section */}
+
       <section className="bg-charcoal dark:bg-charcoal text-concrete py-24 px-8 md:px-16 transition-colors duration-500">
         <div className="max-w-7xl mx-auto">
           <motion.div 

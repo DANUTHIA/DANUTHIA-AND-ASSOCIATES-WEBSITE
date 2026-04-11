@@ -8,7 +8,7 @@ import Logo from '../components/Logo';
 import Magnetic from '../components/Magnetic';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 
-const HERO_VIDEO = "https://cdn.coverr.co/videos/coverr-architectural-structure-of-a-modern-building-4217/1080p.mp4";
+const HERO_VIDEO = "/input_file_0.mp4";
 
 const fadeInUp: any = {
   hidden: { opacity: 0, y: 40 },
@@ -143,7 +143,7 @@ export default function Home() {
   };
 
   return (
-    <main className="bg-concrete dark:bg-charcoal transition-colors duration-500">
+    <main className="bg-concrete dark:bg-charcoal transition-colors duration-500 bg-blueprint-grid">
       {/* Section 1: Hero - Full Bleed Brutalist */}
       <section ref={heroRef} className="relative h-screen w-full overflow-hidden bg-charcoal">
         <motion.div style={{ y }} className="absolute inset-0 w-full h-[130%] -top-[15%]">
@@ -152,7 +152,7 @@ export default function Home() {
             loop 
             muted 
             playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-60"
+            className="absolute inset-0 w-full h-full object-cover opacity-80"
           >
             <source src={HERO_VIDEO} type="video/mp4" />
           </video>
@@ -283,6 +283,69 @@ export default function Home() {
                 <span className="font-display text-6xl font-bold text-charcoal dark:text-concrete tracking-tighter">{metric.value}</span>
                 <span className="font-display text-3xl font-bold text-bronze">{metric.suffix}</span>
               </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.section>
+
+      {/* Section 2.8: Project Stories (HOK Style) */}
+      <motion.section 
+        className="py-24 md:py-32 px-4 md:px-8 max-w-7xl mx-auto border-t border-charcoal dark:border-concrete transition-colors duration-500"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={staggerContainer}
+      >
+        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+          <motion.div variants={fadeInUp} className="max-w-2xl">
+            <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4">Narratives</p>
+            <h2 className="font-display text-4xl md:text-6xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete">Project<br/>Stories.</h2>
+          </motion.div>
+          <motion.div variants={fadeInUp}>
+            <Link to="/portfolio" className="inline-flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-bronze hover:text-charcoal dark:hover:text-concrete transition-colors group">
+              Explore All Stories <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
+            </Link>
+          </motion.div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          {[
+            {
+              title: "Designing for Resilience in Nairobi's Tech Sector",
+              desc: "How the Nairobi Tech Hub is setting a new standard for sustainable commercial architecture in East Africa.",
+              img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop",
+              category: "Commercial"
+            },
+            {
+              title: "The Future of Transit: Mombasa's Wave Terminals",
+              desc: "Exploring the intersection of aerodynamic engineering and tropical urbanism in our latest infrastructure project.",
+              img: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?q=80&w=1200&auto=format&fit=crop",
+              category: "Infrastructure"
+            }
+          ].map((story, idx) => (
+            <motion.div 
+              key={idx}
+              variants={fadeInUp}
+              className="group cursor-pointer"
+            >
+              <div className="aspect-[16/10] overflow-hidden mb-6 relative">
+                <img 
+                  src={story.img} 
+                  alt={story.title} 
+                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute top-6 left-6 bg-bronze text-charcoal px-3 py-1 text-[10px] font-mono uppercase tracking-widest font-bold">
+                  {story.category}
+                </div>
+              </div>
+              <h3 className="font-display text-2xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete group-hover:text-bronze transition-colors mb-4">
+                {story.title}
+              </h3>
+              <p className="text-charcoal/60 dark:text-concrete/60 font-mono text-xs leading-relaxed mb-6">
+                {story.desc}
+              </p>
+              <div className="h-[1px] w-0 group-hover:w-full bg-bronze transition-all duration-700"></div>
             </motion.div>
           ))}
         </div>

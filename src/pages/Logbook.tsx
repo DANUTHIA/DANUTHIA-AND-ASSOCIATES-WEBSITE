@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { FileText, Terminal, ArrowRight, X } from 'lucide-react';
+import { FileText, Terminal, ArrowRight, X, Search, Filter, ArrowUpDown, ChevronDown } from 'lucide-react';
 
 const fadeInUp: any = {
   hidden: { opacity: 0, y: 40 },
@@ -70,9 +70,49 @@ const logs = [
 
 export default function Logbook() {
   const [selectedLog, setSelectedLog] = useState<typeof logs[0] | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [sortConfig, setSortConfig] = useState<{ key: keyof typeof logs[0]; direction: 'asc' | 'desc' } | null>({ key: 'date', direction: 'desc' });
+
+  const categories = ['ALL', ...Array.from(new Set(logs.map(log => log.category)))];
+  const statuses = ['ALL', ...Array.from(new Set(logs.map(log => log.status)))];
+
+  const handleSort = (key: keyof typeof logs[0]) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const filteredAndSortedLogs = useMemo(() => {
+    let result = logs.filter(log => {
+      const matchesSearch = log.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           log.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           log.id.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = categoryFilter === 'ALL' || log.category === categoryFilter;
+      const matchesStatus = statusFilter === 'ALL' || log.status === statusFilter;
+      return matchesSearch && matchesCategory && matchesStatus;
+    });
+
+    if (sortConfig) {
+      result.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    return result;
+  }, [searchQuery, categoryFilter, statusFilter, sortConfig]);
 
   return (
-    <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500 pt-32 pb-24">
+    <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500 pt-32 pb-24 bg-blueprint-grid">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <motion.div 
           initial="hidden"
@@ -92,7 +132,50 @@ export default function Logbook() {
             </div>
             <div className="text-charcoal/60 dark:text-concrete/60 font-mono text-xs uppercase tracking-widest text-right">
               <p>Total Entries: {logs.length}</p>
+              <p>Filtered: {filteredAndSortedLogs.length}</p>
               <p>Status: Online</p>
+            </div>
+          </motion.div>
+
+          {/* Filters & Search */}
+          <motion.div variants={fadeInUp} className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="md:col-span-2 relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/30 dark:text-concrete/30 group-focus-within:text-bronze transition-colors" size={18} />
+              <input 
+                type="text" 
+                placeholder="Search by ID, Title, or Author..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-charcoal/10 dark:border-concrete/10 py-4 pl-12 pr-4 focus:outline-none focus:border-bronze transition-all font-mono text-xs uppercase tracking-widest text-charcoal dark:text-concrete rounded-none"
+              />
+            </div>
+            
+            <div className="relative">
+              <select 
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-charcoal/10 dark:border-concrete/10 py-4 px-4 focus:outline-none focus:border-bronze transition-all font-mono text-xs uppercase tracking-widest text-charcoal dark:text-concrete rounded-none appearance-none cursor-pointer"
+              >
+                {categories.map(cat => (
+                  <option key={cat} value={cat} className="bg-concrete dark:bg-charcoal">{cat}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal/30 dark:text-concrete/30 pointer-events-none" size={16} />
+              <label className="absolute -top-2 left-4 bg-concrete dark:bg-charcoal px-2 text-[8px] font-mono text-bronze uppercase tracking-widest">Category</label>
+            </div>
+
+            <div className="relative">
+              <select 
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-charcoal/10 dark:border-concrete/10 py-4 px-4 focus:outline-none focus:border-bronze transition-all font-mono text-xs uppercase tracking-widest text-charcoal dark:text-concrete rounded-none appearance-none cursor-pointer"
+              >
+                {statuses.map(status => (
+                  <option key={status} value={status} className="bg-concrete dark:bg-charcoal">{status}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal/30 dark:text-concrete/30 pointer-events-none" size={16} />
+              <label className="absolute -top-2 left-4 bg-concrete dark:bg-charcoal px-2 text-[8px] font-mono text-bronze uppercase tracking-widest">Status</label>
             </div>
           </motion.div>
 
@@ -100,44 +183,58 @@ export default function Logbook() {
             <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
                 <tr className="border-b border-charcoal/20 dark:border-concrete/20 text-[10px] font-mono text-bronze uppercase tracking-widest">
-                  <th className="py-4 px-4 font-normal">Doc_ID</th>
-                  <th className="py-4 px-4 font-normal">Date</th>
+                  <th className="py-4 px-4 font-normal cursor-pointer hover:text-charcoal dark:hover:text-concrete transition-colors" onClick={() => handleSort('id')}>
+                    <div className="flex items-center gap-2">Doc_ID <ArrowUpDown size={10} /></div>
+                  </th>
+                  <th className="py-4 px-4 font-normal cursor-pointer hover:text-charcoal dark:hover:text-concrete transition-colors" onClick={() => handleSort('date')}>
+                    <div className="flex items-center gap-2">Date <ArrowUpDown size={10} /></div>
+                  </th>
                   <th className="py-4 px-4 font-normal">Category</th>
-                  <th className="py-4 px-4 font-normal">Title</th>
+                  <th className="py-4 px-4 font-normal cursor-pointer hover:text-charcoal dark:hover:text-concrete transition-colors" onClick={() => handleSort('title')}>
+                    <div className="flex items-center gap-2">Title <ArrowUpDown size={10} /></div>
+                  </th>
                   <th className="py-4 px-4 font-normal">Author</th>
                   <th className="py-4 px-4 font-normal text-right">Status</th>
                 </tr>
               </thead>
               <tbody className="text-sm font-mono text-charcoal dark:text-concrete">
-                {logs.map((log) => (
-                  <tr 
-                    key={log.id} 
-                    onClick={() => setSelectedLog(log)}
-                    className="border-b border-charcoal/10 dark:border-concrete/10 hover:bg-charcoal/5 dark:hover:bg-concrete/5 transition-colors cursor-pointer group"
-                  >
-                    <td className="py-6 px-4 text-bronze">{log.id}</td>
-                    <td className="py-6 px-4 opacity-70">{log.date}</td>
-                    <td className="py-6 px-4">
-                      <span className="border border-charcoal/20 dark:border-concrete/20 px-2 py-1 text-[10px] tracking-widest">
-                        {log.category}
-                      </span>
-                    </td>
-                    <td className="py-6 px-4 font-bold uppercase tracking-tight group-hover:text-bronze transition-colors flex items-center gap-3">
-                      <FileText size={14} className="opacity-50" />
-                      {log.title}
-                    </td>
-                    <td className="py-6 px-4 opacity-70">{log.author}</td>
-                    <td className="py-6 px-4 text-right">
-                      <span className={`text-[10px] tracking-widest px-2 py-1 ${
-                        log.status === 'PUBLISHED' ? 'bg-bronze/20 text-bronze' : 
-                        log.status === 'ARCHIVED' ? 'bg-charcoal/20 dark:bg-concrete/20 text-charcoal dark:text-concrete' : 
-                        'border border-bronze text-bronze'
-                      }`}>
-                        {log.status}
-                      </span>
+                {filteredAndSortedLogs.length > 0 ? (
+                  filteredAndSortedLogs.map((log) => (
+                    <tr 
+                      key={log.id} 
+                      onClick={() => setSelectedLog(log)}
+                      className="border-b border-charcoal/10 dark:border-concrete/10 hover:bg-charcoal/5 dark:hover:bg-concrete/5 transition-colors cursor-pointer group"
+                    >
+                      <td className="py-6 px-4 text-bronze">{log.id}</td>
+                      <td className="py-6 px-4 opacity-70">{log.date}</td>
+                      <td className="py-6 px-4">
+                        <span className="border border-charcoal/20 dark:border-concrete/20 px-2 py-1 text-[10px] tracking-widest">
+                          {log.category}
+                        </span>
+                      </td>
+                      <td className="py-6 px-4 font-bold uppercase tracking-tight group-hover:text-bronze transition-colors flex items-center gap-3">
+                        <FileText size={14} className="opacity-50" />
+                        {log.title}
+                      </td>
+                      <td className="py-6 px-4 opacity-70">{log.author}</td>
+                      <td className="py-6 px-4 text-right">
+                        <span className={`text-[10px] tracking-widest px-2 py-1 ${
+                          log.status === 'PUBLISHED' ? 'bg-bronze/20 text-bronze' : 
+                          log.status === 'ARCHIVED' ? 'bg-charcoal/20 dark:bg-concrete/20 text-charcoal dark:text-concrete' : 
+                          'border border-bronze text-bronze'
+                        }`}>
+                          {log.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="py-24 text-center text-charcoal/30 dark:text-concrete/30 uppercase tracking-[0.2em]">
+                      No entries found matching your criteria
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </motion.div>

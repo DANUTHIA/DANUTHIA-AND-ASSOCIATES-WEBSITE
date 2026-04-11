@@ -84,6 +84,7 @@ export default function Layout() {
             <Magnetic><NavLink to="/" className={navLinkClass}>Home</NavLink></Magnetic>
             <Magnetic><NavLink to="/services" className={navLinkClass}>Services</NavLink></Magnetic>
             <Magnetic><NavLink to="/portfolio" className={navLinkClass}>Portfolio</NavLink></Magnetic>
+            <Magnetic><NavLink to="/sustainability" className={navLinkClass}>Sustainability</NavLink></Magnetic>
             <Magnetic><NavLink to="/about" className={navLinkClass}>About</NavLink></Magnetic>
             <Magnetic><NavLink to="/logbook" className={navLinkClass}>Logbook</NavLink></Magnetic>
             <Magnetic>
@@ -125,6 +126,7 @@ export default function Layout() {
               <Link to="/" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Home</Link>
               <Link to="/services" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Services</Link>
               <Link to="/portfolio" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Portfolio</Link>
+              <Link to="/sustainability" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Sustainability</Link>
               <Link to="/about" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>About</Link>
               <Link to="/logbook" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Logbook</Link>
               <Link to="/portal" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Client Portal</Link>

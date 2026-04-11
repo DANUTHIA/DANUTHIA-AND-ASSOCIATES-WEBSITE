@@ -94,8 +94,8 @@ const projects = [
   },
   { 
     id: 4,
-    title: "Mombasa Transit Center", 
-    category: "Commercial", 
+    title: "Mombasa Transit Terminal", 
+    category: "Aviation & Transportation", 
     img: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?q=80&w=800&auto=format&fit=crop",
     diagram: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop",
     images: [
@@ -121,57 +121,57 @@ const projects = [
   },
   { 
     id: 5,
-    title: "Serene Heights Apartments", 
-    category: "Residential", 
-    img: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=800&auto=format&fit=crop",
+    title: "Kisumu Medical Center", 
+    category: "Healthcare", 
+    img: "https://images.unsplash.com/photo-1586773860418-d372a676f045?q=80&w=800&auto=format&fit=crop",
     diagram: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop",
     images: [
-      "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1460317442991-0ec209397118?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1503387837-b154ad5074bc?q=80&w=800&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1586773860418-d372a676f045?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1516549655169-df83a0774514?q=80&w=800&auto=format&fit=crop"
     ],
-    description: "A high-density residential development that prioritizes structural longevity and community wellbeing. The project integrates pre-cast concrete technology for rapid, high-quality construction and features extensive greywater recycling systems.",
+    description: "A state-of-the-art regional hospital focused on patient-centered care and operational efficiency. The design integrates healing gardens and maximizes natural light to improve patient outcomes and staff well-being.",
     sustainablePrinciples: [
-      "Community rooftop gardens",
-      "Greywater recycling",
-      "Passive solar heating",
-      "Permeable paving"
+      "Healing gardens & biophilia",
+      "High-efficiency HVAC systems",
+      "Medical waste management",
+      "Solar thermal water heating"
     ],
-    client: "Skyline Developers",
+    client: "County Government of Kisumu",
     year: "2025",
-    area: "22,000 sqm",
-    location: "Kilimani, Nairobi",
+    area: "25,000 sqm",
+    location: "Kisumu, Kenya",
     status: "Under Construction",
     lifecyclePhase: 4,
-    siteData: { wind: "NE 12km/h", solar: "High Exposure", rainfall: "900mm/yr" },
-    collaborators: "Precast Solutions Ltd"
+    siteData: { wind: "W 12km/h", solar: "High", rainfall: "1100mm/yr" },
+    collaborators: "GE Healthcare, Perkins&Will"
   },
   { 
     id: 6,
-    title: "Great Rift Valley Masterplan", 
-    category: "Urban Planning", 
-    img: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=800&auto=format&fit=crop",
+    title: "Nairobi Science & Tech Park", 
+    category: "Science & Technology", 
+    img: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=800&auto=format&fit=crop",
     diagram: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop",
     images: [
-      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1444464666168-49d633b867ad?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1507413245164-6160d8298b31?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=800&auto=format&fit=crop"
     ],
-    description: "A visionary regional planning initiative balancing industrial growth with ecological preservation. This project involves the strategic zoning of 50,000 hectares through advanced GIS mapping and sustainable land-use policies.",
+    description: "A collaborative research environment designed to accelerate innovation in biotechnology and renewable energy. The facility features flexible lab spaces, advanced filtration systems, and a high-performance envelope.",
     sustainablePrinciples: [
-      "Wildlife corridor protection",
-      "Renewable energy zoning",
-      "Eco-tourism infrastructure",
-      "Sustainable land management"
+      "Advanced air filtration",
+      "Flexible modular labs",
+      "Smart energy monitoring",
+      "Water reclamation"
     ],
-    client: "Regional Development Authority",
+    client: "Konza Technopolis",
     year: "2026",
-    area: "50,000 ha",
-    location: "Rift Valley, Kenya",
-    status: "Concept",
-    lifecyclePhase: 1,
-    siteData: { wind: "Variable", solar: "High Exposure", rainfall: "600mm/yr" },
-    collaborators: "UN-Habitat, KWS"
+    area: "35,000 sqm",
+    location: "Machakos, Kenya",
+    status: "Design Phase",
+    lifecyclePhase: 2,
+    siteData: { wind: "NE 15km/h", solar: "High", rainfall: "800mm/yr" },
+    collaborators: "Arup, HDR"
   },
   { 
     id: 7,
@@ -257,7 +257,7 @@ export default function Portfolio() {
   };
 
   return (
-    <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500">
+    <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500 bg-blueprint-grid">
       {/* Hero Section */}
       <section className="relative h-[70vh] w-full overflow-hidden bg-charcoal">
         <AnimatePresence mode="popLayout">

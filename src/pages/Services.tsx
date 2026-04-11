@@ -196,7 +196,52 @@ export default function Services() {
         </motion.div>
       </section>
 
+      {/* Markets Section */}
+      <section className="p-8 md:p-16 max-w-7xl mx-auto py-24 border-t border-charcoal/10 dark:border-concrete/10">
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={staggerContainer}
+        >
+          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+            <motion.div variants={fadeInUp} className="max-w-2xl">
+              <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4">Our Reach</p>
+              <h2 className="font-display text-4xl md:text-6xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete">Markets we<br/>transform.</h2>
+            </motion.div>
+            <motion.p variants={fadeInUp} className="text-charcoal/60 dark:text-concrete/60 font-mono text-xs uppercase tracking-widest max-w-xs text-right">
+              Specialized expertise across diverse sectors to deliver site-specific excellence.
+            </motion.p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-charcoal/10 dark:bg-concrete/10 border border-charcoal/10 dark:bg-concrete/10">
+            {[
+              { title: "Aviation & Transportation", icon: "✈️" },
+              { title: "Healthcare", icon: "🏥" },
+              { title: "Science & Technology", icon: "🔬" },
+              { title: "Commercial & Mixed-Use", icon: "🏢" },
+              { title: "Residential & Hospitality", icon: "🏠" },
+              { title: "Civic & Cultural", icon: "🏛️" },
+              { title: "Education", icon: "🎓" },
+              { title: "Urban Planning", icon: "🏙️" }
+            ].map((market, idx) => (
+              <motion.div 
+                key={idx}
+                variants={fadeInUp}
+                className="bg-concrete dark:bg-charcoal p-10 group hover:bg-bronze transition-all duration-500 cursor-default"
+              >
+                <div className="text-3xl mb-6 grayscale group-hover:grayscale-0 transition-all">{market.icon}</div>
+                <h3 className="font-display text-xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete group-hover:text-charcoal transition-colors">
+                  {market.title}
+                </h3>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
       {/* R&D / Technical Capabilities Section */}
+
       <section className="bg-charcoal dark:bg-charcoal text-concrete py-24 md:py-32 transition-colors duration-500 border-t border-concrete/20">
         <div className="max-w-7xl mx-auto px-8 md:px-16">
           <motion.div 
