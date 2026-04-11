@@ -34,6 +34,8 @@ const projects = [
     area: "45,000 sqm",
     location: "Nairobi, Kenya",
     status: "Under Construction",
+    lifecyclePhase: 5,
+    siteData: { wind: "NE 14km/h", solar: "High Exposure", rainfall: "850mm/yr" },
     collaborators: "Arup, Buro Happold"
   },
   { 
@@ -59,6 +61,8 @@ const projects = [
     area: "1,200 sqm",
     location: "Karen, Nairobi",
     status: "Completed",
+    lifecyclePhase: 5,
+    siteData: { wind: "E 10km/h", solar: "Moderate", rainfall: "1050mm/yr" },
     collaborators: "Studio Studio, L&D Landscapes"
   },
   { 
@@ -84,6 +88,8 @@ const projects = [
     area: "800 sqm",
     location: "Westlands, Nairobi",
     status: "Completed",
+    lifecyclePhase: 5,
+    siteData: { wind: "N/A (Interior)", solar: "Optimized West", rainfall: "N/A" },
     collaborators: "Herman Miller, Philips Lighting"
   },
   { 
@@ -109,6 +115,8 @@ const projects = [
     area: "12,000 sqm",
     location: "Mombasa, Kenya",
     status: "Completed",
+    lifecyclePhase: 5,
+    siteData: { wind: "SE 22km/h", solar: "Extreme", rainfall: "1200mm/yr" },
     collaborators: "Mott MacDonald, KURA"
   },
   { 
@@ -134,6 +142,8 @@ const projects = [
     area: "22,000 sqm",
     location: "Kilimani, Nairobi",
     status: "Under Construction",
+    lifecyclePhase: 4,
+    siteData: { wind: "NE 12km/h", solar: "High Exposure", rainfall: "900mm/yr" },
     collaborators: "Precast Solutions Ltd"
   },
   { 
@@ -159,6 +169,8 @@ const projects = [
     area: "50,000 ha",
     location: "Rift Valley, Kenya",
     status: "Concept",
+    lifecyclePhase: 1,
+    siteData: { wind: "Variable", solar: "High Exposure", rainfall: "600mm/yr" },
     collaborators: "UN-Habitat, KWS"
   },
   { 
@@ -184,6 +196,8 @@ const projects = [
     area: "400m span",
     location: "Tana River County",
     status: "Completed",
+    lifecyclePhase: 5,
+    siteData: { wind: "E 18km/h", solar: "High Exposure", rainfall: "400mm/yr" },
     collaborators: "COWI, KeNHA"
   }
 ];
@@ -357,8 +371,9 @@ export default function Portfolio() {
                       referrerPolicy="no-referrer"
                     />
                     <div className="absolute inset-0 border border-steel/20 m-4 pointer-events-none group-hover:border-bronze/50 transition-colors duration-700"></div>
-                    <div className="absolute bottom-6 right-6 bg-charcoal/90 p-4 text-concrete opacity-0 group-hover:opacity-100 transition-opacity duration-500 backdrop-blur-sm border border-steel/30 rounded-none">
-                      <Maximize2 size={20} />
+                    <div className="absolute bottom-6 right-6 bg-charcoal/90 px-6 py-4 text-concrete opacity-0 group-hover:opacity-100 transition-opacity duration-500 backdrop-blur-sm border border-steel/30 rounded-none flex items-center gap-3">
+                      <span className="text-[10px] font-mono uppercase tracking-widest font-bold">Learn more</span>
+                      <ArrowRight size={16} />
                     </div>
                   </div>
                   <div className="flex flex-col items-start">
@@ -440,7 +455,7 @@ export default function Portfolio() {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="w-full h-[60vh] bg-[#111111] relative border border-bronze/30 overflow-hidden flex items-center justify-center mt-8"
+            className="w-full h-[60vh] bg-charcoal relative border border-bronze/30 overflow-hidden flex items-center justify-center mt-8"
           >
             {/* GIS Grid Background */}
             <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ 
@@ -543,7 +558,7 @@ export default function Portfolio() {
               className="bg-concrete dark:bg-charcoal w-full max-w-7xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col md:flex-row border border-steel/30 dark:border-concrete/20 transition-colors duration-500"
               onClick={e => e.stopPropagation()}
             >
-              <div className="w-full md:w-3/5 h-[50vh] md:h-auto relative bg-charcoal dark:bg-[#111111] group transition-colors duration-500">
+              <div className="w-full md:w-3/5 h-[50vh] md:h-auto relative bg-charcoal dark:bg-charcoal group transition-colors duration-500">
                 <img 
                   src={viewMode === 'photo' ? (selectedProject.images ? selectedProject.images[currentImageIndex] : selectedProject.img) : (selectedProject.diagram || selectedProject.img)} 
                   alt={selectedProject.title} 
@@ -557,19 +572,19 @@ export default function Portfolio() {
                 <div className="absolute top-6 left-6 flex bg-charcoal/50 backdrop-blur-md rounded-none p-1 border border-steel/20 z-30">
                   <button 
                     onClick={() => setViewMode('photo')}
-                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${viewMode === 'photo' ? 'bg-bronze text-white' : 'text-concrete hover:text-bronze'}`}
+                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${viewMode === 'photo' ? 'bg-bronze text-concrete' : 'text-concrete hover:text-bronze'}`}
                   >
                     Photo
                   </button>
                   <button 
                     onClick={() => setViewMode('diagram')}
-                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${viewMode === 'diagram' ? 'bg-bronze text-white' : 'text-concrete hover:text-bronze'}`}
+                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${viewMode === 'diagram' ? 'bg-bronze text-concrete' : 'text-concrete hover:text-bronze'}`}
                   >
                     Diagram
                   </button>
                   <button 
                     onClick={() => setShowTechnicalSpecs(!showTechnicalSpecs)}
-                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${showTechnicalSpecs ? 'bg-bronze text-white' : 'text-concrete hover:text-bronze'}`}
+                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${showTechnicalSpecs ? 'bg-bronze text-concrete' : 'text-concrete hover:text-bronze'}`}
                   >
                     <Layers size={16} />
                   </button>
@@ -652,9 +667,9 @@ export default function Portfolio() {
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: idx * 0.05 }}
                           key={idx} 
-                          className="flex items-center gap-4 p-5 rounded-none bg-white dark:bg-[#111111] border border-steel/10 dark:border-concrete/10 hover:border-bronze/40 hover:bg-bronze/5 transition-all duration-500 group/item shadow-sm hover:shadow-md"
+                          className="flex items-center gap-4 p-5 rounded-none bg-concrete dark:bg-charcoal border border-steel/10 dark:border-concrete/10 hover:border-bronze/40 hover:bg-bronze/5 transition-all duration-500 group/item shadow-sm hover:shadow-md"
                         >
-                          <div className="w-12 h-12 rounded-none bg-bronze/10 flex items-center justify-center text-bronze group-hover/item:bg-bronze group-hover/item:text-white transition-all duration-500 flex-shrink-0 shadow-inner">
+                          <div className="w-12 h-12 rounded-none bg-bronze/10 flex items-center justify-center text-bronze group-hover/item:bg-bronze group-hover/item:text-concrete transition-all duration-500 flex-shrink-0 shadow-inner">
                             {getPrincipleIcon(principle)}
                           </div>
                           <div className="flex flex-col">
@@ -694,6 +709,60 @@ export default function Portfolio() {
                   </div>
                 )}
                 
+                {selectedProject.siteData && (
+                  <div className="mb-12">
+                    <p className="text-[10px] font-mono text-steel dark:text-concrete/50 uppercase tracking-[0.2em] flex items-center gap-2 transition-colors duration-500 mb-6">
+                      <span className="w-8 h-px bg-bronze/50"></span>
+                      Climatic & Site Analysis
+                    </p>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="bg-charcoal/5 dark:bg-concrete/5 p-4 border border-steel/10 dark:border-concrete/10">
+                        <Wind className="text-bronze mb-2" size={16} />
+                        <p className="text-[9px] font-mono uppercase tracking-widest text-steel dark:text-concrete/50 mb-1">Prevailing Wind</p>
+                        <p className="font-bold text-xs text-charcoal dark:text-concrete">{selectedProject.siteData.wind}</p>
+                      </div>
+                      <div className="bg-charcoal/5 dark:bg-concrete/5 p-4 border border-steel/10 dark:border-concrete/10">
+                        <Sun className="text-bronze mb-2" size={16} />
+                        <p className="text-[9px] font-mono uppercase tracking-widest text-steel dark:text-concrete/50 mb-1">Solar Orientation</p>
+                        <p className="font-bold text-xs text-charcoal dark:text-concrete">{selectedProject.siteData.solar}</p>
+                      </div>
+                      <div className="bg-charcoal/5 dark:bg-concrete/5 p-4 border border-steel/10 dark:border-concrete/10">
+                        <Droplets className="text-bronze mb-2" size={16} />
+                        <p className="text-[9px] font-mono uppercase tracking-widest text-steel dark:text-concrete/50 mb-1">Annual Rainfall</p>
+                        <p className="font-bold text-xs text-charcoal dark:text-concrete">{selectedProject.siteData.rainfall}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedProject.lifecyclePhase && (
+                  <div className="mb-12">
+                    <p className="text-[10px] font-mono text-steel dark:text-concrete/50 uppercase tracking-[0.2em] flex items-center gap-2 transition-colors duration-500 mb-6">
+                      <span className="w-8 h-px bg-bronze/50"></span>
+                      Architectural Lifecycle
+                    </p>
+                    <div className="flex justify-between items-end mb-2">
+                      <span className="font-bold text-xs text-charcoal dark:text-concrete uppercase">{selectedProject.status}</span>
+                      <span className="text-[10px] font-mono text-bronze uppercase tracking-widest">Phase {selectedProject.lifecyclePhase}/5</span>
+                    </div>
+                    <div className="flex gap-1 h-2">
+                      {[1, 2, 3, 4, 5].map((phase) => (
+                        <div 
+                          key={phase} 
+                          className={`flex-1 ${phase <= selectedProject.lifecyclePhase! ? 'bg-bronze' : 'bg-steel/20 dark:bg-concrete/20'}`}
+                        ></div>
+                      ))}
+                    </div>
+                    <div className="flex justify-between mt-2 text-[8px] font-mono text-steel dark:text-concrete/50 uppercase tracking-widest">
+                      <span>Concept</span>
+                      <span>SD</span>
+                      <span>DD</span>
+                      <span>CD</span>
+                      <span>Built</span>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="grid grid-cols-2 gap-x-8 gap-y-6 border-t border-steel/30 dark:border-concrete/20 pt-8 mt-auto transition-colors duration-500">
                   <div className="flex flex-col border-b border-steel/10 pb-4">
                     <p className="text-[10px] font-mono text-steel dark:text-concrete/50 uppercase tracking-widest mb-1 transition-colors duration-500">Client</p>
@@ -708,8 +777,8 @@ export default function Portfolio() {
                     <p className="font-bold uppercase text-sm text-charcoal dark:text-concrete transition-colors duration-500">{selectedProject.area}</p>
                   </div>
                   <div className="flex flex-col border-b border-steel/10 pb-4">
-                    <p className="text-[10px] font-mono text-steel dark:text-concrete/50 uppercase tracking-widest mb-1 transition-colors duration-500">Status</p>
-                    <p className="font-bold uppercase text-sm text-charcoal dark:text-concrete transition-colors duration-500">{selectedProject.status}</p>
+                    <p className="text-[10px] font-mono text-steel dark:text-concrete/50 uppercase tracking-widest mb-1 transition-colors duration-500">Typology</p>
+                    <p className="font-bold uppercase text-sm text-charcoal dark:text-concrete transition-colors duration-500">{selectedProject.category}</p>
                   </div>
                   <div className="flex flex-col border-b border-steel/10 pb-4">
                     <p className="text-[10px] font-mono text-steel dark:text-concrete/50 uppercase tracking-widest mb-1 transition-colors duration-500">Collaborators</p>

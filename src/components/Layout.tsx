@@ -67,7 +67,7 @@ export default function Layout() {
     isActive ? "text-bronze transition-colors relative after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[1px] after:bg-bronze" : "hover:text-bronze transition-colors relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[1px] after:bg-bronze hover:after:w-full after:transition-all after:duration-300";
 
   return (
-    <div className="min-h-screen bg-concrete dark:bg-charcoal text-charcoal dark:text-concrete selection:bg-bronze selection:text-white flex flex-col relative font-sans transition-colors duration-500">
+    <div className="min-h-screen bg-concrete dark:bg-charcoal text-charcoal dark:text-concrete selection:bg-bronze selection:text-concrete flex flex-col relative font-sans transition-colors duration-500">
       <Global3DBackground />
       
       {/* Navigation */}
@@ -81,9 +81,16 @@ export default function Layout() {
           
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-[0.2em]">
+            <Magnetic><NavLink to="/" className={navLinkClass}>Home</NavLink></Magnetic>
             <Magnetic><NavLink to="/services" className={navLinkClass}>Services</NavLink></Magnetic>
             <Magnetic><NavLink to="/portfolio" className={navLinkClass}>Portfolio</NavLink></Magnetic>
             <Magnetic><NavLink to="/about" className={navLinkClass}>About</NavLink></Magnetic>
+            <Magnetic><NavLink to="/logbook" className={navLinkClass}>Logbook</NavLink></Magnetic>
+            <Magnetic>
+              <NavLink to="/portal" className={({ isActive }) => `px-4 py-2 border border-bronze text-bronze hover:bg-bronze hover:text-concrete transition-colors duration-300 ${isActive ? 'bg-bronze text-concrete' : ''}`}>
+                Client Portal
+              </NavLink>
+            </Magnetic>
             <Magnetic>
               <ThemeToggle isDarkMode={isDarkMode} toggle={toggleDarkMode} />
             </Magnetic>
@@ -115,9 +122,11 @@ export default function Layout() {
               transition={{ duration: 0.3 }}
               className="absolute top-full left-0 w-full h-screen bg-concrete/95 dark:bg-charcoal/95 backdrop-blur-xl flex flex-col pt-12 px-8 uppercase tracking-[0.2em] text-sm font-bold"
             >
+              <Link to="/" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Home</Link>
               <Link to="/services" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Services</Link>
               <Link to="/portfolio" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Portfolio</Link>
               <Link to="/about" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>About</Link>
+              <Link to="/logbook" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Logbook</Link>
               <Link to="/portal" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Client Portal</Link>
               <Link to="/#book" className="mt-12 py-4 bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal text-center hover:bg-bronze dark:hover:bg-bronze transition-colors" onClick={closeMenu}>Book Consultation</Link>
             </motion.div>
@@ -141,7 +150,7 @@ export default function Layout() {
       </div>
 
       {/* Footer - Blueprint Title Block Aesthetic */}
-      <footer className="bg-charcoal dark:bg-[#111111] text-concrete mt-auto border-t-4 border-bronze transition-colors duration-500">
+      <footer className="bg-charcoal dark:bg-charcoal text-concrete mt-auto border-t-4 border-bronze transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-8 md:px-16 py-12">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-0 border border-steel/30 dark:border-concrete/20">
             
@@ -167,6 +176,7 @@ export default function Layout() {
                 <Link to="/services" className="hover:text-bronze transition-colors w-fit">Services</Link>
                 <Link to="/portfolio" className="hover:text-bronze transition-colors w-fit">Portfolio</Link>
                 <Link to="/about" className="hover:text-bronze transition-colors w-fit">About Us</Link>
+                <Link to="/logbook" className="hover:text-bronze transition-colors w-fit">Logbook</Link>
                 <Link to="/portal" className="hover:text-bronze transition-colors w-fit">Client Portal</Link>
               </nav>
             </div>

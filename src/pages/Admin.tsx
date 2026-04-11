@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { auth, db, provider, handleFirestoreError, OperationType } from '../firebase';
 import { signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { collection, query, orderBy, getDocs, updateDoc, doc, deleteDoc, addDoc, serverTimestamp, where, onSnapshot } from 'firebase/firestore';
-import { LogOut, RefreshCw, CheckCircle, Clock, Phone, Trash2, Mail, Plus, Calendar, Users, FileText, BarChart3, MessageSquare, Send, Upload, Download, Edit, PieChart as PieChartIcon, FileText as FileTextIcon, TrendingUp } from 'lucide-react';
+import { LogOut, RefreshCw, CheckCircle, Clock, Phone, Trash2, Mail, Plus, Calendar, Users, FileText, BarChart3, MessageSquare, Send, Upload, Download, Edit, PieChart as PieChartIcon, FileText as FileTextIcon, TrendingUp, MapPin } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, LineChart, Line, CartesianGrid } from 'recharts';
 import { motion } from 'motion/react';
 import Magnetic from '../components/Magnetic';
@@ -10,8 +10,12 @@ import Magnetic from '../components/Magnetic';
 interface BookingRequest {
   id: string;
   fullName: string;
-  projectScale: string;
+  email: string;
+  phone: string;
+  location: string;
+  projectType: string;
   preferredDate: string;
+  description: string;
   status: string;
   createdAt: any;
 }
@@ -571,7 +575,7 @@ export default function Admin() {
           <Magnetic>
             <button 
               onClick={fetchAllData}
-              className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors bg-white dark:bg-charcoal px-4 py-2 border border-steel/20 dark:border-steel/40 rounded shadow-sm"
+              className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors bg-concrete dark:bg-charcoal px-4 py-2 border border-steel/20 dark:border-steel/40 rounded shadow-sm"
             >
               <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
               Refresh Data
@@ -580,7 +584,7 @@ export default function Admin() {
           <Magnetic>
             <button 
               onClick={handleLogout}
-              className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-red-600 hover:text-red-700 transition-colors bg-white dark:bg-charcoal px-4 py-2 border border-red-100 dark:border-red-900/30 rounded shadow-sm"
+              className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-red-600 hover:text-red-700 transition-colors bg-concrete dark:bg-charcoal px-4 py-2 border border-red-100 dark:border-red-900/30 rounded shadow-sm"
             >
               <LogOut size={14} />
               Sign Out
@@ -591,7 +595,7 @@ export default function Admin() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        <div className="bg-white dark:bg-charcoal p-8 border border-steel/20 dark:border-steel/40 flex flex-col justify-between relative overflow-hidden group">
+        <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-steel/40 flex flex-col justify-between relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 dark:bg-bronze/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div>
             <p className="text-steel dark:text-steel/80 font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Total Bookings</p>
@@ -601,7 +605,7 @@ export default function Admin() {
             <Calendar size={20} className="text-bronze/50" strokeWidth={1} />
           </div>
         </div>
-        <div className="bg-white dark:bg-charcoal p-8 border border-steel/20 dark:border-steel/40 flex flex-col justify-between relative overflow-hidden group">
+        <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-steel/40 flex flex-col justify-between relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 dark:bg-bronze/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div>
             <p className="text-steel dark:text-steel/80 font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Pending Requests</p>
@@ -611,7 +615,7 @@ export default function Admin() {
             <Clock size={20} className="text-bronze/50" strokeWidth={1} />
           </div>
         </div>
-        <div className="bg-white dark:bg-charcoal p-8 border border-steel/20 dark:border-steel/40 flex flex-col justify-between relative overflow-hidden group">
+        <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-steel/40 flex flex-col justify-between relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 dark:bg-bronze/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div>
             <p className="text-steel dark:text-steel/80 font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Subscribers</p>
@@ -621,7 +625,7 @@ export default function Admin() {
             <Users size={20} className="text-bronze/50" strokeWidth={1} />
           </div>
         </div>
-        <div className="bg-white dark:bg-charcoal p-8 border border-steel/20 dark:border-steel/40 flex flex-col justify-between relative overflow-hidden group">
+        <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-steel/40 flex flex-col justify-between relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 dark:bg-bronze/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div>
             <p className="text-steel dark:text-steel/80 font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Project Updates</p>
@@ -671,7 +675,7 @@ export default function Admin() {
         >
           Messages
           {messages.filter(m => !m.read && m.receiverId === 'admin').length > 0 && (
-            <span className="bg-bronze text-white text-[8px] px-1.5 py-0.5 rounded-full">
+            <span className="bg-bronze text-concrete text-[8px] px-1.5 py-0.5 rounded-full">
               {messages.filter(m => !m.read && m.receiverId === 'admin').length}
             </span>
           )}
@@ -715,7 +719,7 @@ export default function Admin() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-charcoal p-8 max-w-md w-full rounded-2xl shadow-2xl border border-steel/20 dark:border-steel/40"
+            className="bg-concrete dark:bg-charcoal p-8 max-w-md w-full rounded-2xl shadow-2xl border border-steel/20 dark:border-steel/40"
           >
             <h3 className="font-display text-2xl font-bold uppercase tracking-tight mb-4 text-charcoal dark:text-concrete">Confirm Deletion</h3>
             <p className="text-charcoal/70 dark:text-concrete/70 mb-8 text-sm leading-relaxed">
@@ -730,7 +734,7 @@ export default function Admin() {
               </button>
               <button 
                 onClick={confirmDelete}
-                className="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-bold uppercase tracking-widest text-xs shadow-sm shadow-red-600/20"
+                className="px-5 py-2.5 bg-red-600 text-concrete rounded-lg hover:bg-red-700 transition-colors font-bold uppercase tracking-widest text-xs shadow-sm shadow-red-600/20"
               >
                 Delete
               </button>
@@ -745,7 +749,7 @@ export default function Admin() {
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Chart: Booking Statuses */}
-              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
+              <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
                 <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
                   <BarChart3 size={20} className="text-bronze" strokeWidth={1.5} />
                   Booking Statuses
@@ -778,7 +782,7 @@ export default function Admin() {
               </div>
 
               {/* Recent Activity (Updates & Bookings mixed) */}
-              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
+              <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
                 <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
                   <Clock size={20} className="text-bronze" strokeWidth={1.5} />
                   Recent Activity
@@ -795,7 +799,7 @@ export default function Admin() {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-charcoal dark:text-concrete">New Booking: {req.fullName}</p>
-                          <p className="text-[10px] font-mono text-steel dark:text-steel/80 mt-2 uppercase tracking-widest">{req.createdAt?.toDate ? req.createdAt.toDate().toLocaleDateString() : 'Just now'} • {req.projectScale}</p>
+                          <p className="text-[10px] font-mono text-steel dark:text-steel/80 mt-2 uppercase tracking-widest">{req.createdAt?.toDate ? req.createdAt.toDate().toLocaleDateString() : 'Just now'} • {req.projectType?.replace('-', ' ')}</p>
                         </div>
                       </div>
                     ))}
@@ -811,7 +815,7 @@ export default function Admin() {
             <div className="space-y-12">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Conversion Rate Chart */}
-                <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
+                <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
                   <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
                     <BarChart3 size={20} className="text-bronze" strokeWidth={1.5} />
                     Booking Conversion
@@ -832,21 +836,21 @@ export default function Admin() {
                   </div>
                 </div>
 
-                {/* Project Scale Popularity */}
-                <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
+                {/* Project Type Popularity */}
+                <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
                   <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
                     <PieChartIcon size={20} className="text-bronze" strokeWidth={1.5} />
-                    Project Scale Popularity
+                    Project Type Popularity
                   </h3>
                   <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
                           data={[
-                            { name: 'Small', value: requests.filter(r => r.projectScale === 'small').length },
-                            { name: 'Medium', value: requests.filter(r => r.projectScale === 'medium').length },
-                            { name: 'Large', value: requests.filter(r => r.projectScale === 'large').length },
-                            { name: 'Mega', value: requests.filter(r => r.projectScale === 'mega').length }
+                            { name: 'New Build', value: requests.filter(r => r.projectType === 'new-build').length },
+                            { name: 'Renovation', value: requests.filter(r => r.projectType === 'renovation').length },
+                            { name: 'Interior', value: requests.filter(r => r.projectType === 'interior-design').length },
+                            { name: 'Master Plan', value: requests.filter(r => r.projectType === 'master-planning').length }
                           ]}
                           cx="50%"
                           cy="50%"
@@ -868,7 +872,7 @@ export default function Admin() {
               </div>
 
               {/* Revenue Analytics */}
-              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
+              <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
                 <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
                   <FileText size={20} className="text-bronze" strokeWidth={1.5} />
                   Revenue & Billing
@@ -890,7 +894,7 @@ export default function Admin() {
               </div>
 
               {/* Newsletter Growth Trends */}
-              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
+              <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
                 <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
                   <TrendingUp size={20} className="text-bronze" strokeWidth={1.5} />
                   Newsletter Growth Trends
@@ -922,7 +926,7 @@ export default function Admin() {
           {/* Testimonials Tab */}
           {activeTab === 'testimonials' && (
             <div className="space-y-8">
-              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
+              <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
                 <h2 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
                   <CheckCircle size={20} className="text-bronze" strokeWidth={1.5} />
                   Manage Testimonials
@@ -970,7 +974,7 @@ export default function Admin() {
                             <td className="p-6 text-right">
                               <button 
                                 onClick={() => updateTestimonialStatus(test.id, !test.approved)}
-                                className={`text-[10px] font-mono uppercase tracking-widest px-4 py-2 border transition-all ${test.approved ? 'border-yellow-600 text-yellow-600 hover:bg-yellow-600 hover:text-white' : 'border-green-600 text-green-600 hover:bg-green-600 hover:text-white'}`}
+                                className={`text-[10px] font-mono uppercase tracking-widest px-4 py-2 border transition-all ${test.approved ? 'border-yellow-600 text-yellow-600 hover:bg-yellow-600 hover:text-concrete' : 'border-green-600 text-green-600 hover:bg-green-600 hover:text-concrete'}`}
                               >
                                 {test.approved ? 'Unapprove' : 'Approve'}
                               </button>
@@ -986,25 +990,24 @@ export default function Admin() {
           )}
           {/* Bookings Tab */}
           {activeTab === 'bookings' && (
-            <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">
+            <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-concrete/50 dark:bg-steel/10 border-b border-steel/20 dark:border-steel/40 text-[10px] font-mono text-steel dark:text-steel/80 uppercase tracking-[0.2em]">
                       <th className="p-6 font-normal">Date</th>
-                      <th className="p-6 font-normal">Client Name</th>
-                      <th className="p-6 font-normal">Project Scale</th>
-                      <th className="p-6 font-normal">Preferred Date</th>
+                      <th className="p-6 font-normal">Client Info</th>
+                      <th className="p-6 font-normal">Project Details</th>
                       <th className="p-6 font-normal">Status</th>
                       <th className="p-6 font-normal text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-steel/10">
                     {initialLoading ? (
-                      <tr><td colSpan={6}>{renderSkeleton()}</td></tr>
+                      <tr><td colSpan={5}>{renderSkeleton()}</td></tr>
                     ) : requests.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="p-16 text-center text-steel font-light">
+                        <td colSpan={5} className="p-16 text-center text-steel font-light">
                           <Calendar size={32} className="mx-auto mb-4 opacity-20" strokeWidth={1} />
                           <p>No booking requests found.</p>
                         </td>
@@ -1015,9 +1018,17 @@ export default function Admin() {
                           <td className="p-6 text-xs font-mono text-charcoal/80 dark:text-concrete/80">
                             {req.createdAt?.toDate ? req.createdAt.toDate().toLocaleDateString() : 'Just now'}
                           </td>
-                          <td className="p-6 font-medium text-charcoal dark:text-concrete text-sm">{req.fullName}</td>
-                          <td className="p-6 text-sm capitalize text-charcoal/80 dark:text-concrete/80 font-light">{req.projectScale}</td>
-                          <td className="p-6 text-sm text-charcoal/80 dark:text-concrete/80 font-light">{req.preferredDate}</td>
+                          <td className="p-6">
+                            <div className="font-medium text-charcoal dark:text-concrete text-sm mb-1">{req.fullName}</div>
+                            <div className="text-xs text-steel font-light flex items-center gap-2"><Mail size={12} /> {req.email}</div>
+                            <div className="text-xs text-steel font-light flex items-center gap-2 mt-1"><Phone size={12} /> {req.phone}</div>
+                          </td>
+                          <td className="p-6">
+                            <div className="text-sm capitalize text-charcoal dark:text-concrete font-medium mb-1">{req.projectType?.replace('-', ' ')}</div>
+                            <div className="text-xs text-steel font-light mb-1 flex items-center gap-2"><MapPin size={12} /> {req.location}</div>
+                            <div className="text-xs text-steel font-light mb-1 flex items-center gap-2"><Calendar size={12} /> {req.preferredDate}</div>
+                            <div className="text-[10px] text-steel font-light mt-2 max-w-xs truncate" title={req.description}>{req.description}</div>
+                          </td>
                           <td className="p-6">
                             <span className={`inline-flex items-center gap-2 px-3 py-1 text-[10px] font-mono uppercase tracking-widest border
                               ${req.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-900/50' : 
@@ -1061,7 +1072,7 @@ export default function Admin() {
           {activeTab === 'updates' && (
             <div className="space-y-12">
               {/* Create/Edit Form */}
-              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8 md:p-12">
+              <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8 md:p-12">
                 <div className="flex justify-between items-center mb-8">
                   <h2 className="font-display text-2xl font-light tracking-tight flex items-center gap-3 text-charcoal dark:text-concrete">
                     {editingUpdateId ? <Edit size={20} className="text-bronze" strokeWidth={1.5} /> : <Plus size={20} className="text-bronze" strokeWidth={1.5} />}
@@ -1138,7 +1149,7 @@ export default function Admin() {
               </div>
 
               {/* Updates List */}
-              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">
+              <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
@@ -1209,7 +1220,7 @@ export default function Admin() {
           {activeTab === 'milestones' && (
             <div className="space-y-8">
               {/* Create/Edit Milestone Form */}
-              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
+              <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
                 <div className="flex justify-between items-center mb-8">
                   <h2 className="font-display text-2xl font-light tracking-tight flex items-center gap-3 text-charcoal dark:text-concrete">
                     {editingMilestoneId ? <Edit className="text-bronze" size={24} strokeWidth={1.5} /> : <Calendar className="text-bronze" size={24} strokeWidth={1.5} />}
@@ -1312,7 +1323,7 @@ export default function Admin() {
               </div>
 
               {/* Milestones List */}
-              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">
+              <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
@@ -1385,7 +1396,7 @@ export default function Admin() {
           {activeTab === 'messages' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[600px]">
               {/* Clients List */}
-              <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden flex flex-col">
+              <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden flex flex-col">
                 <div className="p-6 border-b border-steel/20 dark:border-steel/40 bg-concrete/50 dark:bg-steel/10">
                   <h3 className="font-display text-xl font-light text-charcoal dark:text-concrete flex items-center gap-3">
                     <Users size={18} className="text-bronze" strokeWidth={1.5} />
@@ -1411,7 +1422,7 @@ export default function Admin() {
                             <div className="flex justify-between items-center w-full">
                               <span className="font-medium text-charcoal dark:text-concrete text-sm truncate pr-4">{client.email}</span>
                               {unreadCount > 0 && (
-                                <span className="bg-bronze text-white text-[10px] px-2 py-0.5 rounded-full shrink-0">
+                                <span className="bg-bronze text-concrete text-[10px] px-2 py-0.5 rounded-full shrink-0">
                                   {unreadCount}
                                 </span>
                               )}
@@ -1430,7 +1441,7 @@ export default function Admin() {
               </div>
 
               {/* Chat Window */}
-              <div className="lg:col-span-2 bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 flex flex-col">
+              <div className="lg:col-span-2 bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 flex flex-col">
                 {selectedChatClient ? (
                   <>
                     <div className="p-6 border-b border-steel/20 dark:border-steel/40 bg-concrete/50 dark:bg-steel/10 flex items-center gap-4">
@@ -1477,7 +1488,7 @@ export default function Admin() {
                           value={adminReply}
                           onChange={(e) => setAdminReply(e.target.value)}
                           placeholder="Type your reply..."
-                          className="flex-1 bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 px-4 py-3 text-sm font-light focus:outline-none focus:border-bronze dark:focus:border-bronze text-charcoal dark:text-concrete transition-colors"
+                          className="flex-1 bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 px-4 py-3 text-sm font-light focus:outline-none focus:border-bronze dark:focus:border-bronze text-charcoal dark:text-concrete transition-colors"
                           disabled={sendingReply}
                         />
                         <button
@@ -1503,7 +1514,7 @@ export default function Admin() {
 
           {/* Newsletter Tab */}
           {activeTab === 'newsletter' && (
-            <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">
+            <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
@@ -1557,7 +1568,7 @@ export default function Admin() {
           {activeTab === 'documents' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Client List */}
-              <div className="lg:col-span-1 bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden flex flex-col h-[600px]">
+              <div className="lg:col-span-1 bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden flex flex-col h-[600px]">
                 <div className="p-6 border-b border-steel/20 dark:border-steel/40 bg-concrete/50 dark:bg-steel/10">
                   <h3 className="font-display text-xl font-light text-charcoal dark:text-concrete flex items-center gap-3">
                     <Users size={18} className="text-bronze" strokeWidth={1.5} />
@@ -1587,7 +1598,7 @@ export default function Admin() {
               </div>
 
               {/* Document List */}
-              <div className="lg:col-span-2 bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 flex flex-col h-[600px]">
+              <div className="lg:col-span-2 bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 flex flex-col h-[600px]">
                 {selectedDocClient ? (
                   <>
                     <div className="p-6 border-b border-steel/20 dark:border-steel/40 flex justify-between items-center bg-concrete/50 dark:bg-steel/10">
@@ -1628,7 +1639,7 @@ export default function Admin() {
                       ) : (
                         <div className="space-y-4">
                           {documents.filter(d => d.clientId === selectedDocClient).map(doc => (
-                            <div key={doc.id} className="flex items-center justify-between p-6 border border-steel/20 dark:border-steel/40 hover:border-bronze/30 dark:hover:border-bronze/50 transition-colors group bg-white dark:bg-charcoal">
+                            <div key={doc.id} className="flex items-center justify-between p-6 border border-steel/20 dark:border-steel/40 hover:border-bronze/30 dark:hover:border-bronze/50 transition-colors group bg-concrete dark:bg-charcoal">
                               <div className="flex items-center gap-6 overflow-hidden">
                                 <div className="w-12 h-12 bg-concrete/50 dark:bg-steel/10 flex items-center justify-center text-steel shrink-0">
                                   <FileText size={24} strokeWidth={1} />
@@ -1676,7 +1687,7 @@ export default function Admin() {
 
           {/* Users Tab */}
           {activeTab === 'users' && (
-            <div className="bg-white dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">
+            <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">
               <div className="p-8 border-b border-steel/20 dark:border-steel/40 flex justify-between items-center bg-concrete/50 dark:bg-steel/10">
                 <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete flex items-center gap-3">
                   <Users size={24} className="text-bronze" strokeWidth={1.5} />
@@ -1705,7 +1716,7 @@ export default function Admin() {
                           <td className="p-6 font-mono text-[10px] text-steel uppercase tracking-widest">{u.id}</td>
                           <td className="p-6">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-widest ${
-                              u.role === 'admin' ? 'bg-charcoal dark:bg-concrete text-white dark:text-charcoal' :
+                              u.role === 'admin' ? 'bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal' :
                               u.role === 'client' ? 'bg-bronze/10 text-bronze border border-bronze/20' :
                               'bg-yellow-100 text-yellow-800 border border-yellow-200'
                             }`}>

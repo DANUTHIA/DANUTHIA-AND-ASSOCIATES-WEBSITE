@@ -202,7 +202,7 @@ export default function AIConcierge() {
             style={{ height: '500px', maxHeight: '80vh' }}
           >
             {/* Header */}
-            <div className="bg-charcoal text-concrete dark:bg-[#111111] dark:text-concrete p-4 flex justify-between items-center border-b border-bronze/30 transition-colors duration-500">
+            <div className="bg-charcoal text-concrete dark:bg-charcoal dark:text-concrete p-4 flex justify-between items-center border-b border-bronze/30 transition-colors duration-500">
               <div>
                 <h3 className="font-display font-bold uppercase tracking-widest text-sm">AI Concierge</h3>
                 <p className="text-xs text-steel font-mono">Danuthia & Co.</p>
@@ -228,7 +228,7 @@ export default function AIConcierge() {
                   <div className={`max-w-[80%] p-3 text-sm ${
                     msg.role === 'user' 
                       ? 'bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal rounded-none' 
-                      : 'bg-steel/10 text-charcoal dark:bg-[#111111] dark:text-concrete border border-steel/20 dark:border-concrete/10 rounded-none'
+                      : 'bg-steel/10 text-charcoal dark:bg-charcoal dark:text-concrete border border-steel/20 dark:border-concrete/10 rounded-none'
                   }`}>
                     {msg.text}
                   </div>
@@ -236,7 +236,7 @@ export default function AIConcierge() {
               ))}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-steel/10 text-charcoal dark:bg-[#111111] dark:text-concrete border border-steel/20 dark:border-concrete/10 rounded-none p-4 flex gap-1 items-center">
+                  <div className="bg-steel/10 text-charcoal dark:bg-charcoal dark:text-concrete border border-steel/20 dark:border-concrete/10 rounded-none p-4 flex gap-1 items-center">
                     {[0, 1, 2].map((i) => (
                       <motion.div
                         key={i}

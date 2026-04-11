@@ -32,7 +32,7 @@ export default function OnboardingWizard({ userId, onComplete }: OnboardingWizar
       animate={{ opacity: 1 }}
       className="fixed inset-0 z-[10000] bg-charcoal/90 flex items-center justify-center p-6"
     >
-      <div className="bg-concrete dark:bg-[#111111] p-12 max-w-2xl w-full text-charcoal dark:text-concrete">
+      <div className="bg-concrete dark:bg-charcoal p-12 max-w-2xl w-full text-charcoal dark:text-concrete">
         <h2 className="font-display text-4xl font-light mb-8">Welcome to Danuthia & Co.</h2>
         
         {step === 1 && (

@@ -55,10 +55,10 @@ export default function Login() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="max-w-md w-full bg-charcoal dark:bg-[#111111] text-concrete p-10 md:p-16 relative z-10 transition-colors duration-500"
+        className="max-w-md w-full bg-charcoal dark:bg-charcoal text-concrete p-10 md:p-16 relative z-10 transition-colors duration-500"
       >
         <div className="flex justify-center mb-10">
-          <div className="w-16 h-16 rounded-none border border-bronze/30 flex items-center justify-center bg-charcoal dark:bg-[#111111] shadow-[0_0_30px_rgba(184,134,11,0.1)] transition-colors duration-500">
+          <div className="w-16 h-16 rounded-none border border-bronze/30 flex items-center justify-center bg-charcoal dark:bg-charcoal shadow-[0_0_30px_rgba(184,134,11,0.1)] transition-colors duration-500">
             <Lock size={20} className="text-bronze" strokeWidth={1.5} />
           </div>
         </div>
@@ -66,8 +66,8 @@ export default function Login() {
         <h1 className="font-display text-4xl font-light tracking-tight text-center mb-4">
           Client Portal
         </h1>
-        <p className="text-steel font-mono text-[10px] uppercase tracking-[0.3em] text-center mb-12">
-          Secure Access
+        <p className="text-steel font-mono text-[10px] uppercase tracking-[0.15em] text-center mb-12 leading-relaxed">
+          Are you a client? Sign in to get updated on your project.
         </p>
 
         {error && (
@@ -87,10 +87,18 @@ export default function Login() {
           </button>
         </Magnetic>
 
-        <div className="mt-12 pt-8 border-t border-steel/20 dark:border-concrete/20 transition-colors duration-500">
+        <div className="mt-12 pt-8 border-t border-steel/20 dark:border-concrete/20 transition-colors duration-500 flex flex-col items-center gap-4">
           <p className="text-center text-steel text-xs font-light leading-relaxed">
             Access is restricted to active clients of Danuthia & Co.
           </p>
+          <button
+            onClick={() => {
+              navigate('/#book');
+            }}
+            className="text-bronze text-[10px] font-bold uppercase tracking-widest hover:text-concrete transition-colors duration-300 border-b border-bronze/30 hover:border-bronze pb-1"
+          >
+            Not a client yet? Register with us today.
+          </button>
         </div>
       </motion.div>
     </div>

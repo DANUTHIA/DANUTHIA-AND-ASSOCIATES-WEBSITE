@@ -8,10 +8,10 @@
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  --color-concrete: #FFFFFF; /* Pure white */
-  --color-charcoal: #000000; /* Pure black */
-  --color-bronze: #FF3300; /* Safety Orange / Brutalist Accent */
-  --color-steel: #888888; /* Neutral medium gray */
+  --color-concrete: #F9F8F6; /* Warm off-white/alabaster */
+  --color-charcoal: #1A1A1A; /* Deep, rich charcoal */
+  --color-bronze: #B08D57; /* True metallic bronze */
+  --color-steel: #8C8C8C; /* Warm medium gray */
 }
 
 html {

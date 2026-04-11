@@ -20,7 +20,7 @@ export default function Services() {
   return (
     <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500">
       {/* Hero Section */}
-      <section className="relative bg-charcoal dark:bg-[#111111] text-concrete p-8 md:p-16 pt-32 md:pt-40 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
+      <section className="relative bg-charcoal dark:bg-charcoal text-concrete p-8 md:p-16 pt-32 md:pt-40 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.05, scale: 1 }}
@@ -197,7 +197,7 @@ export default function Services() {
       </section>
 
       {/* R&D / Technical Capabilities Section */}
-      <section className="bg-charcoal dark:bg-[#111111] text-concrete py-24 md:py-32 transition-colors duration-500 border-t border-concrete/20">
+      <section className="bg-charcoal dark:bg-charcoal text-concrete py-24 md:py-32 transition-colors duration-500 border-t border-concrete/20">
         <div className="max-w-7xl mx-auto px-8 md:px-16">
           <motion.div 
             initial="hidden"

@@ -89,7 +89,7 @@ export default function BeforeAfterSlider({
         className="absolute top-0 bottom-0 w-0.5 bg-bronze cursor-ew-resize flex items-center justify-center shadow-[0_0_15px_rgba(184,134,11,0.5)] z-10"
         style={{ left: `calc(${sliderPosition}% - 1px)` }}
       >
-        <div className="w-6 h-20 bg-[#111111] border-2 border-bronze shadow-2xl flex items-center justify-center transition-transform duration-200 hover:scale-105">
+        <div className="w-6 h-20 bg-charcoal border-2 border-bronze shadow-2xl flex items-center justify-center transition-transform duration-200 hover:scale-105">
           <div className="w-0.5 h-12 bg-bronze"></div>
         </div>
       </div>

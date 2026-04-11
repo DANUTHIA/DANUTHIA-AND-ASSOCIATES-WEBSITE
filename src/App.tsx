@@ -11,6 +11,7 @@ import ClientPortal from './pages/ClientPortal';
 import Careers from './pages/Careers';
 import Affiliate from './pages/Affiliate';
 import Terms from './pages/Terms';
+import Logbook from './pages/Logbook';
 import ScrollToTop from './components/ScrollToTop';
 import CustomCursor from './components/CustomCursor';
 import KineticDataTicker from './components/KineticDataTicker';
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="careers" element={<Careers />} />
           <Route path="affiliate" element={<Affiliate />} />
           <Route path="terms" element={<Terms />} />
+          <Route path="logbook" element={<Logbook />} />
         </Route>
       </Routes>
     </BrowserRouter>

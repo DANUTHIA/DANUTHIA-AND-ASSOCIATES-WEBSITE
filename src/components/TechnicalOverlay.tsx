@@ -25,7 +25,7 @@ export default function TechnicalOverlay({ active }: TechnicalOverlayProps) {
       <div className="absolute bottom-4 left-4 right-4 h-px bg-bronze"></div>
       
       {/* Callout */}
-      <div className="absolute top-8 left-8 bg-black/80 text-bronze p-2 text-[10px] font-mono border border-bronze">
+      <div className="absolute top-8 left-8 bg-charcoal/80 text-bronze p-2 text-[10px] font-mono border border-bronze">
         STRUCTURAL_GRID_A1
       </div>
     </div>

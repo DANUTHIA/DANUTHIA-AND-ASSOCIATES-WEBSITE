@@ -105,7 +105,7 @@ export default function BlueprintAnnotation({ blueprintId, imageUrl, userId, ini
           <select 
             value={currentVersion} 
             onChange={(e) => setCurrentVersion(Number(e.target.value))}
-            className="bg-white dark:bg-charcoal border border-steel/20 px-3 py-1 text-xs font-mono focus:outline-none focus:border-bronze"
+            className="bg-concrete dark:bg-charcoal border border-steel/20 px-3 py-1 text-xs font-mono focus:outline-none focus:border-bronze"
           >
             {availableVersions.map(v => (
               <option key={v} value={v}>V{v}.0</option>
@@ -192,7 +192,7 @@ export default function BlueprintAnnotation({ blueprintId, imageUrl, userId, ini
             </div>
             <textarea 
               placeholder="Describe the issue or request..." 
-              className="w-full bg-white dark:bg-charcoal border border-bronze/20 p-4 text-sm font-light focus:outline-none focus:border-bronze min-h-[100px]"
+              className="w-full bg-concrete dark:bg-charcoal border border-bronze/20 p-4 text-sm font-light focus:outline-none focus:border-bronze min-h-[100px]"
               value={newAnnotation.comment}
               onChange={(e) => setNewAnnotation({...newAnnotation, comment: e.target.value})}
             />
@@ -213,7 +213,7 @@ export default function BlueprintAnnotation({ blueprintId, imageUrl, userId, ini
               <p className="text-xs text-steel font-mono uppercase">No annotations yet.</p>
             ) : (
               annotations.map(ann => (
-                <div key={ann.id} className="p-4 bg-white dark:bg-charcoal border border-steel/10 flex justify-between items-start group">
+                <div key={ann.id} className="p-4 bg-concrete dark:bg-charcoal border border-steel/10 flex justify-between items-start group">
                   <div>
                     <p className="text-sm font-light leading-relaxed">{ann.comment}</p>
                     <span className="text-[8px] text-steel/50 mt-2 block uppercase tracking-tighter">

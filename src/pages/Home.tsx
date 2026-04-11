@@ -36,9 +36,12 @@ export default function Home() {
   
   // Form State
   const [fullName, setFullName] = useState('');
-  const [projectScale, setProjectScale] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [locationState, setLocationState] = useState('');
+  const [projectType, setProjectType] = useState('');
   const [preferredDate, setPreferredDate] = useState('');
-  const [contactPreference, setContactPreference] = useState('');
+  const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -70,16 +73,18 @@ export default function Home() {
 
   useEffect(() => {
     if (location.hash === '#book') {
-      const element = document.getElementById('book');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
+      setTimeout(() => {
+        const element = document.getElementById('book');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
     }
   }, [location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !projectScale || !preferredDate || !contactPreference) {
+    if (!fullName || !email || !phone || !locationState || !projectType || !preferredDate || !description) {
       setSubmitError('Please fill out all fields.');
       return;
     }
@@ -91,9 +96,12 @@ export default function Home() {
       await addDoc(collection(db, 'bookingRequests'), {
         userId: 'anonymous',
         fullName,
-        projectScale,
+        email,
+        phone,
+        location: locationState,
+        projectType,
         preferredDate,
-        contactPreference,
+        description,
         status: 'pending',
         createdAt: serverTimestamp()
       });
@@ -103,15 +111,15 @@ export default function Home() {
         await fetch('/api/notify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fullName, projectScale, preferredDate, contactPreference })
+          body: JSON.stringify({ fullName, email, phone, location: locationState, projectType, preferredDate, description })
         });
         
-        // Also send thank you to the user if they provided an email (contactPreference might be email)
-        if (contactPreference.includes('@')) {
+        // Also send thank you to the user if they provided an email
+        if (email.includes('@')) {
           await fetch('/api/send-thank-you', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: contactPreference, name: fullName })
+            body: JSON.stringify({ email, name: fullName })
           });
         }
       } catch (err) {
@@ -120,9 +128,12 @@ export default function Home() {
 
       setSubmitSuccess(true);
       setFullName('');
-      setProjectScale('');
+      setEmail('');
+      setPhone('');
+      setLocationState('');
+      setProjectType('');
       setPreferredDate('');
-      setContactPreference('');
+      setDescription('');
     } catch (error) {
       setSubmitError('Failed to submit request. Please try again.');
       handleFirestoreError(error, OperationType.CREATE, 'bookingRequests');
@@ -223,7 +234,7 @@ export default function Home() {
         <motion.div variants={fadeInUp} className="mb-16 max-w-3xl">
           <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4">The Process</p>
           <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete mb-6 transition-colors duration-500">
-            Blueprint to Reality
+            We transform blueprints to reality
           </h2>
           <p className="text-charcoal/70 dark:text-concrete/70 font-mono text-sm leading-relaxed transition-colors duration-500">
             Experience our journey from raw architectural concepts to photorealistic finished environments. Drag the slider to reveal the transformation.
@@ -260,7 +271,7 @@ export default function Home() {
             { label: "Total SQM Developed", value: "130,200", suffix: "+" },
             { label: "Active Sites", value: "04", suffix: "" },
             { label: "Sustainable Certifications", value: "12", suffix: "" },
-            { label: "Years of Excellence", value: "15", suffix: "+" }
+            { label: "Years of Excellence", value: "3", suffix: "" }
           ].map((metric, idx) => (
             <motion.div 
               key={idx}
@@ -280,7 +291,7 @@ export default function Home() {
       {/* Section 3: Project Archive - Brutalist Grid */}
       <motion.section 
         id="research" 
-        className="bg-charcoal dark:bg-[#111111] text-concrete py-24 md:py-32 transition-colors duration-500"
+        className="bg-charcoal dark:bg-charcoal text-concrete py-24 md:py-32 transition-colors duration-500"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
@@ -412,7 +423,7 @@ export default function Home() {
           </motion.div>
 
           {/* Right Column: Booking Form */}
-          <motion.div variants={fadeInUp} id="book" className="p-12 md:p-24 bg-charcoal dark:bg-[#111111] text-concrete flex flex-col justify-center transition-colors duration-500">
+          <motion.div variants={fadeInUp} id="book" className="p-12 md:p-24 bg-charcoal dark:bg-charcoal text-concrete flex flex-col justify-center transition-colors duration-500">
             <div className="max-w-md w-full mx-auto">
               <h3 className="font-display text-4xl font-bold uppercase tracking-tight mb-12">
                 Consultation Booking
@@ -432,7 +443,7 @@ export default function Home() {
                   <Magnetic>
                     <button 
                       onClick={() => setSubmitSuccess(false)}
-                      className="text-[10px] font-mono uppercase tracking-widest text-bronze hover:text-white transition-colors pb-1 border-b border-bronze/30 hover:border-white"
+                      className="text-[10px] font-mono uppercase tracking-widest text-bronze hover:text-concrete transition-colors pb-1 border-b border-bronze/30 hover:border-concrete"
                     >
                       Submit Another Request
                     </button>
@@ -446,66 +457,112 @@ export default function Home() {
                     </div>
                   )}
                   
-                  <div className="relative group">
-                    <input 
-                      type="text" 
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg peer placeholder-transparent rounded-none"
-                      placeholder="Full Name"
-                      id="fullName"
-                      required
-                    />
-                    <label htmlFor="fullName" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-bronze">
-                      Full Name
-                    </label>
-                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div className="relative group">
+                      <input 
+                        type="text" 
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg peer placeholder-transparent rounded-none"
+                        placeholder="Full Name"
+                        id="fullName"
+                        required
+                      />
+                      <label htmlFor="fullName" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-bronze">
+                        Full Name
+                      </label>
+                    </div>
 
-                  <div className="relative group">
-                    <select 
-                      value={projectScale}
-                      onChange={(e) => setProjectScale(e.target.value)}
-                      className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg appearance-none cursor-pointer peer rounded-none"
-                      required
-                    >
-                      <option value="" disabled className="text-charcoal bg-concrete">Select scale...</option>
-                      <option value="residential" className="text-charcoal bg-concrete">Residential</option>
-                      <option value="commercial" className="text-charcoal bg-concrete">Commercial</option>
-                      <option value="regional" className="text-charcoal bg-concrete">Regional / Master Plan</option>
-                    </select>
-                    <label className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-bronze transition-colors">
-                      Project Scale
-                    </label>
-                  </div>
+                    <div className="relative group">
+                      <input 
+                        type="email" 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg peer placeholder-transparent rounded-none"
+                        placeholder="Email Address"
+                        id="email"
+                        required
+                      />
+                      <label htmlFor="email" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-bronze">
+                        Email Address
+                      </label>
+                    </div>
 
-                  <div className="relative group">
-                    <select 
-                      value={contactPreference}
-                      onChange={(e) => setContactPreference(e.target.value)}
-                      className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg appearance-none cursor-pointer peer rounded-none"
-                      required
-                    >
-                      <option value="" disabled className="text-charcoal bg-concrete">Select preference...</option>
-                      <option value="email" className="text-charcoal bg-concrete">Email</option>
-                      <option value="phone" className="text-charcoal bg-concrete">Phone</option>
-                    </select>
-                    <label className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-bronze transition-colors">
-                      Contact Preference
-                    </label>
-                  </div>
+                    <div className="relative group">
+                      <input 
+                        type="tel" 
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg peer placeholder-transparent rounded-none"
+                        placeholder="Phone Number"
+                        id="phone"
+                        required
+                      />
+                      <label htmlFor="phone" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-bronze">
+                        Phone Number
+                      </label>
+                    </div>
 
-                  <div className="relative group">
-                    <input 
-                      type="date" 
-                      value={preferredDate}
-                      onChange={(e) => setPreferredDate(e.target.value)}
-                      className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full peer rounded-none"
-                      required
-                    />
-                    <label className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-bronze transition-colors">
-                      Preferred Date
-                    </label>
-                    <Calendar size={20} className="absolute right-0 top-3 text-concrete/30 pointer-events-none peer-focus:text-bronze transition-colors" />
+                    <div className="relative group">
+                      <input 
+                        type="text" 
+                        value={locationState}
+                        onChange={(e) => setLocationState(e.target.value)}
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg peer placeholder-transparent rounded-none"
+                        placeholder="Project Location"
+                        id="location"
+                        required
+                      />
+                      <label htmlFor="location" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-bronze">
+                        Project Location
+                      </label>
+                    </div>
+
+                    <div className="relative group md:col-span-2">
+                      <select 
+                        value={projectType}
+                        onChange={(e) => setProjectType(e.target.value)}
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg appearance-none cursor-pointer peer rounded-none"
+                        required
+                      >
+                        <option value="" disabled className="text-charcoal bg-concrete">Select project type...</option>
+                        <option value="new-build" className="text-charcoal bg-concrete">New Build</option>
+                        <option value="renovation" className="text-charcoal bg-concrete">Renovation</option>
+                        <option value="interior-design" className="text-charcoal bg-concrete">Interior Design</option>
+                        <option value="master-planning" className="text-charcoal bg-concrete">Master Planning</option>
+                      </select>
+                      <label className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-bronze transition-colors">
+                        Project Type
+                      </label>
+                    </div>
+
+                    <div className="relative group md:col-span-2">
+                      <input 
+                        type="date" 
+                        value={preferredDate}
+                        onChange={(e) => setPreferredDate(e.target.value)}
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full peer rounded-none"
+                        required
+                      />
+                      <label className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-bronze transition-colors">
+                        Preferred Date
+                      </label>
+                      <Calendar size={20} className="absolute right-0 top-3 text-concrete/30 pointer-events-none peer-focus:text-bronze transition-colors" />
+                    </div>
+
+                    <div className="relative group md:col-span-2">
+                      <textarea 
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg peer placeholder-transparent rounded-none resize-none h-24 custom-scrollbar"
+                        placeholder="Project Description"
+                        id="description"
+                        required
+                      />
+                      <label htmlFor="description" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-bronze">
+                        Project Description & Vision
+                      </label>
+                    </div>
                   </div>
 
                   <Magnetic className="w-full">

@@ -27,7 +27,7 @@ export default function About() {
   return (
     <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500">
       {/* Hero Section */}
-      <section className="relative bg-charcoal dark:bg-[#111111] text-concrete p-8 md:p-16 pt-32 md:pt-40 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
+      <section className="relative bg-charcoal dark:bg-charcoal text-concrete p-8 md:p-16 pt-32 md:pt-40 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.05, scale: 1 }}
@@ -106,7 +106,7 @@ export default function About() {
           </motion.div>
 
           <motion.div variants={fadeInUp} className="lg:col-span-5">
-            <div className="bg-charcoal dark:bg-[#111111] p-12 text-concrete flex flex-col justify-center relative overflow-hidden group h-full transition-colors duration-500">
+            <div className="bg-charcoal dark:bg-charcoal p-12 text-concrete flex flex-col justify-center relative overflow-hidden group h-full transition-colors duration-500">
               <div className="absolute top-0 right-0 w-64 h-64 bg-bronze opacity-10 rounded-full blur-3xl group-hover:opacity-20 transition-opacity duration-1000"></div>
               
               <h3 className="font-display text-3xl font-bold uppercase tracking-tight mb-12 relative z-10">Core Values</h3>
@@ -152,7 +152,7 @@ export default function About() {
         </motion.div>
       </section>
       {/* Founder Section */}
-      <section className="bg-charcoal dark:bg-[#111111] text-concrete py-24 px-8 md:px-16 transition-colors duration-500">
+      <section className="bg-charcoal dark:bg-charcoal text-concrete py-24 px-8 md:px-16 transition-colors duration-500">
         <div className="max-w-7xl mx-auto">
           <motion.div 
             initial="hidden"
@@ -173,7 +173,7 @@ export default function About() {
             
             <motion.div variants={fadeInUp} className="flex flex-col justify-center">
               <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-4">Joseph Macharia</h2>
-              <p className="text-bronze font-mono text-sm uppercase tracking-widest mb-8">Founder & Principal Architect</p>
+              <p className="text-bronze font-mono text-sm uppercase tracking-widest mb-8">Founder & Principal Planner</p>
               
               <div className="space-y-6 text-lg text-steel font-light leading-relaxed">
                 <p>
@@ -187,6 +187,106 @@ export default function About() {
           </motion.div>
         </div>
       </section>
+      {/* Personnel Dossiers Section */}
+      <section className="p-8 md:p-16 max-w-7xl mx-auto py-24 border-t border-charcoal/20 dark:border-concrete/20">
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={staggerContainer}
+        >
+          <motion.div variants={fadeInUp} className="mb-16">
+            <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4">Network</p>
+            <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete">
+              Personnel Dossiers
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Dossier 1 */}
+            <motion.div variants={fadeInUp} className="group relative border border-charcoal/20 dark:border-concrete/20 bg-concrete dark:bg-charcoal overflow-hidden transition-colors duration-500">
+              <div className="aspect-square overflow-hidden relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop" 
+                  alt="Dr. E. Vance" 
+                  className="w-full h-full object-cover grayscale opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700 mix-blend-multiply dark:mix-blend-luminosity"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-bronze/10 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute top-4 right-4 bg-charcoal text-concrete text-[9px] font-mono uppercase px-2 py-1 tracking-widest border border-concrete/20">
+                  ACTIVE
+                </div>
+              </div>
+              <div className="p-6 border-t border-charcoal/20 dark:border-concrete/20">
+                <div className="font-mono text-[10px] text-bronze uppercase tracking-widest mb-2">ID: 001 // LEVEL 5</div>
+                <h3 className="font-display text-xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete mb-1">Dr. E. Vance</h3>
+                <p className="font-mono text-xs text-charcoal/60 dark:text-concrete/60 uppercase tracking-wider mb-4">Head of R&D</p>
+                <div className="h-[1px] w-full bg-charcoal/10 dark:bg-concrete/10 mb-4"></div>
+                <div className="space-y-2 font-mono text-[10px] text-charcoal/80 dark:text-concrete/80 uppercase tracking-widest">
+                  <div className="flex justify-between"><span>Specialty:</span> <span className="text-right">Material Science</span></div>
+                  <div className="flex justify-between"><span>Clearance:</span> <span className="text-right">Alpha</span></div>
+                  <div className="flex justify-between"><span>Projects:</span> <span className="text-right">24</span></div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Dossier 2 */}
+            <motion.div variants={fadeInUp} className="group relative border border-charcoal/20 dark:border-concrete/20 bg-concrete dark:bg-charcoal overflow-hidden transition-colors duration-500">
+              <div className="aspect-square overflow-hidden relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=800&auto=format&fit=crop" 
+                  alt="M. Rossi" 
+                  className="w-full h-full object-cover grayscale opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700 mix-blend-multiply dark:mix-blend-luminosity"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-bronze/10 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute top-4 right-4 bg-charcoal text-concrete text-[9px] font-mono uppercase px-2 py-1 tracking-widest border border-concrete/20">
+                  ACTIVE
+                </div>
+              </div>
+              <div className="p-6 border-t border-charcoal/20 dark:border-concrete/20">
+                <div className="font-mono text-[10px] text-bronze uppercase tracking-widest mb-2">ID: 002 // LEVEL 4</div>
+                <h3 className="font-display text-xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete mb-1">M. Rossi</h3>
+                <p className="font-mono text-xs text-charcoal/60 dark:text-concrete/60 uppercase tracking-wider mb-4">Lead Urban Planner</p>
+                <div className="h-[1px] w-full bg-charcoal/10 dark:bg-concrete/10 mb-4"></div>
+                <div className="space-y-2 font-mono text-[10px] text-charcoal/80 dark:text-concrete/80 uppercase tracking-widest">
+                  <div className="flex justify-between"><span>Specialty:</span> <span className="text-right">Parametric Zoning</span></div>
+                  <div className="flex justify-between"><span>Clearance:</span> <span className="text-right">Beta</span></div>
+                  <div className="flex justify-between"><span>Projects:</span> <span className="text-right">38</span></div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Dossier 3 */}
+            <motion.div variants={fadeInUp} className="group relative border border-charcoal/20 dark:border-concrete/20 bg-concrete dark:bg-charcoal overflow-hidden transition-colors duration-500">
+              <div className="aspect-square overflow-hidden relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=800&auto=format&fit=crop" 
+                  alt="A. Chen" 
+                  className="w-full h-full object-cover grayscale opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700 mix-blend-multiply dark:mix-blend-luminosity"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-bronze/10 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute top-4 right-4 bg-charcoal text-concrete text-[9px] font-mono uppercase px-2 py-1 tracking-widest border border-concrete/20">
+                  ACTIVE
+                </div>
+              </div>
+              <div className="p-6 border-t border-charcoal/20 dark:border-concrete/20">
+                <div className="font-mono text-[10px] text-bronze uppercase tracking-widest mb-2">ID: 003 // LEVEL 4</div>
+                <h3 className="font-display text-xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete mb-1">A. Chen</h3>
+                <p className="font-mono text-xs text-charcoal/60 dark:text-concrete/60 uppercase tracking-wider mb-4">Senior Structural Eng.</p>
+                <div className="h-[1px] w-full bg-charcoal/10 dark:bg-concrete/10 mb-4"></div>
+                <div className="space-y-2 font-mono text-[10px] text-charcoal/80 dark:text-concrete/80 uppercase tracking-widest">
+                  <div className="flex justify-between"><span>Specialty:</span> <span className="text-right">Adaptive Reuse</span></div>
+                  <div className="flex justify-between"><span>Clearance:</span> <span className="text-right">Beta</span></div>
+                  <div className="flex justify-between"><span>Projects:</span> <span className="text-right">19</span></div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+      </section>
+
     </main>
   );
 }

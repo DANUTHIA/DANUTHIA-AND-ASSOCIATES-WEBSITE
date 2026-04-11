@@ -153,12 +153,16 @@ service cloud.firestore {
 
     function isValidBookingRequest() {
       let data = request.resource.data;
-      return hasOnlyAllowedFields(['userId', 'fullName', 'projectScale', 'preferredDate', 'createdAt', 'status']) &&
-             hasRequiredFields(['userId', 'fullName', 'projectScale', 'preferredDate', 'createdAt', 'status']) &&
+      return hasOnlyAllowedFields(['userId', 'fullName', 'email', 'phone', 'location', 'projectType', 'preferredDate', 'description', 'createdAt', 'status']) &&
+             hasRequiredFields(['userId', 'fullName', 'email', 'phone', 'location', 'projectType', 'preferredDate', 'description', 'createdAt', 'status']) &&
              data.userId is string && data.userId == 'anonymous' &&
              data.fullName is string && data.fullName.size() > 0 && data.fullName.size() <= 100 &&
-             data.projectScale in ['residential', 'commercial', 'regional'] &&
+             data.email is string && data.email.size() > 0 && data.email.size() <= 150 &&
+             data.phone is string && data.phone.size() > 0 && data.phone.size() <= 50 &&
+             data.location is string && data.location.size() > 0 && data.location.size() <= 200 &&
+             data.projectType is string && data.projectType.size() > 0 && data.projectType.size() <= 100 &&
              isValidDateString(data.preferredDate) &&
+             data.description is string && data.description.size() > 0 && data.description.size() <= 2000 &&
              data.createdAt is timestamp &&
              data.status in ['pending', 'reviewed', 'contacted'];
     }
@@ -337,8 +341,12 @@ service cloud.firestore {
                     request.resource.data.userId == resource.data.userId &&
                     request.resource.data.createdAt == resource.data.createdAt &&
                     request.resource.data.fullName == resource.data.fullName &&
-                    request.resource.data.projectScale == resource.data.projectScale &&
-                    request.resource.data.preferredDate == resource.data.preferredDate;
+                    request.resource.data.email == resource.data.email &&
+                    request.resource.data.phone == resource.data.phone &&
+                    request.resource.data.location == resource.data.location &&
+                    request.resource.data.projectType == resource.data.projectType &&
+                    request.resource.data.preferredDate == resource.data.preferredDate &&
+                    request.resource.data.description == resource.data.description;
                     
       allow delete: if isAdmin();
     }

@@ -63,7 +63,7 @@ export default function CommandPalette() {
             transition={{ duration: 0.2 }}
             className="fixed top-[20vh] left-1/2 -translate-x-1/2 w-full max-w-2xl z-[10000] p-4"
           >
-            <div className="bg-[#111111] border border-bronze/50 shadow-2xl overflow-hidden">
+            <div className="bg-charcoal border border-bronze/50 shadow-2xl overflow-hidden">
               <div className="flex items-center gap-4 p-4 border-b border-bronze/20 bg-bronze/5">
                 <Terminal size={20} className="text-bronze" />
                 <input 

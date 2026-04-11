@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   LogOut, FileText, Calendar, Clock, Download, MessageSquare, 
   Send, Upload, CheckCircle2, Loader2, Circle, Box, CreditCard, 
-  Bell, ChevronRight, Check, AlertCircle, X, Maximize2
+  Bell, ChevronRight, Check, AlertCircle, X, Maximize2, Shield
 } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stage, Gltf, Environment } from '@react-three/drei';
@@ -15,6 +15,7 @@ import Magnetic from '../components/Magnetic';
 import { Skeleton } from '../components/Skeleton';
 import OnboardingWizard from '../components/OnboardingWizard';
 import BlueprintAnnotation from '../components/BlueprintAnnotation';
+import AdminDashboard from '../components/AdminDashboard';
 
 interface Message {
   id: string;
@@ -135,10 +136,21 @@ export default function ClientPortal() {
           
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            setUser({ ...currentUser, role: userData.role, needsOnboarding: userData.needsOnboarding });
+            let role = userData.role;
+            if (currentUser.email === 'machariag605@gmail.com' || currentUser.email === 'danuthiaandassociates@gmail.com') {
+              role = 'admin';
+              if (userData.role !== 'admin') {
+                await updateDoc(userDocRef, { role: 'admin' });
+              }
+            }
+            setUser({ ...currentUser, role: role, needsOnboarding: userData.needsOnboarding });
             setShowOnboarding(userData.needsOnboarding || false);
           } else {
-            setUser({ ...currentUser, role: 'pending' });
+            let role = 'pending';
+            if (currentUser.email === 'machariag605@gmail.com' || currentUser.email === 'danuthiaandassociates@gmail.com') {
+              role = 'admin';
+            }
+            setUser({ ...currentUser, role: role });
           }
         } catch (error) {
           console.error("Error fetching user role:", error);
@@ -473,9 +485,9 @@ export default function ClientPortal() {
   if (user?.role === 'pending') {
     return (
       <div className="min-h-[calc(100vh-6rem)] flex flex-col items-center justify-center bg-concrete dark:bg-charcoal p-6 text-center transition-colors duration-500">
-        <div className="max-w-md w-full bg-charcoal dark:bg-[#111111] text-concrete p-10 md:p-16 relative z-10 transition-colors duration-500">
+        <div className="max-w-md w-full bg-charcoal dark:bg-charcoal text-concrete p-10 md:p-16 relative z-10 transition-colors duration-500">
           <div className="flex justify-center mb-10">
-            <div className="w-16 h-16 rounded-none border border-bronze/30 flex items-center justify-center bg-charcoal dark:bg-[#111111] shadow-[0_0_30px_rgba(184,134,11,0.1)] transition-colors duration-500">
+            <div className="w-16 h-16 rounded-none border border-bronze/30 flex items-center justify-center bg-charcoal dark:bg-charcoal shadow-[0_0_30px_rgba(184,134,11,0.1)] transition-colors duration-500">
               <Clock size={20} className="text-bronze" strokeWidth={1.5} />
             </div>
           </div>
@@ -538,7 +550,7 @@ export default function ClientPortal() {
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 mt-4 w-80 bg-white dark:bg-[#111111] border border-steel/20 dark:border-concrete/20 shadow-2xl z-[100] p-4 transition-colors duration-500"
+                    className="absolute right-0 mt-4 w-80 bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 shadow-2xl z-[100] p-4 transition-colors duration-500"
                   >
                     <div className="flex justify-between items-center mb-4 border-b border-steel/10 pb-2">
                       <h4 className="font-mono text-[10px] uppercase tracking-widest text-steel">Notifications</h4>
@@ -600,6 +612,7 @@ export default function ClientPortal() {
             { id: 'payments', label: 'Payments', icon: CreditCard },
             { id: 'messages', label: 'Messages', icon: MessageSquare },
             { id: 'feedback', label: 'Feedback', icon: CheckCircle2 },
+            ...(user?.role === 'admin' ? [{ id: 'admin', label: 'Admin', icon: Shield }] : []),
           ].map(tab => (
             <button
               key={tab.id}
@@ -633,18 +646,18 @@ export default function ClientPortal() {
               <div className="space-y-12">
                 {/* Project Overview Dashboard */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <div className="bg-white dark:bg-[#111111] p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500">
+                  <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500">
                     <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Days Remaining</h3>
                     <p className="font-display text-4xl text-charcoal dark:text-concrete">42</p>
                   </div>
-                  <div className="bg-white dark:bg-[#111111] p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500">
+                  <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500">
                     <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Budget Utilized</h3>
                     <div className="w-full bg-steel/20 h-2 mb-2">
                       <div className="bg-bronze h-full" style={{ width: '68%' }}></div>
                     </div>
                     <p className="font-display text-xl text-charcoal dark:text-concrete">68%</p>
                   </div>
-                  <div className="bg-white dark:bg-[#111111] p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500 flex justify-between items-center">
+                  <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500 flex justify-between items-center">
                     <div>
                       <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Current Phase</h3>
                       <p className="font-display text-2xl text-charcoal dark:text-concrete">Design Development</p>
@@ -675,7 +688,7 @@ export default function ClientPortal() {
                         {updates.map((update) => (
                           <div 
                             key={update.id}
-                            className="bg-white dark:bg-[#111111] border border-steel/20 dark:border-concrete/20 p-8 hover:border-bronze/30 transition-colors duration-500"
+                            className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 hover:border-bronze/30 transition-colors duration-500"
                           >
                             <div className="flex justify-between items-start mb-6">
                               <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete transition-colors duration-500">{update.title}</h3>
@@ -702,7 +715,7 @@ export default function ClientPortal() {
                   </div>
                   
                   <div className="lg:col-span-4">
-                    <div className="bg-white dark:bg-[#111111] border border-steel/20 dark:border-concrete/20 p-8 transition-colors duration-500 sticky top-24">
+                    <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 transition-colors duration-500 sticky top-24">
                       <h2 className="font-display text-xl font-light tracking-tight mb-8 flex items-center gap-3 text-charcoal dark:text-concrete transition-colors duration-500">
                         <Calendar className="text-bronze" size={18} strokeWidth={1.5} />
                         Next Milestone
@@ -755,7 +768,7 @@ export default function ClientPortal() {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#111111] border border-steel/20 dark:border-concrete/20 overflow-x-auto transition-colors duration-500">
+                <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 overflow-x-auto transition-colors duration-500">
                   <div className="min-w-[800px] p-8">
                     {milestonesLoading ? (
                       <div className="space-y-6">
@@ -824,19 +837,19 @@ export default function ClientPortal() {
                 </div>
 
                 <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <div className="p-6 border border-steel/10 bg-white dark:bg-[#111111]">
+                  <div className="p-6 border border-steel/10 bg-concrete dark:bg-charcoal">
                     <p className="text-[10px] font-mono uppercase text-steel mb-2">Overall Progress</p>
                     <p className="text-3xl font-display font-light">
                       {Math.round((milestones.filter(m => m.status === 'completed').length / milestones.length) * 100) || 0}%
                     </p>
                   </div>
-                  <div className="p-6 border border-steel/10 bg-white dark:bg-[#111111]">
+                  <div className="p-6 border border-steel/10 bg-concrete dark:bg-charcoal">
                     <p className="text-[10px] font-mono uppercase text-steel mb-2">Active Phase</p>
                     <p className="text-xl font-display font-light">
                       {milestones.find(m => m.status === 'in-progress')?.title || 'None'}
                     </p>
                   </div>
-                  <div className="p-6 border border-steel/10 bg-white dark:bg-[#111111]">
+                  <div className="p-6 border border-steel/10 bg-concrete dark:bg-charcoal">
                     <p className="text-[10px] font-mono uppercase text-steel mb-2">Next Milestone</p>
                     <p className="text-xl font-display font-light">
                       {milestones.find(m => m.status === 'upcoming')?.title || 'Project Complete'}
@@ -867,7 +880,7 @@ export default function ClientPortal() {
                 ) : (
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                     <div className="lg:col-span-8">
-                      <div className="bg-white dark:bg-[#111111] border border-steel/20 dark:border-concrete/20 aspect-video relative overflow-hidden transition-colors duration-500">
+                      <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 aspect-video relative overflow-hidden transition-colors duration-500">
                         {selectedModel ? (
                           <div className="w-full h-full">
                             <Canvas shadows camera={{ position: [5, 5, 5], fov: 50 }}>
@@ -903,7 +916,7 @@ export default function ClientPortal() {
                           className={`w-full text-left p-6 border transition-all duration-300 ${
                             selectedModel?.id === model.id 
                               ? 'border-bronze bg-bronze/5' 
-                              : 'border-steel/20 hover:border-bronze/30 bg-white dark:bg-[#111111]'
+                              : 'border-steel/20 hover:border-bronze/30 bg-concrete dark:bg-charcoal'
                           }`}
                         >
                           <h4 className="font-display text-lg font-light mb-2">{model.title}</h4>
@@ -921,7 +934,7 @@ export default function ClientPortal() {
             {activeTab === 'vault' && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                 <div className="lg:col-span-8">
-                  <div className="bg-white dark:bg-[#111111] border border-steel/20 dark:border-concrete/20 p-8 transition-colors duration-500">
+                  <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 transition-colors duration-500">
                     <div className="flex justify-between items-center mb-8">
                       <h2 className="font-display text-2xl font-light tracking-tight flex items-center gap-3">
                         <FileText className="text-bronze" size={20} strokeWidth={1.5} />
@@ -1027,7 +1040,7 @@ export default function ClientPortal() {
                 </div>
                 
                 <div className="lg:col-span-4">
-                  <div className="bg-charcoal dark:bg-[#111111] text-concrete p-8 transition-colors duration-500">
+                  <div className="bg-charcoal dark:bg-charcoal text-concrete p-8 transition-colors duration-500">
                     <h3 className="font-display text-xl font-light mb-6">Vault Statistics</h3>
                     <div className="space-y-6">
                       <div className="flex justify-between items-end">
@@ -1060,19 +1073,19 @@ export default function ClientPortal() {
             {activeTab === 'payments' && (
               <div className="space-y-12">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <div className="bg-white dark:bg-[#111111] p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500">
+                  <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500">
                     <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Outstanding Balance</h3>
                     <p className="font-display text-4xl text-charcoal dark:text-concrete">
                       ${invoices.filter(i => i.status === 'unpaid').reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}
                     </p>
                   </div>
-                  <div className="bg-white dark:bg-[#111111] p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500">
+                  <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500">
                     <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Total Paid</h3>
                     <p className="font-display text-4xl text-bronze">
                       ${invoices.filter(i => i.status === 'paid').reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}
                     </p>
                   </div>
-                  <div className="bg-white dark:bg-[#111111] p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500 flex items-center justify-center">
+                  <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500 flex items-center justify-center">
                     <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest border border-charcoal dark:border-concrete px-8 py-4 hover:bg-charcoal hover:text-concrete dark:hover:bg-concrete dark:hover:text-charcoal transition-all">
                       <Download size={14} />
                       Download Tax Summary
@@ -1080,7 +1093,7 @@ export default function ClientPortal() {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#111111] border border-steel/20 dark:border-concrete/20 p-8 transition-colors duration-500">
+                <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 transition-colors duration-500">
                   <h2 className="font-display text-2xl font-light tracking-tight mb-8">Invoices & Billing</h2>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
@@ -1158,7 +1171,7 @@ export default function ClientPortal() {
 
             {activeTab === 'messages' && (
               <div className="max-w-4xl mx-auto">
-                <div className="bg-white dark:bg-[#111111] border border-steel/20 dark:border-concrete/20 p-8 flex flex-col h-[600px] transition-colors duration-500">
+                <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 flex flex-col h-[600px] transition-colors duration-500">
                   <div className="flex justify-between items-center mb-6 pb-6 border-b border-steel/10">
                     <h2 className="font-display text-2xl font-light tracking-tight flex items-center gap-3 text-charcoal dark:text-concrete transition-colors duration-500">
                       <MessageSquare className="text-bronze" size={20} strokeWidth={1.5} />
@@ -1217,6 +1230,10 @@ export default function ClientPortal() {
                 </div>
               </div>
             )}
+
+            {activeTab === 'admin' && user?.role === 'admin' && (
+              <AdminDashboard />
+            )}
           </motion.div>
         </AnimatePresence>
 
@@ -1238,7 +1255,7 @@ export default function ClientPortal() {
                   <X size={24} />
                 </button>
               </div>
-              <div className="flex-1 bg-black">
+              <div className="flex-1 bg-charcoal">
                 <Canvas shadows camera={{ position: [5, 5, 5], fov: 50 }}>
                   <Stage environment="city" intensity={0.5}>
                     <Gltf src={selectedModel.modelUrl} castShadow receiveShadow />
@@ -1264,7 +1281,7 @@ export default function ClientPortal() {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-concrete dark:bg-[#111111] p-8 max-w-5xl w-full shadow-2xl relative transition-colors duration-500"
+                className="bg-concrete dark:bg-charcoal p-8 max-w-5xl w-full shadow-2xl relative transition-colors duration-500"
               >
                 <div className="flex justify-between items-center mb-6 border-b border-steel/10 pb-4">
                   <div>

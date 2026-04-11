@@ -19,7 +19,7 @@ export default function Affiliate() {
   return (
     <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500">
       {/* Hero Section */}
-      <section className="relative bg-charcoal dark:bg-[#111111] text-concrete p-8 md:p-16 pt-32 md:pt-40 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
+      <section className="relative bg-charcoal dark:bg-charcoal text-concrete p-8 md:p-16 pt-32 md:pt-40 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.05, scale: 1 }}
@@ -76,7 +76,7 @@ export default function Affiliate() {
           </div>
         </div>
 
-        <div className="max-w-3xl mx-auto bg-white dark:bg-[#111111] border border-steel/20 dark:border-concrete/20 p-12 text-center transition-colors duration-500">
+        <div className="max-w-3xl mx-auto bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-12 text-center transition-colors duration-500">
           <h2 className="font-display text-3xl mb-6 text-charcoal dark:text-concrete transition-colors duration-500">Join the Network</h2>
           <p className="text-charcoal/70 dark:text-concrete/70 mb-10 font-light leading-relaxed transition-colors duration-500">
             Our affiliate program is open to real estate agents, financial advisors, and industry professionals. Contact us to discuss partnership terms and register as an official affiliate.
