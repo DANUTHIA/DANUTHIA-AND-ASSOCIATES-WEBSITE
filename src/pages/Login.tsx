@@ -48,7 +48,7 @@ export default function Login() {
       {/* Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
         <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[60%] border-[1px] border-steel/10 dark:border-concrete/10 rounded-full blur-3xl opacity-50 transition-colors duration-500"></div>
-        <div className="absolute bottom-[-10%] left-[-5%] w-[50%] h-[50%] border-[1px] border-bronze/10 rounded-full blur-3xl opacity-30"></div>
+        <div className="absolute bottom-[-10%] left-[-5%] w-[50%] h-[50%] border-[1px] border-accent/10 rounded-full blur-3xl opacity-30"></div>
       </div>
 
       <motion.div 
@@ -58,8 +58,8 @@ export default function Login() {
         className="max-w-md w-full bg-charcoal dark:bg-charcoal text-concrete p-10 md:p-16 relative z-10 transition-colors duration-500"
       >
         <div className="flex justify-center mb-10">
-          <div className="w-16 h-16 rounded-none border border-bronze/30 flex items-center justify-center bg-charcoal dark:bg-charcoal shadow-[0_0_30px_rgba(184,134,11,0.1)] transition-colors duration-500">
-            <Lock size={20} className="text-bronze" strokeWidth={1.5} />
+          <div className="w-16 h-16 rounded-none border border-accent/30 flex items-center justify-center bg-charcoal dark:bg-charcoal shadow-[0_0_30px_rgba(184,134,11,0.1)] transition-colors duration-500">
+            <Lock size={20} className="text-accent" strokeWidth={1.5} />
           </div>
         </div>
         
@@ -80,7 +80,7 @@ export default function Login() {
           <button
             onClick={handleLogin}
             disabled={isLoading}
-            className="w-full bg-transparent border border-bronze text-bronze py-4 font-bold uppercase tracking-widest hover:bg-bronze hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+            className="w-full bg-transparent border border-accent text-accent py-4 font-bold uppercase tracking-widest hover:bg-accent hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed text-xs"
           >
             <span>{isLoading ? 'Authenticating...' : 'Sign in with Google'}</span>
             {!isLoading && <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform duration-500" strokeWidth={1.5} />}
@@ -95,7 +95,7 @@ export default function Login() {
             onClick={() => {
               navigate('/#book');
             }}
-            className="text-bronze text-[10px] font-bold uppercase tracking-widest hover:text-concrete transition-colors duration-300 border-b border-bronze/30 hover:border-bronze pb-1"
+            className="text-accent text-[10px] font-bold uppercase tracking-widest hover:text-concrete transition-colors duration-300 border-b border-accent/30 hover:border-accent pb-1"
           >
             Not a client yet? Register with us today.
           </button>

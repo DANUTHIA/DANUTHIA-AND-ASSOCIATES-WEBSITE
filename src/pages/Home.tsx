@@ -8,7 +8,7 @@ import Logo from '../components/Logo';
 import Magnetic from '../components/Magnetic';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 
-const HERO_VIDEO = "/input_file_0.mp4";
+const HERO_VIDEO = "https://i.imgur.com/xrqIXFV.mp4";
 
 const fadeInUp: any = {
   hidden: { opacity: 0, y: 40 },
@@ -152,13 +152,13 @@ export default function Home() {
             loop 
             muted 
             playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-80"
+            className="absolute inset-0 w-full h-full object-cover opacity-70"
           >
             <source src={HERO_VIDEO} type="video/mp4" />
           </video>
         </motion.div>
         
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-charcoal/50 pointer-events-none"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent pointer-events-none"></div>
         
         <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-16 lg:p-24 z-10">
           <motion.div 
@@ -175,7 +175,7 @@ export default function Home() {
                 Agile, data-driven planning and architectural precision for the next generation of sustainable development.
               </p>
               <div className="flex items-center gap-6">
-                <Link to="/portfolio" className="group flex items-center justify-center w-16 h-16 rounded-none border border-concrete/30 hover:border-bronze hover:bg-bronze transition-all duration-500">
+                <Link to="/portfolio" className="group flex items-center justify-center w-16 h-16 rounded-none border border-concrete/30 hover:border-accent hover:bg-accent transition-all duration-500">
                   <ArrowRight size={20} className="text-concrete group-hover:translate-x-1 transition-transform duration-500" />
                 </Link>
                 <span className="text-xs font-mono uppercase tracking-widest text-concrete/50">Explore Work</span>
@@ -184,6 +184,40 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
+
+      {/* Infinite Ticker - BIG Aesthetic */}
+      <div className="w-full overflow-hidden bg-accent text-charcoal py-4 border-y border-charcoal dark:border-concrete flex whitespace-nowrap">
+        <motion.div 
+          className="flex gap-8 items-center font-display text-xl md:text-2xl font-bold uppercase tracking-widest"
+          animate={{ x: [0, -1035] }}
+          transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+        >
+          <span>Urban Planning</span>
+          <span className="opacity-50">+</span>
+          <span>Architectural Design</span>
+          <span className="opacity-50">+</span>
+          <span>Spatial Analysis</span>
+          <span className="opacity-50">+</span>
+          <span>Sustainable Development</span>
+          <span className="opacity-50">+</span>
+          <span>Project Management</span>
+          <span className="opacity-50">+</span>
+          <span>Parametric Modeling</span>
+          <span className="opacity-50">+</span>
+          <span>Urban Planning</span>
+          <span className="opacity-50">+</span>
+          <span>Architectural Design</span>
+          <span className="opacity-50">+</span>
+          <span>Spatial Analysis</span>
+          <span className="opacity-50">+</span>
+          <span>Sustainable Development</span>
+          <span className="opacity-50">+</span>
+          <span>Project Management</span>
+          <span className="opacity-50">+</span>
+          <span>Parametric Modeling</span>
+          <span className="opacity-50">+</span>
+        </motion.div>
+      </div>
 
       {/* Section 2: Expertise - Brutalist Grid */}
       <motion.section 
@@ -207,7 +241,7 @@ export default function Home() {
             { title: "Project Management", icon: ClipboardList, tags: ['Agile', 'Scheduling', 'Quality Assurance'] }
           ].map((item, idx) => (
             <motion.div key={idx} variants={fadeInUp} className="group flex flex-col p-8 border-r border-b border-charcoal dark:border-concrete hover:bg-charcoal hover:text-concrete dark:hover:bg-concrete dark:hover:text-charcoal transition-colors duration-300">
-              <div className="mb-8 text-bronze">
+              <div className="mb-8 text-accent">
                 <item.icon size={32} strokeWidth={1.5} />
               </div>
               <h3 className="font-display text-xl font-bold uppercase tracking-tight mb-4">{item.title}</h3>
@@ -232,7 +266,7 @@ export default function Home() {
         variants={staggerContainer}
       >
         <motion.div variants={fadeInUp} className="mb-16 max-w-3xl">
-          <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4">The Process</p>
+          <p className="text-accent tracking-[0.2em] text-xs font-mono uppercase mb-4">The Process</p>
           <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete mb-6 transition-colors duration-500">
             We transform blueprints to reality
           </h2>
@@ -260,7 +294,7 @@ export default function Home() {
         variants={staggerContainer}
       >
         <motion.div variants={fadeInUp} className="mb-16">
-          <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4">Firm Impact</p>
+          <p className="text-accent tracking-[0.2em] text-xs font-mono uppercase mb-4">Firm Impact</p>
           <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete mb-6 transition-colors duration-500">
             Global Scale & Metrics
           </h2>
@@ -281,7 +315,7 @@ export default function Home() {
               <p className="text-[10px] font-mono uppercase tracking-widest text-charcoal/60 dark:text-concrete/60 mb-8">{metric.label}</p>
               <div className="flex items-baseline gap-1">
                 <span className="font-display text-6xl font-bold text-charcoal dark:text-concrete tracking-tighter">{metric.value}</span>
-                <span className="font-display text-3xl font-bold text-bronze">{metric.suffix}</span>
+                <span className="font-display text-3xl font-bold text-accent">{metric.suffix}</span>
               </div>
             </motion.div>
           ))}
@@ -298,11 +332,11 @@ export default function Home() {
       >
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
           <motion.div variants={fadeInUp} className="max-w-2xl">
-            <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4">Narratives</p>
+            <p className="text-accent tracking-[0.2em] text-xs font-mono uppercase mb-4">Narratives</p>
             <h2 className="font-display text-4xl md:text-6xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete">Project<br/>Stories.</h2>
           </motion.div>
           <motion.div variants={fadeInUp}>
-            <Link to="/portfolio" className="inline-flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-bronze hover:text-charcoal dark:hover:text-concrete transition-colors group">
+            <Link to="/portfolio" className="inline-flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-accent hover:text-charcoal dark:hover:text-concrete transition-colors group">
               Explore All Stories <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
             </Link>
           </motion.div>
@@ -332,20 +366,20 @@ export default function Home() {
                 <img 
                   src={story.img} 
                   alt={story.title} 
-                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000"
+                  className="w-full h-full object-cover  group-hover:-0 group-hover:scale-105 transition-all duration-1000"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute top-6 left-6 bg-bronze text-charcoal px-3 py-1 text-[10px] font-mono uppercase tracking-widest font-bold">
+                <div className="absolute top-6 left-6 bg-accent text-charcoal px-3 py-1 text-[10px] font-mono uppercase tracking-widest font-bold">
                   {story.category}
                 </div>
               </div>
-              <h3 className="font-display text-2xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete group-hover:text-bronze transition-colors mb-4">
+              <h3 className="font-display text-2xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete group-hover:text-accent transition-colors mb-4">
                 {story.title}
               </h3>
               <p className="text-charcoal/60 dark:text-concrete/60 font-mono text-xs leading-relaxed mb-6">
                 {story.desc}
               </p>
-              <div className="h-[1px] w-0 group-hover:w-full bg-bronze transition-all duration-700"></div>
+              <div className="h-[1px] w-0 group-hover:w-full bg-accent transition-all duration-700"></div>
             </motion.div>
           ))}
         </div>
@@ -363,11 +397,11 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8 border-b border-concrete/20 pb-8">
             <motion.div variants={fadeInUp} className="max-w-2xl">
-              <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4">Selected Works</p>
+              <p className="text-accent tracking-[0.2em] text-xs font-mono uppercase mb-4">Selected Works</p>
               <h2 className="font-display text-5xl md:text-6xl font-bold uppercase tracking-tight">Project & Research Archive</h2>
             </motion.div>
             <motion.div variants={fadeInUp}>
-              <Link to="/portfolio" className="inline-flex items-center gap-4 text-xs font-mono uppercase tracking-widest hover:text-bronze transition-colors group border border-concrete px-6 py-3">
+              <Link to="/portfolio" className="inline-flex items-center gap-4 text-xs font-mono uppercase tracking-widest hover:text-accent transition-colors group border border-concrete px-6 py-3">
                 View All Projects
                 <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
               </Link>
@@ -388,7 +422,7 @@ export default function Home() {
                       transition={{ duration: 1.2, ease: "easeOut" }}
                       src={project.img} 
                       alt={project.title} 
-                      className="object-cover w-full h-full opacity-80 group-hover:opacity-100 transition-opacity duration-500 grayscale group-hover:grayscale-0"
+                      className="object-cover w-full h-full opacity-80 group-hover:opacity-100 transition-opacity duration-500  group-hover:-0"
                       referrerPolicy="no-referrer"
                     />
                   </div>
@@ -411,7 +445,7 @@ export default function Home() {
         variants={staggerContainer}
       >
         <motion.div variants={fadeInUp} className="text-center mb-20 max-w-4xl mx-auto border border-charcoal dark:border-concrete p-12 md:p-24">
-          <Quote size={40} className="text-bronze mx-auto mb-12" />
+          <Quote size={40} className="text-accent mx-auto mb-12" />
           <h2 className="font-display text-3xl md:text-5xl font-bold uppercase tracking-tight leading-tight mb-12 text-balance text-charcoal dark:text-concrete transition-colors duration-500">
             "First life, then spaces, then buildings – the other way around never works."
           </h2>
@@ -432,7 +466,7 @@ export default function Home() {
               >
                 <div className="flex gap-1 mb-6">
                   {[...Array(5)].map((_, i) => (
-                    <span key={i} className={i < test.rating ? 'text-bronze' : 'text-charcoal/20 dark:text-concrete/20'}>★</span>
+                    <span key={i} className={i < test.rating ? 'text-accent' : 'text-charcoal/20 dark:text-concrete/20'}>★</span>
                   ))}
                 </div>
                 <p className="text-charcoal dark:text-concrete font-mono text-sm mb-8 leading-relaxed uppercase">
@@ -443,7 +477,7 @@ export default function Home() {
                     <p className="text-sm font-bold uppercase text-charcoal dark:text-concrete">{test.clientName}</p>
                     <p className="text-[10px] font-mono text-charcoal/50 dark:text-concrete/50 uppercase tracking-widest mt-1">{test.projectType}</p>
                   </div>
-                  <CheckCircle size={16} className="text-bronze" />
+                  <CheckCircle size={16} className="text-accent" />
                 </div>
               </motion.div>
             ))}
@@ -475,12 +509,12 @@ export default function Home() {
               
               <div className="border-t border-charcoal/20 dark:border-concrete/20 pt-4">
                 <p className="text-[10px] font-mono text-charcoal/50 dark:text-concrete/50 uppercase tracking-widest mb-1 transition-colors duration-500">Direct Line</p>
-                <a href="tel:0715795589" className="font-display text-2xl font-bold uppercase text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors duration-500">0715 795 589</a>
+                <a href="tel:0715795589" className="font-display text-2xl font-bold uppercase text-charcoal dark:text-concrete hover:text-accent dark:hover:text-accent transition-colors duration-500">0715 795 589</a>
               </div>
               
               <div className="border-t border-charcoal/20 dark:border-concrete/20 pt-4">
                 <p className="text-[10px] font-mono text-charcoal/50 dark:text-concrete/50 uppercase tracking-widest mb-1 transition-colors duration-500">Official Email</p>
-                <a href="mailto:danuthiaandassociates@gmail.com" className="font-display text-2xl font-bold uppercase text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors duration-500 break-all">danuthiaandassociates@gmail.com</a>
+                <a href="mailto:danuthiaandassociates@gmail.com" className="font-display text-2xl font-bold uppercase text-charcoal dark:text-concrete hover:text-accent dark:hover:text-accent transition-colors duration-500 break-all">danuthiaandassociates@gmail.com</a>
               </div>
             </div>
           </motion.div>
@@ -498,7 +532,7 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   className="text-center py-12 border border-concrete p-8"
                 >
-                  <CheckCircle size={48} className="text-bronze mx-auto mb-6" />
+                  <CheckCircle size={48} className="text-accent mx-auto mb-6" />
                   <h4 className="font-display text-3xl font-bold uppercase tracking-tight mb-4">Request Received</h4>
                   <p className="text-concrete/70 font-mono text-sm mb-12">
                     Thank you. We have received your consultation request and will be in touch shortly to confirm the details.
@@ -506,7 +540,7 @@ export default function Home() {
                   <Magnetic>
                     <button 
                       onClick={() => setSubmitSuccess(false)}
-                      className="text-[10px] font-mono uppercase tracking-widest text-bronze hover:text-concrete transition-colors pb-1 border-b border-bronze/30 hover:border-concrete"
+                      className="text-[10px] font-mono uppercase tracking-widest text-accent hover:text-concrete transition-colors pb-1 border-b border-accent/30 hover:border-concrete"
                     >
                       Submit Another Request
                     </button>
@@ -515,7 +549,7 @@ export default function Home() {
               ) : (
                 <form className="space-y-10" onSubmit={handleSubmit}>
                   {submitError && (
-                    <div className="text-bronze text-[10px] font-mono uppercase border border-bronze p-4">
+                    <div className="text-accent text-[10px] font-mono uppercase border border-accent p-4">
                       {submitError}
                     </div>
                   )}
@@ -526,12 +560,12 @@ export default function Home() {
                         type="text" 
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg peer placeholder-transparent rounded-none"
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-accent transition-colors text-lg peer placeholder-transparent rounded-none"
                         placeholder="Full Name"
                         id="fullName"
                         required
                       />
-                      <label htmlFor="fullName" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-bronze">
+                      <label htmlFor="fullName" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-accent">
                         Full Name
                       </label>
                     </div>
@@ -541,12 +575,12 @@ export default function Home() {
                         type="email" 
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg peer placeholder-transparent rounded-none"
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-accent transition-colors text-lg peer placeholder-transparent rounded-none"
                         placeholder="Email Address"
                         id="email"
                         required
                       />
-                      <label htmlFor="email" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-bronze">
+                      <label htmlFor="email" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-accent">
                         Email Address
                       </label>
                     </div>
@@ -556,12 +590,12 @@ export default function Home() {
                         type="tel" 
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg peer placeholder-transparent rounded-none"
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-accent transition-colors text-lg peer placeholder-transparent rounded-none"
                         placeholder="Phone Number"
                         id="phone"
                         required
                       />
-                      <label htmlFor="phone" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-bronze">
+                      <label htmlFor="phone" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-accent">
                         Phone Number
                       </label>
                     </div>
@@ -571,12 +605,12 @@ export default function Home() {
                         type="text" 
                         value={locationState}
                         onChange={(e) => setLocationState(e.target.value)}
-                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg peer placeholder-transparent rounded-none"
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-accent transition-colors text-lg peer placeholder-transparent rounded-none"
                         placeholder="Project Location"
                         id="location"
                         required
                       />
-                      <label htmlFor="location" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-bronze">
+                      <label htmlFor="location" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-accent">
                         Project Location
                       </label>
                     </div>
@@ -585,7 +619,7 @@ export default function Home() {
                       <select 
                         value={projectType}
                         onChange={(e) => setProjectType(e.target.value)}
-                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg appearance-none cursor-pointer peer rounded-none"
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-accent transition-colors text-lg appearance-none cursor-pointer peer rounded-none"
                         required
                       >
                         <option value="" disabled className="text-charcoal bg-concrete">Select project type...</option>
@@ -594,7 +628,7 @@ export default function Home() {
                         <option value="interior-design" className="text-charcoal bg-concrete">Interior Design</option>
                         <option value="master-planning" className="text-charcoal bg-concrete">Master Planning</option>
                       </select>
-                      <label className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-bronze transition-colors">
+                      <label className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-accent transition-colors">
                         Project Type
                       </label>
                     </div>
@@ -604,25 +638,25 @@ export default function Home() {
                         type="date" 
                         value={preferredDate}
                         onChange={(e) => setPreferredDate(e.target.value)}
-                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full peer rounded-none"
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-accent transition-colors text-lg appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full peer rounded-none"
                         required
                       />
-                      <label className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-bronze transition-colors">
+                      <label className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-accent transition-colors">
                         Preferred Date
                       </label>
-                      <Calendar size={20} className="absolute right-0 top-3 text-concrete/30 pointer-events-none peer-focus:text-bronze transition-colors" />
+                      <Calendar size={20} className="absolute right-0 top-3 text-concrete/30 pointer-events-none peer-focus:text-accent transition-colors" />
                     </div>
 
                     <div className="relative group md:col-span-2">
                       <textarea 
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-bronze transition-colors text-lg peer placeholder-transparent rounded-none resize-none h-24 custom-scrollbar"
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-accent transition-colors text-lg peer placeholder-transparent rounded-none resize-none h-24 custom-scrollbar"
                         placeholder="Project Description"
                         id="description"
                         required
                       />
-                      <label htmlFor="description" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-bronze">
+                      <label htmlFor="description" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-accent">
                         Project Description & Vision
                       </label>
                     </div>
@@ -632,7 +666,7 @@ export default function Home() {
                     <button 
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full border border-bronze text-bronze py-4 font-mono text-[10px] uppercase tracking-widest hover:bg-bronze hover:text-charcoal transition-all duration-500 mt-12 flex items-center justify-center gap-4 group disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full border border-accent text-accent py-4 font-mono text-[10px] uppercase tracking-widest hover:bg-accent hover:text-charcoal transition-all duration-500 mt-12 flex items-center justify-center gap-4 group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span>{isSubmitting ? 'Submitting...' : 'Submit Request'}</span>
                       {!isSubmitting && <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />}

@@ -274,7 +274,7 @@ export default function Portfolio() {
           />
         </AnimatePresence>
         
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-charcoal/50 pointer-events-none"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent pointer-events-none"></div>
         
         <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-16 lg:p-24 z-10">
           <motion.div 
@@ -348,7 +348,7 @@ export default function Portfolio() {
         {displayMode === 'grid' && (
           <motion.div 
             layout
-            className="columns-1 md:columns-2 lg:columns-3 gap-12 space-y-12"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1"
           >
             <AnimatePresence mode="popLayout">
               {filteredProjects.map((project, index) => (
@@ -359,32 +359,30 @@ export default function Portfolio() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.5 }}
                   key={project.id} 
-                  className="group cursor-pointer relative break-inside-avoid p-4 rounded-none border border-transparent hover:border-bronze/30 hover:bg-bronze/5 transition-all duration-500 hover:-translate-y-2"
+                  className="group relative aspect-square overflow-hidden cursor-pointer bg-charcoal"
                   onClick={() => { setSelectedId(project.id); setCurrentImageIndex(0); }}
-                  data-project-metadata={`${project.year} // ${project.area}`}
                 >
-                  <div className="relative overflow-hidden bg-charcoal mb-6 rounded-none shadow-lg group-hover:shadow-xl transition-shadow duration-500 grayscale group-hover:grayscale-0">
-                    <img 
-                      src={project.img} 
-                      alt={project.title} 
-                      className="object-cover w-full h-auto opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-1000 mix-blend-luminosity group-hover:mix-blend-normal"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute inset-0 border border-steel/20 m-4 pointer-events-none group-hover:border-bronze/50 transition-colors duration-700"></div>
-                    <div className="absolute bottom-6 right-6 bg-charcoal/90 px-6 py-4 text-concrete opacity-0 group-hover:opacity-100 transition-opacity duration-500 backdrop-blur-sm border border-steel/30 rounded-none flex items-center gap-3">
-                      <span className="text-[10px] font-mono uppercase tracking-widest font-bold">Learn more</span>
-                      <ArrowRight size={16} />
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-start">
-                    <h3 className="font-display font-bold text-4xl uppercase text-charcoal dark:text-concrete group-hover:text-bronze dark:group-hover:text-bronze transition-colors mb-2">
-                      {project.title}
-                    </h3>
-                    <div className="flex items-center justify-between w-full">
-                      <p className="text-[10px] font-mono text-charcoal/60 dark:text-concrete/60 uppercase tracking-widest transition-colors duration-500">{project.category}</p>
-                      <span className="font-display text-xl font-bold text-steel dark:text-concrete/50 group-hover:text-bronze dark:group-hover:text-bronze transition-colors">
-                        {project.year}
+                  <img 
+                    src={project.img} 
+                    alt={project.title} 
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-40  group-hover:mix-blend-normal"
+                    referrerPolicy="no-referrer"
+                  />
+                  
+                  {/* Hover Overlay - Refined for Desktop, Always-on for Mobile */}
+                  <div className="absolute inset-0 flex flex-col justify-end p-6 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-t from-charcoal/90 via-charcoal/40 to-transparent">
+                    <div className="translate-y-0 lg:translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                      <span className="text-accent font-mono text-[10px] uppercase tracking-widest mb-2 block">
+                        {project.category}
                       </span>
+                      <h3 className="font-display text-2xl md:text-3xl font-bold uppercase tracking-tight text-concrete mb-2">
+                        {project.title}
+                      </h3>
+                      <div className="flex items-center gap-2 mt-2 text-concrete/80 font-mono text-[10px] uppercase tracking-widest">
+                        <span>{project.location}</span>
+                        <span className="w-1 h-1 bg-accent rounded-full"></span>
+                        <span>{project.year}</span>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -416,7 +414,7 @@ export default function Portfolio() {
                   onMouseLeave={() => setHoveredIndexImage(null)}
                 >
                   <div className="col-span-1 font-mono text-xs text-charcoal/50 dark:text-concrete/50">{(idx + 1).toString().padStart(2, '0')}</div>
-                  <div className="col-span-4 font-display font-bold uppercase group-hover:text-bronze transition-colors">{project.title}</div>
+                  <div className="col-span-4 font-display font-bold uppercase group-hover:text-accent transition-colors">{project.title}</div>
                   <div className="col-span-3 font-mono text-[10px] uppercase tracking-widest text-charcoal/70 dark:text-concrete/70">{project.category}</div>
                   <div className="col-span-2 font-mono text-xs text-charcoal/70 dark:text-concrete/70">{project.area}</div>
                   <div className="col-span-2 font-mono text-xs text-right text-charcoal/70 dark:text-concrete/70">{project.year}</div>
@@ -433,7 +431,7 @@ export default function Portfolio() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="absolute inset-0 w-full h-full object-cover grayscale mix-blend-luminosity"
+                    className="absolute inset-0 w-full h-full object-cover  "
                     referrerPolicy="no-referrer"
                   />
                 ) : (
@@ -455,7 +453,7 @@ export default function Portfolio() {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="w-full h-[60vh] bg-charcoal relative border border-bronze/30 overflow-hidden flex items-center justify-center mt-8"
+            className="w-full h-[60vh] bg-charcoal relative border border-accent/30 overflow-hidden flex items-center justify-center mt-8"
           >
             {/* GIS Grid Background */}
             <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ 
@@ -468,11 +466,11 @@ export default function Portfolio() {
             
             {/* Crosshairs */}
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-30">
-              <div className="w-full h-[1px] bg-bronze absolute top-1/2 -translate-y-1/2"></div>
-              <div className="h-full w-[1px] bg-bronze absolute left-1/2 -translate-x-1/2"></div>
-              <div className="w-32 h-32 border border-bronze rounded-full absolute"></div>
-              <div className="w-64 h-64 border border-bronze rounded-full absolute opacity-50"></div>
-              <div className="w-96 h-96 border border-bronze rounded-full absolute opacity-20"></div>
+              <div className="w-full h-[1px] bg-accent absolute top-1/2 -translate-y-1/2"></div>
+              <div className="h-full w-[1px] bg-accent absolute left-1/2 -translate-x-1/2"></div>
+              <div className="w-32 h-32 border border-accent rounded-full absolute"></div>
+              <div className="w-64 h-64 border border-accent rounded-full absolute opacity-50"></div>
+              <div className="w-96 h-96 border border-accent rounded-full absolute opacity-20"></div>
             </div>
 
             {/* Simulated Project Coordinates */}
@@ -489,12 +487,12 @@ export default function Portfolio() {
                   style={{ left: `${x}%`, top: `${y}%` }}
                   onClick={() => { setSelectedId(project.id); setCurrentImageIndex(0); }}
                 >
-                  <div className="w-3 h-3 bg-bronze relative z-10 shadow-[0_0_10px_rgba(184,134,11,0.8)] animate-pulse"></div>
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 border border-bronze rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping"></div>
+                  <div className="w-3 h-3 bg-accent relative z-10 shadow-[0_0_10px_rgba(184,134,11,0.8)] animate-pulse"></div>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 border border-accent rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping"></div>
                   
                   {/* Tooltip */}
-                  <div className="absolute top-4 left-4 bg-charcoal/90 backdrop-blur-sm border border-bronze/50 p-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none w-48 z-20">
-                    <p className="text-[9px] font-mono text-bronze uppercase tracking-widest mb-1">LOC: {x.toFixed(2)}°N, {y.toFixed(2)}°E</p>
+                  <div className="absolute top-4 left-4 bg-charcoal/90 backdrop-blur-sm border border-accent/50 p-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none w-48 z-20">
+                    <p className="text-[9px] font-mono text-accent uppercase tracking-widest mb-1">LOC: {x.toFixed(2)}°N, {y.toFixed(2)}°E</p>
                     <h4 className="font-display text-sm font-bold text-concrete uppercase truncate">{project.title}</h4>
                     <p className="text-[10px] font-mono text-concrete/60 uppercase">{project.location}</p>
                   </div>
@@ -503,7 +501,7 @@ export default function Portfolio() {
             })}
 
             {/* Overlay Info */}
-            <div className="absolute bottom-4 left-4 text-[10px] font-mono text-bronze uppercase tracking-widest bg-charcoal/80 p-2 border border-bronze/30">
+            <div className="absolute bottom-4 left-4 text-[10px] font-mono text-accent uppercase tracking-widest bg-charcoal/80 p-2 border border-accent/30">
               SYS.GIS_PLOTTER // ACTIVE
             </div>
           </motion.div>
@@ -517,15 +515,15 @@ export default function Portfolio() {
           >
             {filteredProjects.sort((a, b) => parseInt(b.year) - parseInt(a.year)).map((project, index) => (
               <div key={project.id} className="relative pl-8 md:pl-16 py-12 border-b border-charcoal/10 dark:border-concrete/10 group cursor-pointer" onClick={() => { setSelectedId(project.id); setCurrentImageIndex(0); }}>
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-charcoal dark:bg-concrete group-hover:bg-bronze transition-colors duration-300"></div>
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-charcoal dark:bg-concrete group-hover:bg-accent transition-colors duration-300"></div>
                 <div className="flex flex-col md:flex-row gap-8 md:gap-16 items-center">
                   <div className="w-full md:w-1/3">
-                    <div className="aspect-video relative overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-500 border border-charcoal/20 dark:border-concrete/20">
+                    <div className="aspect-video relative overflow-hidden  group-hover:-0 transition-all duration-500 border border-charcoal/20 dark:border-concrete/20">
                       <img src={project.img} alt={project.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     </div>
                   </div>
                   <div className="w-full md:w-2/3 flex flex-col">
-                    <span className="font-display text-4xl font-bold text-bronze mb-2">{project.year}</span>
+                    <span className="font-display text-4xl font-bold text-accent mb-2">{project.year}</span>
                     <h3 className="font-display text-3xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete mb-4">{project.title}</h3>
                     <div className="flex gap-4 text-[10px] font-mono uppercase tracking-widest text-charcoal/60 dark:text-concrete/60">
                       <span>{project.category}</span>
@@ -572,19 +570,19 @@ export default function Portfolio() {
                 <div className="absolute top-6 left-6 flex bg-charcoal/50 backdrop-blur-md rounded-none p-1 border border-steel/20 z-30">
                   <button 
                     onClick={() => setViewMode('photo')}
-                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${viewMode === 'photo' ? 'bg-bronze text-concrete' : 'text-concrete hover:text-bronze'}`}
+                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${viewMode === 'photo' ? 'bg-accent text-concrete' : 'text-concrete hover:text-accent'}`}
                   >
                     Photo
                   </button>
                   <button 
                     onClick={() => setViewMode('diagram')}
-                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${viewMode === 'diagram' ? 'bg-bronze text-concrete' : 'text-concrete hover:text-bronze'}`}
+                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${viewMode === 'diagram' ? 'bg-accent text-concrete' : 'text-concrete hover:text-accent'}`}
                   >
                     Diagram
                   </button>
                   <button 
                     onClick={() => setShowTechnicalSpecs(!showTechnicalSpecs)}
-                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${showTechnicalSpecs ? 'bg-bronze text-concrete' : 'text-concrete hover:text-bronze'}`}
+                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${showTechnicalSpecs ? 'bg-accent text-concrete' : 'text-concrete hover:text-accent'}`}
                   >
                     <Layers size={16} />
                   </button>
@@ -609,7 +607,7 @@ export default function Portfolio() {
                         <button
                           key={idx}
                           onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(idx); }}
-                          className={`h-1.5 rounded-none transition-all ${idx === currentImageIndex ? 'bg-bronze w-8' : 'bg-concrete/50 dark:bg-charcoal/50 hover:bg-concrete dark:hover:bg-charcoal w-2'}`}
+                          className={`h-1.5 rounded-none transition-all ${idx === currentImageIndex ? 'bg-accent w-8' : 'bg-concrete/50 dark:bg-charcoal/50 hover:bg-concrete dark:hover:bg-charcoal w-2'}`}
                         />
                       ))}
                     </div>
@@ -619,12 +617,12 @@ export default function Portfolio() {
               <div className="w-full md:w-2/5 p-8 md:p-16 flex flex-col bg-concrete dark:bg-charcoal transition-colors duration-500">
                 <button 
                   onClick={() => { setSelectedId(null); setShowTechnicalSpecs(false); }}
-                  className="self-end text-steel dark:text-concrete/50 hover:text-bronze dark:hover:text-bronze transition-colors mb-8 bg-steel/10 dark:bg-concrete/10 p-2 rounded-none"
+                  className="self-end text-steel dark:text-concrete/50 hover:text-accent dark:hover:text-accent transition-colors mb-8 bg-steel/10 dark:bg-concrete/10 p-2 rounded-none"
                 >
                   <X size={24} />
                 </button>
                 
-                <p className="text-sm font-mono text-bronze uppercase tracking-widest mb-4">{selectedProject.category}</p>
+                <p className="text-sm font-mono text-accent uppercase tracking-widest mb-4">{selectedProject.category}</p>
                 <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tighter mb-8 leading-none text-charcoal dark:text-concrete transition-colors duration-500">{selectedProject.title}</h2>
                 
                 <p className="text-lg text-charcoal/80 dark:text-concrete/80 leading-relaxed mb-10 font-light transition-colors duration-500">
@@ -634,7 +632,7 @@ export default function Portfolio() {
                 {selectedProject.materials && (
                   <div className="mb-12">
                     <p className="text-[10px] font-mono text-steel dark:text-concrete/50 uppercase tracking-[0.2em] flex items-center gap-2 transition-colors duration-500 mb-6">
-                      <span className="w-8 h-px bg-bronze/50"></span>
+                      <span className="w-8 h-px bg-accent/50"></span>
                       Materiality
                     </p>
                     <MaterialityGrid materials={selectedProject.materials} />
@@ -646,14 +644,14 @@ export default function Portfolio() {
                     <div className="flex items-center justify-between mb-8">
                       <div className="flex flex-col">
                         <p className="text-[10px] font-mono text-steel dark:text-concrete/50 uppercase tracking-[0.2em] flex items-center gap-2 transition-colors duration-500">
-                          <span className="w-8 h-px bg-bronze/50"></span>
+                          <span className="w-8 h-px bg-accent/50"></span>
                           Sustainable Principles
                         </p>
                         <h4 className="font-display text-2xl font-medium mt-1 text-charcoal dark:text-concrete">Eco-Impact Strategy</h4>
                       </div>
                       <div className="flex flex-col items-end">
-                        <div className="px-3 py-1 rounded-none bg-bronze/10 border border-bronze/30 text-[10px] font-mono text-bronze uppercase tracking-widest flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 bg-bronze rounded-none animate-pulse"></div>
+                        <div className="px-3 py-1 rounded-none bg-accent/10 border border-accent/30 text-[10px] font-mono text-accent uppercase tracking-widest flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 bg-accent rounded-none animate-pulse"></div>
                           Eco-Certified
                         </div>
                         <span className="text-[9px] font-mono text-steel mt-1 uppercase tracking-tighter">LEED Gold Equivalent</span>
@@ -667,9 +665,9 @@ export default function Portfolio() {
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: idx * 0.05 }}
                           key={idx} 
-                          className="flex items-center gap-4 p-5 rounded-none bg-concrete dark:bg-charcoal border border-steel/10 dark:border-concrete/10 hover:border-bronze/40 hover:bg-bronze/5 transition-all duration-500 group/item shadow-sm hover:shadow-md"
+                          className="flex items-center gap-4 p-5 rounded-none bg-concrete dark:bg-charcoal border border-steel/10 dark:border-concrete/10 hover:border-accent/40 hover:bg-accent/5 transition-all duration-500 group/item shadow-sm hover:shadow-md"
                         >
-                          <div className="w-12 h-12 rounded-none bg-bronze/10 flex items-center justify-center text-bronze group-hover/item:bg-bronze group-hover/item:text-concrete transition-all duration-500 flex-shrink-0 shadow-inner">
+                          <div className="w-12 h-12 rounded-none bg-accent/10 flex items-center justify-center text-accent group-hover/item:bg-accent group-hover/item:text-concrete transition-all duration-500 flex-shrink-0 shadow-inner">
                             {getPrincipleIcon(principle)}
                           </div>
                           <div className="flex flex-col">
@@ -683,23 +681,23 @@ export default function Portfolio() {
                     </div>
                     
                     {/* Sustainability Meter */}
-                    <div className="mt-10 p-8 rounded-none bg-bronze/5 border border-bronze/20 relative overflow-hidden">
+                    <div className="mt-10 p-8 rounded-none bg-accent/5 border border-accent/20 relative overflow-hidden">
                       <div className="absolute top-0 right-0 p-4">
-                        <Leaf className="text-bronze/10 w-16 h-16 -rotate-12" />
+                        <Leaf className="text-accent/10 w-16 h-16 -rotate-12" />
                       </div>
                       <div className="flex justify-between items-center mb-6">
                         <div className="flex flex-col">
-                          <span className="text-[10px] font-mono uppercase tracking-widest text-bronze font-bold">Sustainability Score</span>
+                          <span className="text-[10px] font-mono uppercase tracking-widest text-accent font-bold">Sustainability Score</span>
                           <span className="text-xs text-steel/70 mt-1">Environmental Performance Index</span>
                         </div>
-                        <span className="text-3xl font-display font-bold text-bronze">94/100</span>
+                        <span className="text-3xl font-display font-bold text-accent">94/100</span>
                       </div>
-                      <div className="w-full h-2 bg-bronze/10 rounded-none overflow-hidden">
+                      <div className="w-full h-2 bg-accent/10 rounded-none overflow-hidden">
                         <motion.div 
                           initial={{ width: 0 }}
                           animate={{ width: '94%' }}
                           transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
-                          className="h-full bg-bronze"
+                          className="h-full bg-accent"
                         />
                       </div>
                       <p className="text-xs text-steel/70 mt-6 leading-relaxed uppercase font-mono">
@@ -712,22 +710,22 @@ export default function Portfolio() {
                 {selectedProject.siteData && (
                   <div className="mb-12">
                     <p className="text-[10px] font-mono text-steel dark:text-concrete/50 uppercase tracking-[0.2em] flex items-center gap-2 transition-colors duration-500 mb-6">
-                      <span className="w-8 h-px bg-bronze/50"></span>
+                      <span className="w-8 h-px bg-accent/50"></span>
                       Climatic & Site Analysis
                     </p>
                     <div className="grid grid-cols-3 gap-4">
                       <div className="bg-charcoal/5 dark:bg-concrete/5 p-4 border border-steel/10 dark:border-concrete/10">
-                        <Wind className="text-bronze mb-2" size={16} />
+                        <Wind className="text-accent mb-2" size={16} />
                         <p className="text-[9px] font-mono uppercase tracking-widest text-steel dark:text-concrete/50 mb-1">Prevailing Wind</p>
                         <p className="font-bold text-xs text-charcoal dark:text-concrete">{selectedProject.siteData.wind}</p>
                       </div>
                       <div className="bg-charcoal/5 dark:bg-concrete/5 p-4 border border-steel/10 dark:border-concrete/10">
-                        <Sun className="text-bronze mb-2" size={16} />
+                        <Sun className="text-accent mb-2" size={16} />
                         <p className="text-[9px] font-mono uppercase tracking-widest text-steel dark:text-concrete/50 mb-1">Solar Orientation</p>
                         <p className="font-bold text-xs text-charcoal dark:text-concrete">{selectedProject.siteData.solar}</p>
                       </div>
                       <div className="bg-charcoal/5 dark:bg-concrete/5 p-4 border border-steel/10 dark:border-concrete/10">
-                        <Droplets className="text-bronze mb-2" size={16} />
+                        <Droplets className="text-accent mb-2" size={16} />
                         <p className="text-[9px] font-mono uppercase tracking-widest text-steel dark:text-concrete/50 mb-1">Annual Rainfall</p>
                         <p className="font-bold text-xs text-charcoal dark:text-concrete">{selectedProject.siteData.rainfall}</p>
                       </div>
@@ -738,18 +736,18 @@ export default function Portfolio() {
                 {selectedProject.lifecyclePhase && (
                   <div className="mb-12">
                     <p className="text-[10px] font-mono text-steel dark:text-concrete/50 uppercase tracking-[0.2em] flex items-center gap-2 transition-colors duration-500 mb-6">
-                      <span className="w-8 h-px bg-bronze/50"></span>
+                      <span className="w-8 h-px bg-accent/50"></span>
                       Architectural Lifecycle
                     </p>
                     <div className="flex justify-between items-end mb-2">
                       <span className="font-bold text-xs text-charcoal dark:text-concrete uppercase">{selectedProject.status}</span>
-                      <span className="text-[10px] font-mono text-bronze uppercase tracking-widest">Phase {selectedProject.lifecyclePhase}/5</span>
+                      <span className="text-[10px] font-mono text-accent uppercase tracking-widest">Phase {selectedProject.lifecyclePhase}/5</span>
                     </div>
                     <div className="flex gap-1 h-2">
                       {[1, 2, 3, 4, 5].map((phase) => (
                         <div 
                           key={phase} 
-                          className={`flex-1 ${phase <= selectedProject.lifecyclePhase! ? 'bg-bronze' : 'bg-steel/20 dark:bg-concrete/20'}`}
+                          className={`flex-1 ${phase <= selectedProject.lifecyclePhase! ? 'bg-accent' : 'bg-steel/20 dark:bg-concrete/20'}`}
                         ></div>
                       ))}
                     </div>

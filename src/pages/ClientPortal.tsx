@@ -477,7 +477,7 @@ export default function ClientPortal() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-concrete dark:bg-charcoal transition-colors duration-500">
-        <div className="w-8 h-8 border-2 border-bronze border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -487,8 +487,8 @@ export default function ClientPortal() {
       <div className="min-h-[calc(100vh-6rem)] flex flex-col items-center justify-center bg-concrete dark:bg-charcoal p-6 text-center transition-colors duration-500">
         <div className="max-w-md w-full bg-charcoal dark:bg-charcoal text-concrete p-10 md:p-16 relative z-10 transition-colors duration-500">
           <div className="flex justify-center mb-10">
-            <div className="w-16 h-16 rounded-none border border-bronze/30 flex items-center justify-center bg-charcoal dark:bg-charcoal shadow-[0_0_30px_rgba(184,134,11,0.1)] transition-colors duration-500">
-              <Clock size={20} className="text-bronze" strokeWidth={1.5} />
+            <div className="w-16 h-16 rounded-none border border-accent/30 flex items-center justify-center bg-charcoal dark:bg-charcoal shadow-[0_0_30px_rgba(184,134,11,0.1)] transition-colors duration-500">
+              <Clock size={20} className="text-accent" strokeWidth={1.5} />
             </div>
           </div>
           <h1 className="font-display text-3xl font-light tracking-tight mb-4">Pending Approval</h1>
@@ -498,7 +498,7 @@ export default function ClientPortal() {
           <Magnetic className="w-full">
             <button 
               onClick={handleSignOut}
-              className="w-full bg-transparent border border-bronze text-bronze py-4 font-bold uppercase tracking-widest hover:bg-bronze hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 text-xs"
+              className="w-full bg-transparent border border-accent text-accent py-4 font-bold uppercase tracking-widest hover:bg-accent hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 text-xs"
             >
               <LogOut size={16} />
               Sign Out
@@ -538,7 +538,7 @@ export default function ClientPortal() {
               >
                 <Bell size={18} />
                 {notifications.filter(n => !n.read).length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-bronze text-concrete text-[10px] flex items-center justify-center rounded-none font-bold">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent text-concrete text-[10px] flex items-center justify-center rounded-none font-bold">
                     {notifications.filter(n => !n.read).length}
                   </span>
                 )}
@@ -558,12 +558,12 @@ export default function ClientPortal() {
                         {notifications.some(n => !n.read) && (
                           <button 
                             onClick={handleMarkAllNotificationsRead}
-                            className="text-[8px] font-bold uppercase tracking-tighter text-bronze hover:underline"
+                            className="text-[8px] font-bold uppercase tracking-tighter text-accent hover:underline"
                           >
                             Mark all as read
                           </button>
                         )}
-                        <button onClick={() => setShowNotifications(false)} className="text-steel hover:text-bronze"><X size={14} /></button>
+                        <button onClick={() => setShowNotifications(false)} className="text-steel hover:text-accent"><X size={14} /></button>
                       </div>
                     </div>
                     <div className="space-y-4 max-h-80 overflow-y-auto custom-scrollbar pr-2">
@@ -573,7 +573,7 @@ export default function ClientPortal() {
                         notifications.map(n => (
                           <div 
                             key={n.id} 
-                            className={`p-3 border-l-2 transition-colors ${n.read ? 'border-steel/20 bg-transparent' : 'border-bronze bg-bronze/5'}`}
+                            className={`p-3 border-l-2 transition-colors ${n.read ? 'border-steel/20 bg-transparent' : 'border-accent bg-accent/5'}`}
                             onClick={() => handleMarkNotificationRead(n.id)}
                           >
                             <h5 className="text-xs font-bold mb-1">{n.title}</h5>
@@ -618,7 +618,7 @@ export default function ClientPortal() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 pb-4 px-2 text-xs font-bold uppercase tracking-widest transition-all relative ${
-                activeTab === tab.id ? 'text-bronze' : 'text-steel hover:text-charcoal dark:hover:text-concrete'
+                activeTab === tab.id ? 'text-accent' : 'text-steel hover:text-charcoal dark:hover:text-concrete'
               }`}
             >
               <tab.icon size={14} />
@@ -626,7 +626,7 @@ export default function ClientPortal() {
               {activeTab === tab.id && (
                 <motion.div 
                   layoutId="activeTab"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-bronze"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent"
                 />
               )}
             </button>
@@ -653,7 +653,7 @@ export default function ClientPortal() {
                   <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500">
                     <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Budget Utilized</h3>
                     <div className="w-full bg-steel/20 h-2 mb-2">
-                      <div className="bg-bronze h-full" style={{ width: '68%' }}></div>
+                      <div className="bg-accent h-full" style={{ width: '68%' }}></div>
                     </div>
                     <p className="font-display text-xl text-charcoal dark:text-concrete">68%</p>
                   </div>
@@ -662,7 +662,7 @@ export default function ClientPortal() {
                       <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Current Phase</h3>
                       <p className="font-display text-2xl text-charcoal dark:text-concrete">Design Development</p>
                     </div>
-                    <a href="https://calendly.com/your-firm/consultation" target="_blank" rel="noopener noreferrer" className="bg-bronze text-concrete px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-bronze/90 transition-colors">
+                    <a href="https://calendly.com/your-firm/consultation" target="_blank" rel="noopener noreferrer" className="bg-accent text-concrete px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-accent/90 transition-colors">
                       Schedule
                     </a>
                   </div>
@@ -671,7 +671,7 @@ export default function ClientPortal() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                   <div className="lg:col-span-8 space-y-12">
                     <h2 className="font-display text-2xl font-light tracking-tight flex items-center gap-4">
-                      <Clock className="text-bronze" size={20} strokeWidth={1.5} />
+                      <Clock className="text-accent" size={20} strokeWidth={1.5} />
                       Recent Updates
                     </h2>
                     
@@ -688,7 +688,7 @@ export default function ClientPortal() {
                         {updates.map((update) => (
                           <div 
                             key={update.id}
-                            className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 hover:border-bronze/30 transition-colors duration-500"
+                            className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 hover:border-accent/30 transition-colors duration-500"
                           >
                             <div className="flex justify-between items-start mb-6">
                               <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete transition-colors duration-500">{update.title}</h3>
@@ -717,7 +717,7 @@ export default function ClientPortal() {
                   <div className="lg:col-span-4">
                     <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 transition-colors duration-500 sticky top-24">
                       <h2 className="font-display text-xl font-light tracking-tight mb-8 flex items-center gap-3 text-charcoal dark:text-concrete transition-colors duration-500">
-                        <Calendar className="text-bronze" size={18} strokeWidth={1.5} />
+                        <Calendar className="text-accent" size={18} strokeWidth={1.5} />
                         Next Milestone
                       </h2>
                       {milestones.find(m => m.status === 'in-progress') ? (
@@ -732,7 +732,7 @@ export default function ClientPortal() {
                             <motion.div 
                               initial={{ width: 0 }}
                               animate={{ width: '45%' }}
-                              className="bg-bronze h-full"
+                              className="bg-accent h-full"
                             />
                           </div>
                         </div>
@@ -754,7 +754,7 @@ export default function ClientPortal() {
                   </div>
                   <div className="flex gap-6 text-[10px] font-mono uppercase tracking-widest text-steel">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-bronze" />
+                      <div className="w-3 h-3 bg-accent" />
                       <span>Completed</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -802,7 +802,7 @@ export default function ClientPortal() {
                           >
                             <div className="col-span-3 py-4">
                               <h4 className={`text-xs font-bold uppercase tracking-wider ${
-                                milestone.status === 'completed' ? 'text-bronze' : 
+                                milestone.status === 'completed' ? 'text-accent' : 
                                 milestone.status === 'in-progress' ? 'text-charcoal dark:text-concrete' : 
                                 'text-steel'
                               }`}>
@@ -820,7 +820,7 @@ export default function ClientPortal() {
                                 }}
                                 transition={{ duration: 1, ease: "easeOut" }}
                                 className={`absolute h-full rounded-none ${
-                                  milestone.status === 'completed' ? 'bg-bronze' : 
+                                  milestone.status === 'completed' ? 'bg-accent' : 
                                   milestone.status === 'in-progress' ? 'bg-charcoal dark:bg-concrete' : 
                                   'bg-transparent'
                                 }`}
@@ -893,7 +893,7 @@ export default function ClientPortal() {
                             <div className="absolute bottom-6 right-6 flex gap-3">
                               <button 
                                 onClick={() => setIsModelFullScreen(true)}
-                                className="p-3 bg-charcoal/80 text-concrete hover:bg-bronze transition-colors"
+                                className="p-3 bg-charcoal/80 text-concrete hover:bg-accent transition-colors"
                               >
                                 <Maximize2 size={16} />
                               </button>
@@ -915,8 +915,8 @@ export default function ClientPortal() {
                           onClick={() => setSelectedModel(model)}
                           className={`w-full text-left p-6 border transition-all duration-300 ${
                             selectedModel?.id === model.id 
-                              ? 'border-bronze bg-bronze/5' 
-                              : 'border-steel/20 hover:border-bronze/30 bg-concrete dark:bg-charcoal'
+                              ? 'border-accent bg-accent/5' 
+                              : 'border-steel/20 hover:border-accent/30 bg-concrete dark:bg-charcoal'
                           }`}
                         >
                           <h4 className="font-display text-lg font-light mb-2">{model.title}</h4>
@@ -937,7 +937,7 @@ export default function ClientPortal() {
                   <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 transition-colors duration-500">
                     <div className="flex justify-between items-center mb-8">
                       <h2 className="font-display text-2xl font-light tracking-tight flex items-center gap-3">
-                        <FileText className="text-bronze" size={20} strokeWidth={1.5} />
+                        <FileText className="text-accent" size={20} strokeWidth={1.5} />
                         Document Repository
                       </h2>
                       <div className="flex flex-wrap gap-4">
@@ -947,7 +947,7 @@ export default function ClientPortal() {
                               key={cat}
                               onClick={() => setCategoryFilter(cat)}
                               className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors ${
-                                categoryFilter === cat ? 'bg-bronze text-concrete' : 'text-steel hover:text-charcoal dark:hover:text-concrete'
+                                categoryFilter === cat ? 'bg-accent text-concrete' : 'text-steel hover:text-charcoal dark:hover:text-concrete'
                               }`}
                             >
                               {cat}
@@ -957,7 +957,7 @@ export default function ClientPortal() {
                         <input 
                           type="text" 
                           placeholder="Search..." 
-                          className="bg-concrete/50 dark:bg-charcoal border border-steel/20 px-4 py-2 text-xs font-mono focus:outline-none focus:border-bronze transition-colors"
+                          className="bg-concrete/50 dark:bg-charcoal border border-steel/20 px-4 py-2 text-xs font-mono focus:outline-none focus:border-accent transition-colors"
                           onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         <div>
@@ -1016,14 +1016,14 @@ export default function ClientPortal() {
                                   <div className="flex justify-end gap-2">
                                     <button 
                                       onClick={() => setSelectedBlueprint(doc)}
-                                      className="p-2 text-steel hover:text-bronze transition-colors"
+                                      className="p-2 text-steel hover:text-accent transition-colors"
                                       title="Annotate"
                                     >
                                       <MessageSquare size={16} />
                                     </button>
                                     <button 
                                       onClick={() => handleDownload(doc)}
-                                      className="p-2 text-steel hover:text-bronze transition-colors"
+                                      className="p-2 text-steel hover:text-accent transition-colors"
                                       title="Download"
                                     >
                                       <Download size={16} />
@@ -1048,7 +1048,7 @@ export default function ClientPortal() {
                         <span className="text-sm font-light">{(documents.length * 0.4).toFixed(1)} MB / 50 MB</span>
                       </div>
                       <div className="w-full bg-steel/20 h-1">
-                        <div className="bg-bronze h-full" style={{ width: `${(documents.length * 0.4 / 50) * 100}%` }}></div>
+                        <div className="bg-accent h-full" style={{ width: `${(documents.length * 0.4 / 50) * 100}%` }}></div>
                       </div>
                       <div className="pt-6 border-t border-steel/10 space-y-4">
                         <div className="flex justify-between text-xs">
@@ -1081,7 +1081,7 @@ export default function ClientPortal() {
                   </div>
                   <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500">
                     <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Total Paid</h3>
-                    <p className="font-display text-4xl text-bronze">
+                    <p className="font-display text-4xl text-accent">
                       ${invoices.filter(i => i.status === 'paid').reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}
                     </p>
                   </div>
@@ -1133,7 +1133,7 @@ export default function ClientPortal() {
                                   <button 
                                     onClick={() => handlePayInvoice(invoice.id)}
                                     disabled={payingInvoice === invoice.id}
-                                    className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-6 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-bronze dark:hover:bg-bronze transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-6 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-accent dark:hover:bg-accent transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                                   >
                                     {payingInvoice === invoice.id ? (
                                       <>
@@ -1153,7 +1153,7 @@ export default function ClientPortal() {
                                         Payment Successful
                                       </motion.span>
                                     )}
-                                    <button className="p-2 text-steel hover:text-bronze transition-colors">
+                                    <button className="p-2 text-steel hover:text-accent transition-colors">
                                       <Download size={16} />
                                     </button>
                                   </div>
@@ -1174,7 +1174,7 @@ export default function ClientPortal() {
                 <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 flex flex-col h-[600px] transition-colors duration-500">
                   <div className="flex justify-between items-center mb-6 pb-6 border-b border-steel/10">
                     <h2 className="font-display text-2xl font-light tracking-tight flex items-center gap-3 text-charcoal dark:text-concrete transition-colors duration-500">
-                      <MessageSquare className="text-bronze" size={20} strokeWidth={1.5} />
+                      <MessageSquare className="text-accent" size={20} strokeWidth={1.5} />
                       Project Manager
                     </h2>
                     <div className="flex items-center gap-3">
@@ -1216,13 +1216,13 @@ export default function ClientPortal() {
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Type your message..."
-                      className="flex-1 bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 px-4 py-4 text-sm font-light focus:outline-none focus:border-bronze dark:focus:border-bronze text-charcoal dark:text-concrete transition-colors duration-500"
+                      className="flex-1 bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 px-4 py-4 text-sm font-light focus:outline-none focus:border-accent dark:focus:border-accent text-charcoal dark:text-concrete transition-colors duration-500"
                       disabled={sendingMessage}
                     />
                     <button
                       type="submit"
                       disabled={!newMessage.trim() || sendingMessage}
-                      className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-8 py-4 hover:bg-bronze dark:hover:bg-bronze transition-colors duration-300 disabled:opacity-50 flex items-center justify-center"
+                      className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-8 py-4 hover:bg-accent dark:hover:bg-accent transition-colors duration-300 disabled:opacity-50 flex items-center justify-center"
                     >
                       <Send size={18} />
                     </button>
@@ -1288,7 +1288,7 @@ export default function ClientPortal() {
                     <h3 className="text-2xl font-display font-light">Annotate Blueprint</h3>
                     <p className="text-[10px] font-mono text-steel uppercase tracking-widest">{selectedBlueprint.fileName}</p>
                   </div>
-                  <button onClick={() => setSelectedBlueprint(null)} className="p-2 text-steel hover:text-bronze transition-colors">
+                  <button onClick={() => setSelectedBlueprint(null)} className="p-2 text-steel hover:text-accent transition-colors">
                     <X size={24} />
                   </button>
                 </div>

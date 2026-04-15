@@ -122,7 +122,7 @@ export default function Logbook() {
         >
           <motion.div variants={fadeInUp} className="border-b border-charcoal/20 dark:border-concrete/20 pb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
             <div>
-              <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4 flex items-center gap-2">
+              <p className="text-accent tracking-[0.2em] text-xs font-mono uppercase mb-4 flex items-center gap-2">
                 <Terminal size={14} />
                 <span>System Database</span>
               </p>
@@ -140,13 +140,13 @@ export default function Logbook() {
           {/* Filters & Search */}
           <motion.div variants={fadeInUp} className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="md:col-span-2 relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/30 dark:text-concrete/30 group-focus-within:text-bronze transition-colors" size={18} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/30 dark:text-concrete/30 group-focus-within:text-accent transition-colors" size={18} />
               <input 
                 type="text" 
                 placeholder="Search by ID, Title, or Author..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-charcoal/10 dark:border-concrete/10 py-4 pl-12 pr-4 focus:outline-none focus:border-bronze transition-all font-mono text-xs uppercase tracking-widest text-charcoal dark:text-concrete rounded-none"
+                className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-charcoal/10 dark:border-concrete/10 py-4 pl-12 pr-4 focus:outline-none focus:border-accent transition-all font-mono text-xs uppercase tracking-widest text-charcoal dark:text-concrete rounded-none"
               />
             </div>
             
@@ -154,35 +154,35 @@ export default function Logbook() {
               <select 
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-charcoal/10 dark:border-concrete/10 py-4 px-4 focus:outline-none focus:border-bronze transition-all font-mono text-xs uppercase tracking-widest text-charcoal dark:text-concrete rounded-none appearance-none cursor-pointer"
+                className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-charcoal/10 dark:border-concrete/10 py-4 px-4 focus:outline-none focus:border-accent transition-all font-mono text-xs uppercase tracking-widest text-charcoal dark:text-concrete rounded-none appearance-none cursor-pointer"
               >
                 {categories.map(cat => (
                   <option key={cat} value={cat} className="bg-concrete dark:bg-charcoal">{cat}</option>
                 ))}
               </select>
               <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal/30 dark:text-concrete/30 pointer-events-none" size={16} />
-              <label className="absolute -top-2 left-4 bg-concrete dark:bg-charcoal px-2 text-[8px] font-mono text-bronze uppercase tracking-widest">Category</label>
+              <label className="absolute -top-2 left-4 bg-concrete dark:bg-charcoal px-2 text-[8px] font-mono text-accent uppercase tracking-widest">Category</label>
             </div>
 
             <div className="relative">
               <select 
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-charcoal/10 dark:border-concrete/10 py-4 px-4 focus:outline-none focus:border-bronze transition-all font-mono text-xs uppercase tracking-widest text-charcoal dark:text-concrete rounded-none appearance-none cursor-pointer"
+                className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-charcoal/10 dark:border-concrete/10 py-4 px-4 focus:outline-none focus:border-accent transition-all font-mono text-xs uppercase tracking-widest text-charcoal dark:text-concrete rounded-none appearance-none cursor-pointer"
               >
                 {statuses.map(status => (
                   <option key={status} value={status} className="bg-concrete dark:bg-charcoal">{status}</option>
                 ))}
               </select>
               <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal/30 dark:text-concrete/30 pointer-events-none" size={16} />
-              <label className="absolute -top-2 left-4 bg-concrete dark:bg-charcoal px-2 text-[8px] font-mono text-bronze uppercase tracking-widest">Status</label>
+              <label className="absolute -top-2 left-4 bg-concrete dark:bg-charcoal px-2 text-[8px] font-mono text-accent uppercase tracking-widest">Status</label>
             </div>
           </motion.div>
 
           <motion.div variants={fadeInUp} className="w-full overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
-                <tr className="border-b border-charcoal/20 dark:border-concrete/20 text-[10px] font-mono text-bronze uppercase tracking-widest">
+                <tr className="border-b border-charcoal/20 dark:border-concrete/20 text-[10px] font-mono text-accent uppercase tracking-widest">
                   <th className="py-4 px-4 font-normal cursor-pointer hover:text-charcoal dark:hover:text-concrete transition-colors" onClick={() => handleSort('id')}>
                     <div className="flex items-center gap-2">Doc_ID <ArrowUpDown size={10} /></div>
                   </th>
@@ -205,23 +205,23 @@ export default function Logbook() {
                       onClick={() => setSelectedLog(log)}
                       className="border-b border-charcoal/10 dark:border-concrete/10 hover:bg-charcoal/5 dark:hover:bg-concrete/5 transition-colors cursor-pointer group"
                     >
-                      <td className="py-6 px-4 text-bronze">{log.id}</td>
+                      <td className="py-6 px-4 text-accent">{log.id}</td>
                       <td className="py-6 px-4 opacity-70">{log.date}</td>
                       <td className="py-6 px-4">
                         <span className="border border-charcoal/20 dark:border-concrete/20 px-2 py-1 text-[10px] tracking-widest">
                           {log.category}
                         </span>
                       </td>
-                      <td className="py-6 px-4 font-bold uppercase tracking-tight group-hover:text-bronze transition-colors flex items-center gap-3">
+                      <td className="py-6 px-4 font-bold uppercase tracking-tight group-hover:text-accent transition-colors flex items-center gap-3">
                         <FileText size={14} className="opacity-50" />
                         {log.title}
                       </td>
                       <td className="py-6 px-4 opacity-70">{log.author}</td>
                       <td className="py-6 px-4 text-right">
                         <span className={`text-[10px] tracking-widest px-2 py-1 ${
-                          log.status === 'PUBLISHED' ? 'bg-bronze/20 text-bronze' : 
+                          log.status === 'PUBLISHED' ? 'bg-accent/20 text-accent' : 
                           log.status === 'ARCHIVED' ? 'bg-charcoal/20 dark:bg-concrete/20 text-charcoal dark:text-concrete' : 
-                          'border border-bronze text-bronze'
+                          'border border-accent text-accent'
                         }`}>
                           {log.status}
                         </span>
@@ -263,11 +263,11 @@ export default function Logbook() {
                 <img 
                   src={selectedLog.image} 
                   alt={selectedLog.title} 
-                  className="w-full h-full object-cover grayscale opacity-60 mix-blend-luminosity"
+                  className="w-full h-full object-cover  opacity-60 "
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute inset-0 bg-bronze/10 mix-blend-overlay"></div>
-                <div className="absolute top-4 left-4 bg-charcoal/80 text-bronze text-[10px] font-mono px-2 py-1 border border-bronze/30">
+                <div className="absolute inset-0 bg-accent/10 mix-blend-overlay"></div>
+                <div className="absolute top-4 left-4 bg-charcoal/80 text-accent text-[10px] font-mono px-2 py-1 border border-accent/30">
                   FIG. 1 // {selectedLog.id}
                 </div>
               </div>
@@ -275,7 +275,7 @@ export default function Logbook() {
               {/* Content Side */}
               <div className="w-full md:w-3/5 p-8 md:p-12 flex flex-col">
                 <div className="flex justify-between items-start mb-8">
-                  <div className="font-mono text-[10px] text-bronze uppercase tracking-widest">
+                  <div className="font-mono text-[10px] text-accent uppercase tracking-widest">
                     {selectedLog.date} // {selectedLog.category}
                   </div>
                   <button 
@@ -294,14 +294,14 @@ export default function Logbook() {
                   <div className="font-mono text-xs text-charcoal/70 dark:text-concrete/70 uppercase">
                     Author: <span className="text-charcoal dark:text-concrete font-bold">{selectedLog.author}</span>
                   </div>
-                  <div className="w-1 h-1 bg-bronze rounded-full"></div>
+                  <div className="w-1 h-1 bg-accent rounded-full"></div>
                   <div className="font-mono text-xs text-charcoal/70 dark:text-concrete/70 uppercase">
-                    Status: <span className="text-bronze">{selectedLog.status}</span>
+                    Status: <span className="text-accent">{selectedLog.status}</span>
                   </div>
                 </div>
 
                 <div className="flex-grow">
-                  <h3 className="font-mono text-xs text-bronze uppercase tracking-widest mb-4">Abstract</h3>
+                  <h3 className="font-mono text-xs text-accent uppercase tracking-widest mb-4">Abstract</h3>
                   <p className="text-charcoal/80 dark:text-concrete/80 font-mono text-sm leading-relaxed">
                     {selectedLog.abstract}
                   </p>
@@ -311,7 +311,7 @@ export default function Logbook() {
                   <div className="font-mono text-[10px] text-charcoal/50 dark:text-concrete/50 uppercase tracking-widest">
                     END OF FILE
                   </div>
-                  <button className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors group">
+                  <button className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-charcoal dark:text-concrete hover:text-accent dark:hover:text-accent transition-colors group">
                     <span>Download PDF</span>
                     <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                   </button>

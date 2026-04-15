@@ -30,7 +30,7 @@ export default function MaterialityGrid({ materials }: MaterialityGridProps) {
           />
           <div className="absolute inset-0 bg-charcoal/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
             <h4 className="text-concrete font-bold font-display uppercase tracking-widest text-sm">{material.name}</h4>
-            <p className="text-bronze text-[10px] font-mono">{material.description}</p>
+            <p className="text-accent text-[10px] font-mono">{material.description}</p>
           </div>
         </motion.div>
       ))}

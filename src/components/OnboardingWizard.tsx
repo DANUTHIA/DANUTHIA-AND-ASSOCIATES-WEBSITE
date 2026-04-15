@@ -42,9 +42,9 @@ export default function OnboardingWizard({ userId, onComplete }: OnboardingWizar
               value={goals}
               onChange={(e) => setGoals(e.target.value)}
               placeholder="e.g., Sustainable residential design, Commercial office space..."
-              className="w-full h-32 bg-transparent border border-steel/30 p-4 mb-8 focus:outline-none focus:border-bronze"
+              className="w-full h-32 bg-transparent border border-steel/30 p-4 mb-8 focus:outline-none focus:border-accent"
             />
-            <button onClick={() => setStep(2)} className="bg-bronze text-concrete px-8 py-3 uppercase tracking-widest text-xs font-bold">Next</button>
+            <button onClick={() => setStep(2)} className="bg-accent text-concrete px-8 py-3 uppercase tracking-widest text-xs font-bold">Next</button>
           </motion.div>
         )}
 
@@ -57,7 +57,7 @@ export default function OnboardingWizard({ userId, onComplete }: OnboardingWizar
             </div>
             <div className="flex gap-4">
               <button onClick={() => setStep(1)} className="border border-steel/30 px-8 py-3 uppercase tracking-widest text-xs font-bold">Back</button>
-              <button onClick={handleComplete} className="bg-bronze text-concrete px-8 py-3 uppercase tracking-widest text-xs font-bold">Complete</button>
+              <button onClick={handleComplete} className="bg-accent text-concrete px-8 py-3 uppercase tracking-widest text-xs font-bold">Complete</button>
             </div>
           </motion.div>
         )}

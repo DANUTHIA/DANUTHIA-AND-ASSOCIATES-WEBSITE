@@ -28,6 +28,19 @@ export default function About() {
     <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500 bg-blueprint-grid">
       {/* Hero Section */}
       <section className="relative bg-charcoal dark:bg-charcoal text-concrete p-8 md:p-16 pt-32 md:pt-40 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-70"
+          >
+            <source src="https://i.imgur.com/okef0xf.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent"></div>
+        </div>
+
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.05, scale: 1 }}
@@ -47,11 +60,11 @@ export default function About() {
             <div>
               <motion.h1 variants={fadeInUp} className="font-display text-5xl md:text-7xl font-bold leading-[0.9] tracking-tighter mb-8 uppercase">
                 Rooted in context.<br/>
-                <span className="text-bronze">Designing for tomorrow.</span>
+                <span className="text-accent">Designing for tomorrow.</span>
               </motion.h1>
             </div>
             <motion.div variants={fadeInUp} className="pb-2">
-              <p className="text-lg md:text-xl text-concrete/80 font-light leading-relaxed border-l border-bronze pl-6">
+              <p className="text-lg md:text-xl text-concrete/80 font-light leading-relaxed border-l border-accent pl-6">
                 Danuthia & Co. is a premier architectural and urban planning firm based in Nairobi, Kenya. We believe in designing spaces that respect the past while building for the future.
               </p>
             </motion.div>
@@ -69,7 +82,7 @@ export default function About() {
             viewport={{ once: true }}
             src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?q=80&w=2000&auto=format&fit=crop" 
             alt="Architectural detail" 
-            className="w-full h-full object-cover mix-blend-luminosity"
+            className="w-full h-full object-cover "
             referrerPolicy="no-referrer"
           />
         </motion.div>
@@ -107,40 +120,40 @@ export default function About() {
 
           <motion.div variants={fadeInUp} className="lg:col-span-5">
             <div className="bg-charcoal dark:bg-charcoal p-12 text-concrete flex flex-col justify-center relative overflow-hidden group h-full transition-colors duration-500">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-bronze opacity-10 rounded-full blur-3xl group-hover:opacity-20 transition-opacity duration-1000"></div>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-accent opacity-10 rounded-full blur-3xl group-hover:opacity-20 transition-opacity duration-1000"></div>
               
               <h3 className="font-display text-3xl font-bold uppercase tracking-tight mb-12 relative z-10">Core Values</h3>
               <ul className="space-y-10 font-mono text-sm uppercase tracking-widest relative z-10">
                 <li className="flex items-start gap-6 group/item">
-                  <span className="text-bronze font-display text-2xl leading-none font-bold">01</span>
+                  <span className="text-accent font-display text-2xl leading-none font-bold">01</span>
                   <div>
                     <span className="block font-bold mb-2 text-concrete">Sustainable Development</span>
                     <span className="text-steel text-xs normal-case tracking-normal font-sans leading-relaxed block">Minimizing footprint, maximizing efficiency through intelligent material selection and passive design.</span>
                   </div>
                 </li>
                 <li className="flex items-start gap-6 group/item">
-                  <span className="text-bronze font-display text-2xl leading-none font-bold">02</span>
+                  <span className="text-accent font-display text-2xl leading-none font-bold">02</span>
                   <div>
                     <span className="block font-bold mb-2 text-concrete">Data-Driven Planning</span>
                     <span className="text-steel text-xs normal-case tracking-normal font-sans leading-relaxed block">Evidence over intuition. Utilizing advanced spatial analysis to inform every design decision.</span>
                   </div>
                 </li>
                 <li className="flex items-start gap-6 group/item">
-                  <span className="text-bronze font-display text-2xl leading-none font-bold">03</span>
+                  <span className="text-accent font-display text-2xl leading-none font-bold">03</span>
                   <div>
                     <span className="block font-bold mb-2 text-concrete">Cultural Context</span>
                     <span className="text-steel text-xs normal-case tracking-normal font-sans leading-relaxed block">Honoring local heritage and climate, creating spaces that resonate with their surroundings.</span>
                   </div>
                 </li>
                 <li className="flex items-start gap-6 group/item">
-                  <span className="text-bronze font-display text-2xl leading-none font-bold">04</span>
+                  <span className="text-accent font-display text-2xl leading-none font-bold">04</span>
                   <div>
                     <span className="block font-bold mb-2 text-concrete">Architectural Excellence</span>
                     <span className="text-steel text-xs normal-case tracking-normal font-sans leading-relaxed block">Uncompromising quality in every detail, from conceptual sketches to final construction.</span>
                   </div>
                 </li>
                 <li className="flex items-start gap-6 group/item">
-                  <span className="text-bronze font-display text-2xl leading-none font-bold">05</span>
+                  <span className="text-accent font-display text-2xl leading-none font-bold">05</span>
                   <div>
                     <span className="block font-bold mb-2 text-concrete">Project Management</span>
                     <span className="text-steel text-xs normal-case tracking-normal font-sans leading-relaxed block">Precision-driven management ensuring every project milestone is met on time and within budget.</span>
@@ -161,7 +174,7 @@ export default function About() {
             variants={staggerContainer}
           >
             <div className="mb-16">
-              <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4">Our Culture</p>
+              <p className="text-accent tracking-[0.2em] text-xs font-mono uppercase mb-4">Our Culture</p>
               <h2 className="font-display text-4xl md:text-6xl font-bold uppercase tracking-tight">Core Values.</h2>
             </div>
 
@@ -171,7 +184,7 @@ export default function About() {
                 { title: "Integrity", desc: "Our commitment to ethical practice and structural honesty is unwavering." },
                 { title: "Inclusion", desc: "We design for everyone, ensuring our spaces are accessible and equitable." }
               ].map((value, idx) => (
-                <motion.div key={idx} variants={fadeInUp} className="border-l border-bronze pl-8">
+                <motion.div key={idx} variants={fadeInUp} className="border-l border-accent pl-8">
                   <h3 className="font-display text-2xl font-bold uppercase mb-4">{value.title}</h3>
                   <p className="text-concrete/60 font-light leading-relaxed">{value.desc}</p>
                 </motion.div>
@@ -191,18 +204,18 @@ export default function About() {
           className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center"
         >
           <motion.div variants={fadeInUp}>
-            <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4">Our Reach</p>
+            <p className="text-accent tracking-[0.2em] text-xs font-mono uppercase mb-4">Our Reach</p>
             <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete mb-8">A Global Network of Expertise.</h2>
             <p className="text-charcoal/60 dark:text-concrete/60 mb-12 text-lg leading-relaxed">
               While rooted in Nairobi, our influence and collaborations span across three continents. We leverage a global network of specialists to bring world-class innovation to local challenges.
             </p>
             <div className="grid grid-cols-2 gap-8">
               <div>
-                <div className="text-4xl font-display font-bold text-bronze mb-2">03</div>
+                <div className="text-4xl font-display font-bold text-accent mb-2">03</div>
                 <div className="text-xs font-mono uppercase tracking-widest text-charcoal/60 dark:text-concrete/60">Continents</div>
               </div>
               <div>
-                <div className="text-4xl font-display font-bold text-bronze mb-2">15+</div>
+                <div className="text-4xl font-display font-bold text-accent mb-2">15+</div>
                 <div className="text-xs font-mono uppercase tracking-widest text-charcoal/60 dark:text-concrete/60">Global Partners</div>
               </div>
             </div>
@@ -211,11 +224,11 @@ export default function About() {
             <img 
               src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200&auto=format&fit=crop" 
               alt="Global Network" 
-              className="w-full h-full object-cover opacity-50 grayscale"
+              className="w-full h-full object-cover opacity-50 "
               referrerPolicy="no-referrer"
             />
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-full h-full border border-bronze/20 m-8"></div>
+              <div className="w-full h-full border border-accent/20 m-8"></div>
             </div>
           </motion.div>
         </motion.div>
@@ -233,18 +246,18 @@ export default function About() {
             className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center"
           >
             <motion.div variants={fadeInUp} className="relative aspect-[3/4] w-full max-w-md mx-auto lg:mx-0">
-              <div className="absolute inset-0 bg-bronze/20 translate-x-4 translate-y-4"></div>
+              <div className="absolute inset-0 bg-accent/20 translate-x-4 translate-y-4"></div>
               <img 
                 src="/joseph-macharia.png" 
                 alt="Joseph Macharia - Founder" 
-                className="relative z-10 w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                className="relative z-10 w-full h-full object-cover  hover:-0 transition-all duration-700"
                 referrerPolicy="no-referrer"
               />
             </motion.div>
             
             <motion.div variants={fadeInUp} className="flex flex-col justify-center">
               <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-4">Joseph Macharia</h2>
-              <p className="text-bronze font-mono text-sm uppercase tracking-widest mb-8">Founder & Principal Planner</p>
+              <p className="text-accent font-mono text-sm uppercase tracking-widest mb-8">Founder & Principal Planner</p>
               
               <div className="space-y-6 text-lg text-steel font-light leading-relaxed">
                 <p>
@@ -267,7 +280,7 @@ export default function About() {
           variants={staggerContainer}
         >
           <motion.div variants={fadeInUp} className="mb-16">
-            <p className="text-bronze tracking-[0.2em] text-xs font-mono uppercase mb-4">Network</p>
+            <p className="text-accent tracking-[0.2em] text-xs font-mono uppercase mb-4">Network</p>
             <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete">
               Personnel Dossiers
             </h2>
@@ -280,16 +293,16 @@ export default function About() {
                 <img 
                   src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop" 
                   alt="Dr. E. Vance" 
-                  className="w-full h-full object-cover grayscale opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700 mix-blend-multiply dark:mix-blend-luminosity"
+                  className="w-full h-full object-cover  opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700 mix-blend-multiply dark:"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute inset-0 bg-bronze/10 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 bg-accent/10 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="absolute top-4 right-4 bg-charcoal text-concrete text-[9px] font-mono uppercase px-2 py-1 tracking-widest border border-concrete/20">
                   ACTIVE
                 </div>
               </div>
               <div className="p-6 border-t border-charcoal/20 dark:border-concrete/20">
-                <div className="font-mono text-[10px] text-bronze uppercase tracking-widest mb-2">ID: 001 // LEVEL 5</div>
+                <div className="font-mono text-[10px] text-accent uppercase tracking-widest mb-2">ID: 001 // LEVEL 5</div>
                 <h3 className="font-display text-xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete mb-1">Dr. E. Vance</h3>
                 <p className="font-mono text-xs text-charcoal/60 dark:text-concrete/60 uppercase tracking-wider mb-4">Head of R&D</p>
                 <div className="h-[1px] w-full bg-charcoal/10 dark:bg-concrete/10 mb-4"></div>
@@ -307,16 +320,16 @@ export default function About() {
                 <img 
                   src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=800&auto=format&fit=crop" 
                   alt="M. Rossi" 
-                  className="w-full h-full object-cover grayscale opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700 mix-blend-multiply dark:mix-blend-luminosity"
+                  className="w-full h-full object-cover  opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700 mix-blend-multiply dark:"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute inset-0 bg-bronze/10 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 bg-accent/10 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="absolute top-4 right-4 bg-charcoal text-concrete text-[9px] font-mono uppercase px-2 py-1 tracking-widest border border-concrete/20">
                   ACTIVE
                 </div>
               </div>
               <div className="p-6 border-t border-charcoal/20 dark:border-concrete/20">
-                <div className="font-mono text-[10px] text-bronze uppercase tracking-widest mb-2">ID: 002 // LEVEL 4</div>
+                <div className="font-mono text-[10px] text-accent uppercase tracking-widest mb-2">ID: 002 // LEVEL 4</div>
                 <h3 className="font-display text-xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete mb-1">M. Rossi</h3>
                 <p className="font-mono text-xs text-charcoal/60 dark:text-concrete/60 uppercase tracking-wider mb-4">Lead Urban Planner</p>
                 <div className="h-[1px] w-full bg-charcoal/10 dark:bg-concrete/10 mb-4"></div>
@@ -334,16 +347,16 @@ export default function About() {
                 <img 
                   src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=800&auto=format&fit=crop" 
                   alt="A. Chen" 
-                  className="w-full h-full object-cover grayscale opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700 mix-blend-multiply dark:mix-blend-luminosity"
+                  className="w-full h-full object-cover  opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700 mix-blend-multiply dark:"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute inset-0 bg-bronze/10 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 bg-accent/10 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="absolute top-4 right-4 bg-charcoal text-concrete text-[9px] font-mono uppercase px-2 py-1 tracking-widest border border-concrete/20">
                   ACTIVE
                 </div>
               </div>
               <div className="p-6 border-t border-charcoal/20 dark:border-concrete/20">
-                <div className="font-mono text-[10px] text-bronze uppercase tracking-widest mb-2">ID: 003 // LEVEL 4</div>
+                <div className="font-mono text-[10px] text-accent uppercase tracking-widest mb-2">ID: 003 // LEVEL 4</div>
                 <h3 className="font-display text-xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete mb-1">A. Chen</h3>
                 <p className="font-mono text-xs text-charcoal/60 dark:text-concrete/60 uppercase tracking-wider mb-4">Senior Structural Eng.</p>
                 <div className="h-[1px] w-full bg-charcoal/10 dark:bg-concrete/10 mb-4"></div>

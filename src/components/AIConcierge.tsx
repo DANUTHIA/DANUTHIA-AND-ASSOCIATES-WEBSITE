@@ -182,7 +182,7 @@ export default function AIConcierge() {
     <>
       {/* Floating Button */}
       <motion.button
-        className="fixed bottom-6 right-6 w-14 h-14 bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal rounded-none flex items-center justify-center shadow-2xl z-[9000] border border-bronze/30 hover:bg-bronze dark:hover:bg-bronze transition-colors duration-300"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal rounded-none flex items-center justify-center shadow-2xl z-[9000] border border-accent/30 hover:bg-accent dark:hover:bg-accent transition-colors duration-300"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(true)}
@@ -202,7 +202,7 @@ export default function AIConcierge() {
             style={{ height: '500px', maxHeight: '80vh' }}
           >
             {/* Header */}
-            <div className="bg-charcoal text-concrete dark:bg-charcoal dark:text-concrete p-4 flex justify-between items-center border-b border-bronze/30 transition-colors duration-500">
+            <div className="bg-charcoal text-concrete dark:bg-charcoal dark:text-concrete p-4 flex justify-between items-center border-b border-accent/30 transition-colors duration-500">
               <div>
                 <h3 className="font-display font-bold uppercase tracking-widest text-sm">AI Concierge</h3>
                 <p className="text-xs text-steel font-mono">Danuthia & Co.</p>
@@ -210,12 +210,12 @@ export default function AIConcierge() {
               <div className="flex items-center gap-3">
                 <button 
                   onClick={() => setMessages([{ role: 'ai', text: 'Hello. I am the Danuthia & Co. AI Concierge. How can I assist you with your architectural or planning needs today?' }])}
-                  className="text-xs text-steel hover:text-bronze transition-colors"
+                  className="text-xs text-steel hover:text-accent transition-colors"
                   title="Clear Chat"
                 >
                   Clear
                 </button>
-                <button onClick={() => setIsOpen(false)} className="text-steel hover:text-bronze transition-colors">
+                <button onClick={() => setIsOpen(false)} className="text-steel hover:text-accent transition-colors">
                   <X size={20} />
                 </button>
               </div>
@@ -240,7 +240,7 @@ export default function AIConcierge() {
                     {[0, 1, 2].map((i) => (
                       <motion.div
                         key={i}
-                        className="w-1.5 h-1.5 bg-bronze rounded-none"
+                        className="w-1.5 h-1.5 bg-accent rounded-none"
                         animate={{ y: [0, -4, 0] }}
                         transition={{
                           duration: 0.6,
@@ -263,12 +263,12 @@ export default function AIConcierge() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask about our services..."
-                className="flex-1 bg-transparent border border-steel/30 dark:border-concrete/30 px-3 py-2 text-sm text-charcoal dark:text-concrete focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors placeholder:text-steel"
+                className="flex-1 bg-transparent border border-steel/30 dark:border-concrete/30 px-3 py-2 text-sm text-charcoal dark:text-concrete focus:outline-none focus:border-accent dark:focus:border-accent transition-colors placeholder:text-steel"
               />
               <button 
                 type="submit" 
                 disabled={isLoading || !input.trim()}
-                className="bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal p-2 hover:bg-bronze dark:hover:bg-bronze transition-colors disabled:opacity-50 disabled:hover:bg-charcoal dark:disabled:hover:bg-concrete"
+                className="bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal p-2 hover:bg-accent dark:hover:bg-accent transition-colors disabled:opacity-50 disabled:hover:bg-charcoal dark:disabled:hover:bg-concrete"
               >
                 <Send size={18} />
               </button>

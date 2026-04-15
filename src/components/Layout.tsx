@@ -8,6 +8,7 @@ import Logo from './Logo';
 import Global3DBackground from './Global3DBackground';
 import Magnetic from './Magnetic';
 import ThemeToggle from './ThemeToggle';
+import CustomCursor from './CustomCursor';
 
 export default function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -64,10 +65,11 @@ export default function Layout() {
   };
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) => 
-    isActive ? "text-bronze transition-colors relative after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[1px] after:bg-bronze" : "hover:text-bronze transition-colors relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[1px] after:bg-bronze hover:after:w-full after:transition-all after:duration-300";
+    isActive ? "text-accent transition-colors relative after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[1px] after:bg-accent" : "hover:text-accent transition-colors relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[1px] after:bg-accent hover:after:w-full after:transition-all after:duration-300";
 
   return (
-    <div className="min-h-screen bg-concrete dark:bg-charcoal text-charcoal dark:text-concrete selection:bg-bronze selection:text-concrete flex flex-col relative font-sans transition-colors duration-500">
+    <div className="min-h-screen bg-concrete dark:bg-charcoal text-charcoal dark:text-concrete selection:bg-accent selection:text-concrete flex flex-col relative font-sans transition-colors duration-500">
+      <CustomCursor />
       <Global3DBackground />
       
       {/* Navigation */}
@@ -88,7 +90,7 @@ export default function Layout() {
             <Magnetic><NavLink to="/about" className={navLinkClass}>About</NavLink></Magnetic>
             <Magnetic><NavLink to="/logbook" className={navLinkClass}>Logbook</NavLink></Magnetic>
             <Magnetic>
-              <NavLink to="/portal" className={({ isActive }) => `px-4 py-2 border border-bronze text-bronze hover:bg-bronze hover:text-concrete transition-colors duration-300 ${isActive ? 'bg-bronze text-concrete' : ''}`}>
+              <NavLink to="/portal" className={({ isActive }) => `px-4 py-2 border border-accent text-accent hover:bg-accent hover:text-concrete transition-colors duration-300 ${isActive ? 'bg-accent text-concrete' : ''}`}>
                 Client Portal
               </NavLink>
             </Magnetic>
@@ -104,7 +106,7 @@ export default function Layout() {
             </Magnetic>
             <Magnetic>
               <button 
-                className="p-2 text-charcoal dark:text-concrete hover:text-bronze transition-colors"
+                className="p-2 text-charcoal dark:text-concrete hover:text-accent transition-colors"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
                 {isMobileMenuOpen ? <X size={28} strokeWidth={1.5} /> : <Menu size={28} strokeWidth={1.5} />}
@@ -123,14 +125,14 @@ export default function Layout() {
               transition={{ duration: 0.3 }}
               className="absolute top-full left-0 w-full h-screen bg-concrete/95 dark:bg-charcoal/95 backdrop-blur-xl flex flex-col pt-12 px-8 uppercase tracking-[0.2em] text-sm font-bold"
             >
-              <Link to="/" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Home</Link>
-              <Link to="/services" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Services</Link>
-              <Link to="/portfolio" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Portfolio</Link>
-              <Link to="/sustainability" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Sustainability</Link>
-              <Link to="/about" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>About</Link>
-              <Link to="/logbook" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Logbook</Link>
-              <Link to="/portal" className="py-6 border-b border-steel/20 hover:text-bronze transition-colors" onClick={closeMenu}>Client Portal</Link>
-              <Link to="/#book" className="mt-12 py-4 bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal text-center hover:bg-bronze dark:hover:bg-bronze transition-colors" onClick={closeMenu}>Book Consultation</Link>
+              <Link to="/" className="py-6 border-b border-steel/20 hover:text-accent transition-colors" onClick={closeMenu}>Home</Link>
+              <Link to="/services" className="py-6 border-b border-steel/20 hover:text-accent transition-colors" onClick={closeMenu}>Services</Link>
+              <Link to="/portfolio" className="py-6 border-b border-steel/20 hover:text-accent transition-colors" onClick={closeMenu}>Portfolio</Link>
+              <Link to="/sustainability" className="py-6 border-b border-steel/20 hover:text-accent transition-colors" onClick={closeMenu}>Sustainability</Link>
+              <Link to="/about" className="py-6 border-b border-steel/20 hover:text-accent transition-colors" onClick={closeMenu}>About</Link>
+              <Link to="/logbook" className="py-6 border-b border-steel/20 hover:text-accent transition-colors" onClick={closeMenu}>Logbook</Link>
+              <Link to="/portal" className="py-6 border-b border-steel/20 hover:text-accent transition-colors" onClick={closeMenu}>Client Portal</Link>
+              <Link to="/#book" className="mt-12 py-4 bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal text-center hover:bg-accent dark:hover:bg-accent transition-colors" onClick={closeMenu}>Book Consultation</Link>
             </motion.div>
           )}
         </AnimatePresence>
@@ -152,7 +154,7 @@ export default function Layout() {
       </div>
 
       {/* Footer - Blueprint Title Block Aesthetic */}
-      <footer className="bg-charcoal dark:bg-charcoal text-concrete mt-auto border-t-4 border-bronze transition-colors duration-500">
+      <footer className="bg-charcoal dark:bg-charcoal text-concrete mt-auto border-t-4 border-accent transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-8 md:px-16 py-12">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-0 border border-steel/30 dark:border-concrete/20">
             
@@ -166,39 +168,40 @@ export default function Layout() {
                   Shaping the future of the African urban landscape through sustainable, context-driven architectural design and master planning.
                 </p>
               </div>
-              <div className="mt-12 text-[9px] font-mono text-bronze uppercase tracking-[0.2em]">
+              <div className="mt-12 text-[9px] font-mono text-accent uppercase tracking-[0.2em]">
                 DOC.REF: FT-2026-04 // REV.A
               </div>
             </div>
 
             {/* Block 2: Links */}
             <div className="md:col-span-2 p-8 border-b md:border-b-0 md:border-r border-steel/30 dark:border-concrete/20">
-              <p className="text-[10px] font-mono text-bronze uppercase tracking-widest mb-6 border-b border-bronze/30 pb-2">Index</p>
+              <p className="text-[10px] font-mono text-accent uppercase tracking-widest mb-6 border-b border-accent/30 pb-2">Index</p>
               <nav className="flex flex-col gap-3 font-mono uppercase text-[10px] tracking-widest">
-                <Link to="/services" className="hover:text-bronze transition-colors w-fit">Services</Link>
-                <Link to="/portfolio" className="hover:text-bronze transition-colors w-fit">Portfolio</Link>
-                <Link to="/about" className="hover:text-bronze transition-colors w-fit">About Us</Link>
-                <Link to="/logbook" className="hover:text-bronze transition-colors w-fit">Logbook</Link>
-                <Link to="/portal" className="hover:text-bronze transition-colors w-fit">Client Portal</Link>
+                <Link to="/services" className="hover:text-accent transition-colors w-fit">Services</Link>
+                <Link to="/portfolio" className="hover:text-accent transition-colors w-fit">Portfolio</Link>
+                <Link to="/about" className="hover:text-accent transition-colors w-fit">About Us</Link>
+                <Link to="/logbook" className="hover:text-accent transition-colors w-fit">Logbook</Link>
+                <Link to="/portal" className="hover:text-accent transition-colors w-fit">Client Portal</Link>
+                <Link to="/careers" className="text-accent hover:text-concrete transition-colors w-fit font-bold mt-2">Open Positions</Link>
               </nav>
             </div>
 
             {/* Block 3: Connect */}
             <div className="md:col-span-2 p-8 border-b md:border-b-0 md:border-r border-steel/30 dark:border-concrete/20">
-              <p className="text-[10px] font-mono text-bronze uppercase tracking-widest mb-6 border-b border-bronze/30 pb-2">Network</p>
+              <p className="text-[10px] font-mono text-accent uppercase tracking-widest mb-6 border-b border-accent/30 pb-2">Network</p>
               <nav className="flex flex-col gap-3 font-mono uppercase text-[10px] tracking-widest">
-                <a href="https://www.linkedin.com/in/danuthiaandassociates-344b353b7/" target="_blank" rel="noopener noreferrer" className="hover:text-bronze transition-colors w-fit">LinkedIn</a>
-                <a href="https://www.instagram.com/danuthiaandassociates/" target="_blank" rel="noopener noreferrer" className="hover:text-bronze transition-colors w-fit">Instagram</a>
-                <a href="https://x.com/DanuthiaandCo" target="_blank" rel="noopener noreferrer" className="hover:text-bronze transition-colors w-fit">Twitter / X</a>
+                <a href="https://www.linkedin.com/in/danuthiaandassociates-344b353b7/" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors w-fit">LinkedIn</a>
+                <a href="https://www.instagram.com/danuthiaandassociates/" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors w-fit">Instagram</a>
+                <a href="https://x.com/DanuthiaandCo" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors w-fit">Twitter / X</a>
               </nav>
             </div>
 
             {/* Block 4: Newsletter & Meta */}
             <div className="md:col-span-3 p-8 flex flex-col justify-between bg-charcoal/50 dark:bg-[#0a0a0a]">
               <div>
-                <p className="text-[10px] font-mono text-bronze uppercase tracking-widest mb-6 border-b border-bronze/30 pb-2">Data Stream</p>
+                <p className="text-[10px] font-mono text-accent uppercase tracking-widest mb-6 border-b border-accent/30 pb-2">Data Stream</p>
                 {subscribed ? (
-                  <div className="flex items-center gap-2 text-bronze font-mono text-[10px] uppercase tracking-widest p-3 border border-bronze/30 bg-bronze/5">
+                  <div className="flex items-center gap-2 text-accent font-mono text-[10px] uppercase tracking-widest p-3 border border-accent/30 bg-accent/5">
                     <CheckCircle size={14} />
                     <span>Connection Est.</span>
                   </div>
@@ -209,11 +212,11 @@ export default function Layout() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="ENTER EMAIL..." 
-                      className="bg-transparent w-full border-b border-steel/30 focus:border-bronze outline-none text-[10px] font-mono uppercase tracking-widest placeholder:text-steel/50 pb-2 transition-colors"
+                      className="bg-transparent w-full border-b border-steel/30 focus:border-accent outline-none text-[10px] font-mono uppercase tracking-widest placeholder:text-steel/50 pb-2 transition-colors"
                       required
                     />
                     <Magnetic>
-                      <button type="submit" className="text-charcoal bg-bronze hover:bg-concrete transition-colors uppercase text-[10px] font-bold tracking-widest py-2 px-4 w-full">
+                      <button type="submit" className="text-charcoal bg-accent hover:bg-concrete transition-colors uppercase text-[10px] font-bold tracking-widest py-2 px-4 w-full">
                         Initialize
                       </button>
                     </Magnetic>
@@ -223,9 +226,9 @@ export default function Layout() {
               <div className="mt-12 pt-4 border-t border-steel/30 flex flex-col gap-2 text-[9px] font-mono text-steel uppercase tracking-widest">
                 <p>© {new Date().getFullYear()} Danuthia & Co.</p>
                 <div className="flex gap-4">
-                  <Link to="/terms" className="hover:text-bronze transition-colors">Privacy</Link>
-                  <Link to="/terms" className="hover:text-bronze transition-colors">Terms</Link>
-                  <Link to="/admin" className="hover:text-bronze transition-colors">Admin</Link>
+                  <Link to="/terms" className="hover:text-accent transition-colors">Privacy</Link>
+                  <Link to="/terms" className="hover:text-accent transition-colors">Terms</Link>
+                  <Link to="/admin" className="hover:text-accent transition-colors">Admin</Link>
                 </div>
               </div>
             </div>

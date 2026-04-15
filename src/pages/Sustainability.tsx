@@ -20,6 +20,19 @@ export default function Sustainability() {
     <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500 bg-blueprint-grid">
       {/* Hero Section */}
       <section className="relative bg-charcoal text-concrete p-8 md:p-16 pt-32 md:pt-40 flex flex-col justify-center overflow-hidden min-h-[70vh]">
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-70"
+          >
+            <source src="https://i.imgur.com/DKkCVme.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent"></div>
+        </div>
+
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.05, scale: 1 }}
@@ -36,13 +49,13 @@ export default function Sustainability() {
           className="relative z-10 max-w-5xl mx-auto w-full"
         >
           <motion.div variants={fadeInUp} className="mb-6">
-            <span className="text-bronze font-mono text-xs uppercase tracking-[0.3em]">Our Commitment</span>
+            <span className="text-accent font-mono text-xs uppercase tracking-[0.3em]">Our Commitment</span>
           </motion.div>
           <motion.h1 variants={fadeInUp} className="font-display text-5xl md:text-8xl font-bold leading-[0.85] tracking-tighter mb-12 uppercase">
             Design for a<br/>
-            <span className="text-bronze">Better World.</span>
+            <span className="text-accent">Better World.</span>
           </motion.h1>
-          <motion.p variants={fadeInUp} className="text-xl md:text-2xl text-concrete/70 font-light max-w-2xl leading-relaxed border-l border-bronze pl-8">
+          <motion.p variants={fadeInUp} className="text-xl md:text-2xl text-concrete/70 font-light max-w-2xl leading-relaxed border-l border-accent pl-8">
             At Danuthia & Co., sustainability isn't a feature—it's the foundation. We engineer environments that harmonize human ambition with ecological resilience.
           </motion.p>
         </motion.div>
@@ -58,8 +71,8 @@ export default function Sustainability() {
           className="grid grid-cols-1 md:grid-cols-3 gap-16"
         >
           <motion.div variants={fadeInUp} className="group">
-            <div className="w-16 h-16 bg-bronze/10 flex items-center justify-center mb-8 border border-bronze/20 group-hover:bg-bronze transition-colors duration-500">
-              <Zap size={32} className="text-bronze group-hover:text-charcoal transition-colors" />
+            <div className="w-16 h-16 bg-accent/10 flex items-center justify-center mb-8 border border-accent/20 group-hover:bg-accent transition-colors duration-500">
+              <Zap size={32} className="text-accent group-hover:text-charcoal transition-colors" />
             </div>
             <h3 className="font-display text-2xl font-bold uppercase mb-4 text-charcoal dark:text-concrete">Net Zero Carbon</h3>
             <p className="text-charcoal/60 dark:text-concrete/60 leading-relaxed">
@@ -68,8 +81,8 @@ export default function Sustainability() {
           </motion.div>
 
           <motion.div variants={fadeInUp} className="group">
-            <div className="w-16 h-16 bg-bronze/10 flex items-center justify-center mb-8 border border-bronze/20 group-hover:bg-bronze transition-colors duration-500">
-              <Droplets size={32} className="text-bronze group-hover:text-charcoal transition-colors" />
+            <div className="w-16 h-16 bg-accent/10 flex items-center justify-center mb-8 border border-accent/20 group-hover:bg-accent transition-colors duration-500">
+              <Droplets size={32} className="text-accent group-hover:text-charcoal transition-colors" />
             </div>
             <h3 className="font-display text-2xl font-bold uppercase mb-4 text-charcoal dark:text-concrete">Water Resilience</h3>
             <p className="text-charcoal/60 dark:text-concrete/60 leading-relaxed">
@@ -78,8 +91,8 @@ export default function Sustainability() {
           </motion.div>
 
           <motion.div variants={fadeInUp} className="group">
-            <div className="w-16 h-16 bg-bronze/10 flex items-center justify-center mb-8 border border-bronze/20 group-hover:bg-bronze transition-colors duration-500">
-              <Recycle size={32} className="text-bronze group-hover:text-charcoal transition-colors" />
+            <div className="w-16 h-16 bg-accent/10 flex items-center justify-center mb-8 border border-accent/20 group-hover:bg-accent transition-colors duration-500">
+              <Recycle size={32} className="text-accent group-hover:text-charcoal transition-colors" />
             </div>
             <h3 className="font-display text-2xl font-bold uppercase mb-4 text-charcoal dark:text-concrete">Circular Economy</h3>
             <p className="text-charcoal/60 dark:text-concrete/60 leading-relaxed">
@@ -100,12 +113,12 @@ export default function Sustainability() {
               transition={{ duration: 1 }}
             >
               <h2 className="font-display text-4xl md:text-6xl font-bold uppercase mb-12 leading-tight">
-                Evidence-Based<br/><span className="text-bronze">Performance.</span>
+                Evidence-Based<br/><span className="text-accent">Performance.</span>
               </h2>
               <div className="space-y-12">
                 <div className="flex gap-8">
                   <div className="flex-shrink-0 pt-2">
-                    <BarChart3 size={24} className="text-bronze" />
+                    <BarChart3 size={24} className="text-accent" />
                   </div>
                   <div>
                     <h4 className="font-display text-xl font-bold uppercase mb-2">Energy Modeling</h4>
@@ -114,7 +127,7 @@ export default function Sustainability() {
                 </div>
                 <div className="flex gap-8">
                   <div className="flex-shrink-0 pt-2">
-                    <ShieldCheck size={24} className="text-bronze" />
+                    <ShieldCheck size={24} className="text-accent" />
                   </div>
                   <div>
                     <h4 className="font-display text-xl font-bold uppercase mb-2">Certification Leadership</h4>
@@ -123,7 +136,7 @@ export default function Sustainability() {
                 </div>
                 <div className="flex gap-8">
                   <div className="flex-shrink-0 pt-2">
-                    <Globe size={24} className="text-bronze" />
+                    <Globe size={24} className="text-accent" />
                   </div>
                   <div>
                     <h4 className="font-display text-xl font-bold uppercase mb-2">Regional Adaptation</h4>
@@ -140,16 +153,16 @@ export default function Sustainability() {
               transition={{ duration: 1 }}
               className="relative aspect-square"
             >
-              <div className="absolute inset-0 border border-bronze/30 m-8 z-10"></div>
+              <div className="absolute inset-0 border border-accent/30 m-8 z-10"></div>
               <img 
                 src="https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=1200&auto=format&fit=crop" 
                 alt="Sustainable Urbanism" 
-                className="w-full h-full object-cover grayscale opacity-50"
+                className="w-full h-full object-cover  opacity-50"
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-transparent"></div>
               <div className="absolute bottom-16 left-16 z-20">
-                <div className="text-8xl font-display font-bold text-bronze mb-2">40%</div>
+                <div className="text-8xl font-display font-bold text-accent mb-2">40%</div>
                 <div className="text-xs font-mono uppercase tracking-widest text-concrete/60">Average energy reduction across portfolio</div>
               </div>
             </motion.div>
@@ -167,7 +180,7 @@ export default function Sustainability() {
         >
           <h2 className="font-display text-4xl md:text-5xl font-bold uppercase mb-8 text-charcoal dark:text-concrete">Ready to build for the future?</h2>
           <p className="text-charcoal/60 dark:text-concrete/60 mb-12 text-lg">Download our 2026 Sustainability Report to see how we're transforming the built environment.</p>
-          <button className="bg-bronze text-charcoal px-12 py-5 font-mono text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal hover:text-bronze border border-bronze transition-all duration-500">
+          <button className="bg-accent text-charcoal px-12 py-5 font-mono text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal hover:text-accent border border-accent transition-all duration-500">
             Download Report
           </button>
         </motion.div>

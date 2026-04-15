@@ -10,12 +10,25 @@
 
   --color-concrete: #F9F8F6; /* Warm off-white/alabaster */
   --color-charcoal: #1A1A1A; /* Deep, rich charcoal */
-  --color-bronze: #B08D57; /* True metallic bronze */
+  --color-accent: var(--accent-color); /* Dynamic monochrome accent */
   --color-steel: #8C8C8C; /* Warm medium gray */
 }
 
-html {
-  scroll-behavior: smooth;
+:root {
+  --accent-color: #1A1A1A; /* Charcoal in light mode */
+}
+
+.dark {
+  --accent-color: #F9F8F6; /* Concrete in dark mode */
+}
+
+@media (pointer: fine) {
+  body {
+    cursor: none;
+  }
+  a, button, [role="button"], input, select, textarea, .cursor-pointer {
+    cursor: none !important;
+  }
 }
 
 body {
@@ -71,7 +84,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--color-bronze);
+  background: var(--color-accent);
 }
 
 /* Blueprint Grid Background */

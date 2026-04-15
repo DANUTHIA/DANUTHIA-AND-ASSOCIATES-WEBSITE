@@ -539,7 +539,7 @@ export default function Admin() {
   if (!isAuthReady) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-bronze border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -554,7 +554,7 @@ export default function Admin() {
         <Magnetic>
           <button 
             onClick={handleLogin}
-            className="bg-charcoal text-concrete px-8 py-4 font-bold uppercase tracking-widest hover:bg-bronze transition-all duration-300"
+            className="bg-charcoal text-concrete px-8 py-4 font-bold uppercase tracking-widest hover:bg-accent transition-all duration-300"
           >
             Sign in with Google
           </button>
@@ -575,7 +575,7 @@ export default function Admin() {
           <Magnetic>
             <button 
               onClick={fetchAllData}
-              className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-charcoal dark:text-concrete hover:text-bronze dark:hover:text-bronze transition-colors bg-concrete dark:bg-charcoal px-4 py-2 border border-steel/20 dark:border-steel/40 rounded shadow-sm"
+              className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-charcoal dark:text-concrete hover:text-accent dark:hover:text-accent transition-colors bg-concrete dark:bg-charcoal px-4 py-2 border border-steel/20 dark:border-steel/40 rounded shadow-sm"
             >
               <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
               Refresh Data
@@ -596,43 +596,43 @@ export default function Admin() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-steel/40 flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 dark:bg-bronze/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+          <div className="absolute top-0 right-0 w-24 h-24 bg-accent/5 dark:bg-accent/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div>
             <p className="text-steel dark:text-steel/80 font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Total Bookings</p>
             <h3 className="font-display text-5xl font-light text-charcoal dark:text-concrete">{initialLoading ? '-' : requests.length}</h3>
           </div>
           <div className="mt-6 flex justify-end">
-            <Calendar size={20} className="text-bronze/50" strokeWidth={1} />
+            <Calendar size={20} className="text-accent/50" strokeWidth={1} />
           </div>
         </div>
         <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-steel/40 flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 dark:bg-bronze/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+          <div className="absolute top-0 right-0 w-24 h-24 bg-accent/5 dark:bg-accent/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div>
             <p className="text-steel dark:text-steel/80 font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Pending Requests</p>
-            <h3 className="font-display text-5xl font-light text-bronze">{initialLoading ? '-' : pendingCount}</h3>
+            <h3 className="font-display text-5xl font-light text-accent">{initialLoading ? '-' : pendingCount}</h3>
           </div>
           <div className="mt-6 flex justify-end">
-            <Clock size={20} className="text-bronze/50" strokeWidth={1} />
+            <Clock size={20} className="text-accent/50" strokeWidth={1} />
           </div>
         </div>
         <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-steel/40 flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 dark:bg-bronze/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+          <div className="absolute top-0 right-0 w-24 h-24 bg-accent/5 dark:bg-accent/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div>
             <p className="text-steel dark:text-steel/80 font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Subscribers</p>
             <h3 className="font-display text-5xl font-light text-charcoal dark:text-concrete">{initialLoading ? '-' : subscribers.length}</h3>
           </div>
           <div className="mt-6 flex justify-end">
-            <Users size={20} className="text-bronze/50" strokeWidth={1} />
+            <Users size={20} className="text-accent/50" strokeWidth={1} />
           </div>
         </div>
         <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-steel/40 flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-bronze/5 dark:bg-bronze/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+          <div className="absolute top-0 right-0 w-24 h-24 bg-accent/5 dark:bg-accent/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div>
             <p className="text-steel dark:text-steel/80 font-mono text-[10px] uppercase tracking-[0.2em] mb-3">Project Updates</p>
             <h3 className="font-display text-5xl font-light text-charcoal dark:text-concrete">{initialLoading ? '-' : updates.length}</h3>
           </div>
           <div className="mt-6 flex justify-end">
-            <FileText size={20} className="text-bronze/50" strokeWidth={1} />
+            <FileText size={20} className="text-accent/50" strokeWidth={1} />
           </div>
         </div>
       </div>
@@ -675,7 +675,7 @@ export default function Admin() {
         >
           Messages
           {messages.filter(m => !m.read && m.receiverId === 'admin').length > 0 && (
-            <span className="bg-bronze text-concrete text-[8px] px-1.5 py-0.5 rounded-full">
+            <span className="bg-accent text-concrete text-[8px] px-1.5 py-0.5 rounded-full">
               {messages.filter(m => !m.read && m.receiverId === 'admin').length}
             </span>
           )}
@@ -751,12 +751,12 @@ export default function Admin() {
               {/* Chart: Booking Statuses */}
               <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
                 <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
-                  <BarChart3 size={20} className="text-bronze" strokeWidth={1.5} />
+                  <BarChart3 size={20} className="text-accent" strokeWidth={1.5} />
                   Booking Statuses
                 </h3>
                 {initialLoading ? (
                   <div className="h-64 flex items-center justify-center">
-                    <div className="w-8 h-8 border-2 border-bronze border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
                   </div>
                 ) : requests.length === 0 ? (
                   <div className="h-64 flex items-center justify-center text-steel text-sm font-light">No booking data available.</div>
@@ -784,7 +784,7 @@ export default function Admin() {
               {/* Recent Activity (Updates & Bookings mixed) */}
               <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
                 <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
-                  <Clock size={20} className="text-bronze" strokeWidth={1.5} />
+                  <Clock size={20} className="text-accent" strokeWidth={1.5} />
                   Recent Activity
                 </h3>
                 {initialLoading ? (
@@ -794,7 +794,7 @@ export default function Admin() {
                     {/* Just showing the 5 most recent bookings for overview */}
                     {requests.slice(0, 5).map(req => (
                       <div key={req.id} className="flex items-start gap-4 pb-6 border-b border-steel/10 last:border-0 last:pb-0">
-                        <div className="w-8 h-8 border border-bronze/30 flex items-center justify-center text-bronze shrink-0 mt-1">
+                        <div className="w-8 h-8 border border-accent/30 flex items-center justify-center text-accent shrink-0 mt-1">
                           <Calendar size={14} strokeWidth={1.5} />
                         </div>
                         <div>
@@ -817,7 +817,7 @@ export default function Admin() {
                 {/* Conversion Rate Chart */}
                 <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
                   <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
-                    <BarChart3 size={20} className="text-bronze" strokeWidth={1.5} />
+                    <BarChart3 size={20} className="text-accent" strokeWidth={1.5} />
                     Booking Conversion
                   </h3>
                   <div className="h-64 w-full">
@@ -839,7 +839,7 @@ export default function Admin() {
                 {/* Project Type Popularity */}
                 <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
                   <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
-                    <PieChartIcon size={20} className="text-bronze" strokeWidth={1.5} />
+                    <PieChartIcon size={20} className="text-accent" strokeWidth={1.5} />
                     Project Type Popularity
                   </h3>
                   <div className="h-64 w-full">
@@ -874,7 +874,7 @@ export default function Admin() {
               {/* Revenue Analytics */}
               <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
                 <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
-                  <FileText size={20} className="text-bronze" strokeWidth={1.5} />
+                  <FileText size={20} className="text-accent" strokeWidth={1.5} />
                   Revenue & Billing
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
@@ -884,7 +884,7 @@ export default function Admin() {
                   </div>
                   <div className="p-6 border border-steel/10">
                     <p className="text-[10px] font-mono uppercase text-steel mb-2">Total Collected</p>
-                    <p className="text-3xl font-display font-light text-bronze">${invoices.filter(i => i.status === 'paid').reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}</p>
+                    <p className="text-3xl font-display font-light text-accent">${invoices.filter(i => i.status === 'paid').reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}</p>
                   </div>
                   <div className="p-6 border border-steel/10">
                     <p className="text-[10px] font-mono uppercase text-steel mb-2">Outstanding</p>
@@ -896,7 +896,7 @@ export default function Admin() {
               {/* Newsletter Growth Trends */}
               <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
                 <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
-                  <TrendingUp size={20} className="text-bronze" strokeWidth={1.5} />
+                  <TrendingUp size={20} className="text-accent" strokeWidth={1.5} />
                   Newsletter Growth Trends
                 </h3>
                 <div className="h-80 w-full">
@@ -928,7 +928,7 @@ export default function Admin() {
             <div className="space-y-8">
               <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
                 <h2 className="font-display text-2xl font-light text-charcoal dark:text-concrete mb-8 flex items-center gap-3">
-                  <CheckCircle size={20} className="text-bronze" strokeWidth={1.5} />
+                  <CheckCircle size={20} className="text-accent" strokeWidth={1.5} />
                   Manage Testimonials
                 </h2>
                 <div className="overflow-x-auto">
@@ -959,7 +959,7 @@ export default function Admin() {
                             <td className="p-6">
                               <div className="flex gap-0.5">
                                 {[...Array(5)].map((_, i) => (
-                                  <span key={i} className={i < test.rating ? 'text-bronze' : 'text-steel/20'}>★</span>
+                                  <span key={i} className={i < test.rating ? 'text-accent' : 'text-steel/20'}>★</span>
                                 ))}
                               </div>
                             </td>
@@ -1045,7 +1045,7 @@ export default function Admin() {
                             <select 
                               value={req.status}
                               onChange={(e) => updateStatus(req.id, e.target.value)}
-                              className="text-[10px] font-mono uppercase tracking-widest bg-transparent border border-steel/20 dark:border-steel/40 px-3 py-1.5 outline-none focus:border-bronze dark:focus:border-bronze cursor-pointer text-charcoal dark:text-concrete transition-all"
+                              className="text-[10px] font-mono uppercase tracking-widest bg-transparent border border-steel/20 dark:border-steel/40 px-3 py-1.5 outline-none focus:border-accent dark:focus:border-accent cursor-pointer text-charcoal dark:text-concrete transition-all"
                             >
                               <option value="pending" className="dark:bg-charcoal">Pending</option>
                               <option value="reviewed" className="dark:bg-charcoal">Reviewed</option>
@@ -1075,7 +1075,7 @@ export default function Admin() {
               <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8 md:p-12">
                 <div className="flex justify-between items-center mb-8">
                   <h2 className="font-display text-2xl font-light tracking-tight flex items-center gap-3 text-charcoal dark:text-concrete">
-                    {editingUpdateId ? <Edit size={20} className="text-bronze" strokeWidth={1.5} /> : <Plus size={20} className="text-bronze" strokeWidth={1.5} />}
+                    {editingUpdateId ? <Edit size={20} className="text-accent" strokeWidth={1.5} /> : <Plus size={20} className="text-accent" strokeWidth={1.5} />}
                     {editingUpdateId ? 'Edit Project Update' : 'Post New Update'}
                   </h2>
                   {editingUpdateId && (
@@ -1097,7 +1097,7 @@ export default function Admin() {
                       <select 
                         value={newUpdate.clientId}
                         onChange={e => setNewUpdate({...newUpdate, clientId: e.target.value})}
-                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors font-light text-charcoal dark:text-concrete"
+                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-accent dark:focus:border-accent transition-colors font-light text-charcoal dark:text-concrete"
                         required
                       >
                         <option value="" className="dark:bg-charcoal">-- Select a Client --</option>
@@ -1112,7 +1112,7 @@ export default function Admin() {
                         type="text"
                         value={newUpdate.title}
                         onChange={e => setNewUpdate({...newUpdate, title: e.target.value})}
-                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors font-light text-charcoal dark:text-concrete placeholder:text-steel/50 dark:placeholder:text-steel/40"
+                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-accent dark:focus:border-accent transition-colors font-light text-charcoal dark:text-concrete placeholder:text-steel/50 dark:placeholder:text-steel/40"
                         placeholder="e.g., Foundation Poured"
                         required
                       />
@@ -1123,7 +1123,7 @@ export default function Admin() {
                     <textarea 
                       value={newUpdate.description}
                       onChange={e => setNewUpdate({...newUpdate, description: e.target.value})}
-                      className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors font-light min-h-[120px] resize-y text-charcoal dark:text-concrete placeholder:text-steel/50 dark:placeholder:text-steel/40"
+                      className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-accent dark:focus:border-accent transition-colors font-light min-h-[120px] resize-y text-charcoal dark:text-concrete placeholder:text-steel/50 dark:placeholder:text-steel/40"
                       placeholder="Detailed progress report..."
                       required
                     />
@@ -1134,14 +1134,14 @@ export default function Admin() {
                       type="url"
                       value={newUpdate.imageUrl}
                       onChange={e => setNewUpdate({...newUpdate, imageUrl: e.target.value})}
-                      className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors font-light text-charcoal dark:text-concrete placeholder:text-steel/50 dark:placeholder:text-steel/40"
+                      className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-accent dark:focus:border-accent transition-colors font-light text-charcoal dark:text-concrete placeholder:text-steel/50 dark:placeholder:text-steel/40"
                       placeholder="https://..."
                     />
                   </div>
                   <button 
                     type="submit"
                     disabled={isCreatingUpdate}
-                    className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-8 py-4 font-mono text-[10px] uppercase tracking-[0.2em] hover:bg-bronze dark:hover:bg-bronze transition-colors disabled:opacity-50"
+                    className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-8 py-4 font-mono text-[10px] uppercase tracking-[0.2em] hover:bg-accent dark:hover:bg-accent transition-colors disabled:opacity-50"
                   >
                     {isCreatingUpdate ? (editingUpdateId ? 'Updating...' : 'Posting...') : (editingUpdateId ? 'Update Project' : 'Post Update')}
                   </button>
@@ -1192,7 +1192,7 @@ export default function Admin() {
                                     });
                                     window.scrollTo({ top: 0, behavior: 'smooth' });
                                   }}
-                                  className="p-2 text-steel hover:text-bronze transition-colors inline-block"
+                                  className="p-2 text-steel hover:text-accent transition-colors inline-block"
                                   title="Edit Update"
                                 >
                                   <Edit size={16} strokeWidth={1.5} />
@@ -1223,7 +1223,7 @@ export default function Admin() {
               <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 p-8">
                 <div className="flex justify-between items-center mb-8">
                   <h2 className="font-display text-2xl font-light tracking-tight flex items-center gap-3 text-charcoal dark:text-concrete">
-                    {editingMilestoneId ? <Edit className="text-bronze" size={24} strokeWidth={1.5} /> : <Calendar className="text-bronze" size={24} strokeWidth={1.5} />}
+                    {editingMilestoneId ? <Edit className="text-accent" size={24} strokeWidth={1.5} /> : <Calendar className="text-accent" size={24} strokeWidth={1.5} />}
                     {editingMilestoneId ? 'Edit Project Milestone' : 'Add Project Milestone'}
                   </h2>
                   {editingMilestoneId && (
@@ -1268,7 +1268,7 @@ export default function Admin() {
                       <select 
                         value={newMilestone.clientId}
                         onChange={e => setNewMilestone({...newMilestone, clientId: e.target.value})}
-                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors font-light text-charcoal dark:text-concrete"
+                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-accent dark:focus:border-accent transition-colors font-light text-charcoal dark:text-concrete"
                         required
                       >
                         <option value="" className="dark:bg-charcoal">-- Select a Client --</option>
@@ -1283,7 +1283,7 @@ export default function Admin() {
                         type="text"
                         value={newMilestone.title}
                         onChange={e => setNewMilestone({...newMilestone, title: e.target.value})}
-                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors font-light text-charcoal dark:text-concrete placeholder:text-steel/50 dark:placeholder:text-steel/40"
+                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-accent dark:focus:border-accent transition-colors font-light text-charcoal dark:text-concrete placeholder:text-steel/50 dark:placeholder:text-steel/40"
                         placeholder="e.g., Phase 1: Design"
                         required
                       />
@@ -1293,7 +1293,7 @@ export default function Admin() {
                       <select 
                         value={newMilestone.status}
                         onChange={e => setNewMilestone({...newMilestone, status: e.target.value as any})}
-                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors font-light text-charcoal dark:text-concrete"
+                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-accent dark:focus:border-accent transition-colors font-light text-charcoal dark:text-concrete"
                         required
                       >
                         <option value="upcoming" className="dark:bg-charcoal">Upcoming</option>
@@ -1307,7 +1307,7 @@ export default function Admin() {
                         type="number"
                         value={newMilestone.order}
                         onChange={e => setNewMilestone({...newMilestone, order: parseInt(e.target.value) || 0})}
-                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors font-light text-charcoal dark:text-concrete placeholder:text-steel/50 dark:placeholder:text-steel/40"
+                        className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-accent dark:focus:border-accent transition-colors font-light text-charcoal dark:text-concrete placeholder:text-steel/50 dark:placeholder:text-steel/40"
                         required
                       />
                     </div>
@@ -1315,7 +1315,7 @@ export default function Admin() {
                   <button 
                     type="submit"
                     disabled={isCreatingMilestone}
-                    className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-8 py-4 font-mono text-[10px] uppercase tracking-[0.2em] hover:bg-bronze dark:hover:bg-bronze transition-colors disabled:opacity-50"
+                    className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-8 py-4 font-mono text-[10px] uppercase tracking-[0.2em] hover:bg-accent dark:hover:bg-accent transition-colors disabled:opacity-50"
                   >
                     {isCreatingMilestone ? (editingMilestoneId ? 'Updating...' : 'Adding...') : (editingMilestoneId ? 'Update Milestone' : 'Add Milestone')}
                   </button>
@@ -1368,7 +1368,7 @@ export default function Admin() {
                                     });
                                     window.scrollTo({ top: 0, behavior: 'smooth' });
                                   }}
-                                  className="p-2 text-steel hover:text-bronze transition-colors inline-block"
+                                  className="p-2 text-steel hover:text-accent transition-colors inline-block"
                                   title="Edit Milestone"
                                 >
                                   <Edit size={16} strokeWidth={1.5} />
@@ -1399,7 +1399,7 @@ export default function Admin() {
               <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden flex flex-col">
                 <div className="p-6 border-b border-steel/20 dark:border-steel/40 bg-concrete/50 dark:bg-steel/10">
                   <h3 className="font-display text-xl font-light text-charcoal dark:text-concrete flex items-center gap-3">
-                    <Users size={18} className="text-bronze" strokeWidth={1.5} />
+                    <Users size={18} className="text-accent" strokeWidth={1.5} />
                     Clients
                   </h3>
                 </div>
@@ -1417,12 +1417,12 @@ export default function Admin() {
                           <button
                             key={client.id}
                             onClick={() => setSelectedChatClient(client.id)}
-                            className={`w-full text-left p-6 hover:bg-concrete/50 dark:hover:bg-steel/10 transition-colors flex flex-col gap-2 ${selectedChatClient === client.id ? 'bg-bronze/5 dark:bg-bronze/10 border-l-2 border-bronze' : 'border-l-2 border-transparent'}`}
+                            className={`w-full text-left p-6 hover:bg-concrete/50 dark:hover:bg-steel/10 transition-colors flex flex-col gap-2 ${selectedChatClient === client.id ? 'bg-accent/5 dark:bg-accent/10 border-l-2 border-accent' : 'border-l-2 border-transparent'}`}
                           >
                             <div className="flex justify-between items-center w-full">
                               <span className="font-medium text-charcoal dark:text-concrete text-sm truncate pr-4">{client.email}</span>
                               {unreadCount > 0 && (
-                                <span className="bg-bronze text-concrete text-[10px] px-2 py-0.5 rounded-full shrink-0">
+                                <span className="bg-accent text-concrete text-[10px] px-2 py-0.5 rounded-full shrink-0">
                                   {unreadCount}
                                 </span>
                               )}
@@ -1445,7 +1445,7 @@ export default function Admin() {
                 {selectedChatClient ? (
                   <>
                     <div className="p-6 border-b border-steel/20 dark:border-steel/40 bg-concrete/50 dark:bg-steel/10 flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-bronze/10 flex items-center justify-center text-bronze">
+                      <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent">
                         <MessageSquare size={18} strokeWidth={1.5} />
                       </div>
                       <div>
@@ -1488,13 +1488,13 @@ export default function Admin() {
                           value={adminReply}
                           onChange={(e) => setAdminReply(e.target.value)}
                           placeholder="Type your reply..."
-                          className="flex-1 bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 px-4 py-3 text-sm font-light focus:outline-none focus:border-bronze dark:focus:border-bronze text-charcoal dark:text-concrete transition-colors"
+                          className="flex-1 bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 px-4 py-3 text-sm font-light focus:outline-none focus:border-accent dark:focus:border-accent text-charcoal dark:text-concrete transition-colors"
                           disabled={sendingReply}
                         />
                         <button
                           type="submit"
                           disabled={!adminReply.trim() || sendingReply}
-                          className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-6 py-3 hover:bg-bronze dark:hover:bg-bronze transition-colors duration-300 disabled:opacity-50 flex items-center justify-center"
+                          className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-6 py-3 hover:bg-accent dark:hover:bg-accent transition-colors duration-300 disabled:opacity-50 flex items-center justify-center"
                         >
                           <Send size={16} strokeWidth={1.5} />
                         </button>
@@ -1541,7 +1541,7 @@ export default function Admin() {
                             {sub.createdAt?.toDate ? sub.createdAt.toDate().toLocaleDateString() : 'Just now'}
                           </td>
                           <td className="p-6 font-medium text-charcoal dark:text-concrete flex items-center gap-3 text-sm">
-                            <div className="w-8 h-8 rounded-full bg-bronze/10 flex items-center justify-center text-bronze">
+                            <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-accent">
                               <Mail size={14} strokeWidth={1.5} />
                             </div>
                             {sub.email}
@@ -1571,7 +1571,7 @@ export default function Admin() {
               <div className="lg:col-span-1 bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden flex flex-col h-[600px]">
                 <div className="p-6 border-b border-steel/20 dark:border-steel/40 bg-concrete/50 dark:bg-steel/10">
                   <h3 className="font-display text-xl font-light text-charcoal dark:text-concrete flex items-center gap-3">
-                    <Users size={18} className="text-bronze" strokeWidth={1.5} />
+                    <Users size={18} className="text-accent" strokeWidth={1.5} />
                     Clients
                   </h3>
                 </div>
@@ -1585,7 +1585,7 @@ export default function Admin() {
                       <button
                         key={client.id}
                         onClick={() => setSelectedDocClient(client.id)}
-                        className={`w-full text-left p-4 mb-2 transition-colors flex items-center justify-between ${selectedDocClient === client.id ? 'bg-bronze/5 dark:bg-bronze/10 border border-bronze/30' : 'hover:bg-concrete/50 dark:hover:bg-steel/10 border border-transparent'}`}
+                        className={`w-full text-left p-4 mb-2 transition-colors flex items-center justify-between ${selectedDocClient === client.id ? 'bg-accent/5 dark:bg-accent/10 border border-accent/30' : 'hover:bg-concrete/50 dark:hover:bg-steel/10 border border-transparent'}`}
                       >
                         <div>
                           <p className="font-medium text-charcoal dark:text-concrete text-sm truncate">{client.email}</p>
@@ -1604,7 +1604,7 @@ export default function Admin() {
                     <div className="p-6 border-b border-steel/20 dark:border-steel/40 flex justify-between items-center bg-concrete/50 dark:bg-steel/10">
                       <div>
                         <h3 className="font-display text-xl font-light text-charcoal dark:text-concrete flex items-center gap-3">
-                          <FileText size={18} className="text-bronze" strokeWidth={1.5} />
+                          <FileText size={18} className="text-accent" strokeWidth={1.5} />
                           Client Documents
                         </h3>
                         <p className="text-[10px] text-steel mt-2 font-mono uppercase tracking-widest">{clients.find(c => c.id === selectedDocClient)?.email}</p>
@@ -1619,7 +1619,7 @@ export default function Admin() {
                         />
                         <label 
                           htmlFor="admin-doc-upload" 
-                          className={`cursor-pointer flex items-center gap-3 text-[10px] font-mono uppercase tracking-[0.2em] bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-6 py-3 hover:bg-bronze dark:hover:bg-bronze transition-colors ${uploadingDoc ? 'opacity-50 pointer-events-none' : ''}`}
+                          className={`cursor-pointer flex items-center gap-3 text-[10px] font-mono uppercase tracking-[0.2em] bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-6 py-3 hover:bg-accent dark:hover:bg-accent transition-colors ${uploadingDoc ? 'opacity-50 pointer-events-none' : ''}`}
                         >
                           <Upload size={14} strokeWidth={1.5} />
                           {uploadingDoc ? 'Uploading...' : 'Upload Document'}
@@ -1639,7 +1639,7 @@ export default function Admin() {
                       ) : (
                         <div className="space-y-4">
                           {documents.filter(d => d.clientId === selectedDocClient).map(doc => (
-                            <div key={doc.id} className="flex items-center justify-between p-6 border border-steel/20 dark:border-steel/40 hover:border-bronze/30 dark:hover:border-bronze/50 transition-colors group bg-concrete dark:bg-charcoal">
+                            <div key={doc.id} className="flex items-center justify-between p-6 border border-steel/20 dark:border-steel/40 hover:border-accent/30 dark:hover:border-accent/50 transition-colors group bg-concrete dark:bg-charcoal">
                               <div className="flex items-center gap-6 overflow-hidden">
                                 <div className="w-12 h-12 bg-concrete/50 dark:bg-steel/10 flex items-center justify-center text-steel shrink-0">
                                   <FileText size={24} strokeWidth={1} />
@@ -1655,7 +1655,7 @@ export default function Admin() {
                               <div className="flex items-center gap-4 shrink-0">
                                 <button 
                                   onClick={() => handleDownload(doc)}
-                                  className="p-2 text-steel hover:text-bronze transition-colors"
+                                  className="p-2 text-steel hover:text-accent transition-colors"
                                   title="Download"
                                 >
                                   <Download size={18} strokeWidth={1.5} />
@@ -1690,7 +1690,7 @@ export default function Admin() {
             <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">
               <div className="p-8 border-b border-steel/20 dark:border-steel/40 flex justify-between items-center bg-concrete/50 dark:bg-steel/10">
                 <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete flex items-center gap-3">
-                  <Users size={24} className="text-bronze" strokeWidth={1.5} />
+                  <Users size={24} className="text-accent" strokeWidth={1.5} />
                   User Management
                 </h3>
               </div>
@@ -1717,7 +1717,7 @@ export default function Admin() {
                           <td className="p-6">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-widest ${
                               u.role === 'admin' ? 'bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal' :
-                              u.role === 'client' ? 'bg-bronze/10 text-bronze border border-bronze/20' :
+                              u.role === 'client' ? 'bg-accent/10 text-accent border border-accent/20' :
                               'bg-yellow-100 text-yellow-800 border border-yellow-200'
                             }`}>
                               {u.role}
@@ -1727,7 +1727,7 @@ export default function Admin() {
                             <select
                               value={u.role}
                               onChange={(e) => updateUserRole(u.id, e.target.value)}
-                              className="bg-transparent border border-steel/30 dark:border-steel/50 text-charcoal dark:text-concrete text-xs rounded px-2 py-1 focus:outline-none focus:border-bronze dark:focus:border-bronze transition-colors"
+                              className="bg-transparent border border-steel/30 dark:border-steel/50 text-charcoal dark:text-concrete text-xs rounded px-2 py-1 focus:outline-none focus:border-accent dark:focus:border-accent transition-colors"
                               disabled={u.id === user?.uid}
                             >
                               <option value="pending" className="dark:bg-charcoal">Pending</option>

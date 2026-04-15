@@ -38,11 +38,11 @@ export default function Careers() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-end">
             <div>
               <motion.h1 variants={fadeInUp} className="font-display text-5xl md:text-7xl font-bold leading-[0.9] tracking-tighter mb-8 uppercase">
-                Work With <span className="text-bronze">Us.</span>
+                Work With <span className="text-accent">Us.</span>
               </motion.h1>
             </div>
             <motion.div variants={fadeInUp} className="pb-2">
-              <p className="text-lg md:text-xl text-concrete/80 font-light leading-relaxed border-l border-bronze pl-6">
+              <p className="text-lg md:text-xl text-concrete/80 font-light leading-relaxed border-l border-accent pl-6">
                 Join a team of visionary architects and urban planners shaping the future of the African landscape.
               </p>
             </motion.div>

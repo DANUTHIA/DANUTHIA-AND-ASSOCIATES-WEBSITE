@@ -33,23 +33,23 @@ export default function Logo({ className = "" }: { className?: string }) {
           {/* Stylized '&' with Compass and Road */}
           <path 
             d="M140 100C160 100 175 85 175 65C175 45 160 40 150 40C140 40 125 45 125 65C125 85 140 100 160 100Z" 
-            stroke="var(--color-bronze, #B08D57)" 
+            stroke="var(--color-accent, #B08D57)" 
             strokeWidth="8" 
           />
           <path 
             d="M175 100L150 40" 
-            stroke="var(--color-bronze, #B08D57)" 
+            stroke="var(--color-accent, #B08D57)" 
             strokeWidth="8" 
             strokeLinecap="round"
           />
           {/* Compass inside & */}
           <path 
             d="M150 55L155 70L150 85L145 70L150 55Z" 
-            fill="var(--color-bronze, #B08D57)" 
+            fill="var(--color-accent, #B08D57)" 
           />
           <path 
             d="M135 70L150 65L165 70L150 75L135 70Z" 
-            fill="var(--color-bronze, #B08D57)" 
+            fill="var(--color-accent, #B08D57)" 
           />
           {/* Road curve */}
           <path 
@@ -68,10 +68,10 @@ export default function Logo({ className = "" }: { className?: string }) {
             strokeLinecap="round"
           />
           {/* City Skyline inside C */}
-          <rect x="205" y="70" width="10" height="30" fill="var(--color-bronze, #B08D57)" />
-          <rect x="220" y="55" width="12" height="45" fill="var(--color-bronze, #B08D57)" />
-          <rect x="238" y="65" width="8" height="35" fill="var(--color-bronze, #B08D57)" />
-          <rect x="252" y="75" width="10" height="25" fill="var(--color-bronze, #B08D57)" />
+          <rect x="205" y="70" width="10" height="30" fill="var(--color-accent, #B08D57)" />
+          <rect x="220" y="55" width="12" height="45" fill="var(--color-accent, #B08D57)" />
+          <rect x="238" y="65" width="8" height="35" fill="var(--color-accent, #B08D57)" />
+          <rect x="252" y="75" width="10" height="25" fill="var(--color-accent, #B08D57)" />
         </svg>
       </div>
       

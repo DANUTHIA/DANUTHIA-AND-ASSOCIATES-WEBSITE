@@ -105,7 +105,7 @@ export default function BlueprintAnnotation({ blueprintId, imageUrl, userId, ini
           <select 
             value={currentVersion} 
             onChange={(e) => setCurrentVersion(Number(e.target.value))}
-            className="bg-concrete dark:bg-charcoal border border-steel/20 px-3 py-1 text-xs font-mono focus:outline-none focus:border-bronze"
+            className="bg-concrete dark:bg-charcoal border border-steel/20 px-3 py-1 text-xs font-mono focus:outline-none focus:border-accent"
           >
             {availableVersions.map(v => (
               <option key={v} value={v}>V{v}.0</option>
@@ -118,7 +118,7 @@ export default function BlueprintAnnotation({ blueprintId, imageUrl, userId, ini
             setCurrentVersion(nextVer);
             setAvailableVersions(prev => [...prev, nextVer].sort((a, b) => b - a));
           }}
-          className="text-[10px] font-mono uppercase tracking-widest text-bronze hover:text-charcoal flex items-center gap-2"
+          className="text-[10px] font-mono uppercase tracking-widest text-accent hover:text-charcoal flex items-center gap-2"
         >
           <Plus size={12} />
           New Version
@@ -185,21 +185,21 @@ export default function BlueprintAnnotation({ blueprintId, imageUrl, userId, ini
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {newAnnotation && (
-          <div className="p-6 bg-bronze/10 border border-bronze/30 space-y-4">
+          <div className="p-6 bg-accent/10 border border-accent/30 space-y-4">
             <div className="flex justify-between items-center">
-              <h4 className="font-mono text-[10px] uppercase tracking-widest text-bronze">New Annotation</h4>
-              <button onClick={() => setNewAnnotation(null)} className="text-bronze hover:text-charcoal"><X size={14} /></button>
+              <h4 className="font-mono text-[10px] uppercase tracking-widest text-accent">New Annotation</h4>
+              <button onClick={() => setNewAnnotation(null)} className="text-accent hover:text-charcoal"><X size={14} /></button>
             </div>
             <textarea 
               placeholder="Describe the issue or request..." 
-              className="w-full bg-concrete dark:bg-charcoal border border-bronze/20 p-4 text-sm font-light focus:outline-none focus:border-bronze min-h-[100px]"
+              className="w-full bg-concrete dark:bg-charcoal border border-accent/20 p-4 text-sm font-light focus:outline-none focus:border-accent min-h-[100px]"
               value={newAnnotation.comment}
               onChange={(e) => setNewAnnotation({...newAnnotation, comment: e.target.value})}
             />
             <button 
               onClick={() => saveAnnotation(newAnnotation.comment || '')} 
               disabled={!newAnnotation.comment?.trim()}
-              className="w-full bg-bronze text-concrete py-3 text-xs font-bold uppercase tracking-widest hover:bg-bronze/90 transition-colors disabled:opacity-50"
+              className="w-full bg-accent text-concrete py-3 text-xs font-bold uppercase tracking-widest hover:bg-accent/90 transition-colors disabled:opacity-50"
             >
               Save Annotation
             </button>

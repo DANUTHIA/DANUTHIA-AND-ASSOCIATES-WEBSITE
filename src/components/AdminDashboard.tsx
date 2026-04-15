@@ -64,7 +64,7 @@ export default function AdminDashboard() {
     <div className="space-y-12">
       <div>
         <h2 className="font-display text-2xl font-light mb-6 flex items-center gap-3">
-          <Clock className="text-bronze" size={24} />
+          <Clock className="text-accent" size={24} />
           Pending Approvals ({pendingUsers.length})
         </h2>
         {pendingUsers.length === 0 ? (
@@ -80,7 +80,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={() => handleApprove(user.id)}
-                    className="p-2 bg-bronze text-concrete hover:bg-bronze/80 transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-widest"
+                    className="p-2 bg-accent text-concrete hover:bg-accent/80 transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-widest"
                   >
                     <Check size={14} /> Approve
                   </button>
@@ -100,7 +100,7 @@ export default function AdminDashboard() {
 
       <div>
         <h2 className="font-display text-2xl font-light mb-6 flex items-center gap-3">
-          <User className="text-bronze" size={24} />
+          <User className="text-accent" size={24} />
           Approved Clients ({approvedClients.length})
         </h2>
         {approvedClients.length === 0 ? (
@@ -115,7 +115,7 @@ export default function AdminDashboard() {
                 </div>
                 <button 
                   onClick={() => handleRevoke(user.id)}
-                  className="px-4 py-2 border border-steel/30 text-steel hover:border-bronze hover:text-bronze transition-colors text-xs font-bold uppercase tracking-widest"
+                  className="px-4 py-2 border border-steel/30 text-steel hover:border-accent hover:text-accent transition-colors text-xs font-bold uppercase tracking-widest"
                 >
                   Revoke Access
                 </button>
@@ -127,14 +127,14 @@ export default function AdminDashboard() {
 
       <div>
         <h2 className="font-display text-2xl font-light mb-6 flex items-center gap-3">
-          <Shield className="text-bronze" size={24} />
+          <Shield className="text-accent" size={24} />
           Administrators ({admins.length})
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {admins.map(user => (
-            <div key={user.id} className="border border-bronze/30 p-6 bg-bronze/5">
+            <div key={user.id} className="border border-accent/30 p-6 bg-accent/5">
               <p className="font-bold text-sm">{user.email}</p>
-              <p className="text-[10px] font-mono text-bronze uppercase tracking-widest mt-1">Administrator</p>
+              <p className="text-[10px] font-mono text-accent uppercase tracking-widest mt-1">Administrator</p>
             </div>
           ))}
         </div>

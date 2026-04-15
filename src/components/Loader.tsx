@@ -30,7 +30,7 @@ export default function Loader() {
           >
             <Logo className="scale-150 mb-8" />
             <motion.div 
-              className="h-[1px] bg-bronze overflow-hidden relative w-48"
+              className="h-[1px] bg-accent overflow-hidden relative w-48"
               initial={{ width: 0 }}
               animate={{ width: 192 }}
               transition={{ duration: 1.5, ease: "easeInOut", delay: 0.5 }}
