@@ -162,9 +162,9 @@ export default function Services() {
                 View Related Projects <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
               </Link>
             </div>
-            <div className="lg:col-span-7 order-1 lg:order-2 h-[40vh] lg:h-[60vh] overflow-hidden relative">
+              <div className="lg:col-span-7 order-1 lg:order-2 h-[40vh] lg:h-[60vh] overflow-hidden relative">
               <img 
-                src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=1600&auto=format&fit=crop" 
+                src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop" 
                 alt="Spatial Analysis" 
                 className="w-full h-full object-cover  group-hover:mix-blend-normal group-hover:scale-105 transition-all duration-1000"
                 referrerPolicy="no-referrer"
@@ -244,7 +244,7 @@ export default function Services() {
                 className="bg-concrete dark:bg-charcoal p-10 group hover:bg-accent transition-all duration-500 cursor-default"
               >
                 <div className="text-3xl mb-6  group-hover:-0 transition-all">{market.icon}</div>
-                <h3 className="font-display text-xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete group-hover:text-charcoal transition-colors">
+                <h3 className="font-display text-xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete group-hover:text-concrete dark:group-hover:text-charcoal transition-colors">
                   {market.title}
                 </h3>
               </motion.div>

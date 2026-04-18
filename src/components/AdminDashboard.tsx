@@ -80,7 +80,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={() => handleApprove(user.id)}
-                    className="p-2 bg-accent text-concrete hover:bg-accent/80 transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-widest"
+                    className="p-2 bg-accent text-concrete dark:text-charcoal hover:bg-accent/80 transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-widest"
                   >
                     <Check size={14} /> Approve
                   </button>

@@ -103,6 +103,7 @@ export default function ClientPortal() {
   const [newMessage, setNewMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
   const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [docConsent, setDocConsent] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [selectedBlueprint, setSelectedBlueprint] = useState<VaultDocument | null>(null);
@@ -137,14 +138,14 @@ export default function ClientPortal() {
           if (userDoc.exists()) {
             const userData = userDoc.data();
             let role = userData.role;
-            if (currentUser.email === 'machariag605@gmail.com' || currentUser.email === 'danuthiaandassociates@gmail.com') {
+            if (currentUser.email === 'machariag605@gmail.com' || currentUser.email === 'danuthiaandassociates@gmail.com' || currentUser.email === 'urbanplanning2027@gmail.com') {
               role = 'admin';
               if (userData.role !== 'admin') {
                 await updateDoc(userDocRef, { role: 'admin' });
               }
             }
-            setUser({ ...currentUser, role: role, needsOnboarding: userData.needsOnboarding });
-            setShowOnboarding(userData.needsOnboarding || false);
+            setUser({ ...currentUser, role: role, needsOnboarding: userData.needsOnboarding, officialName: userData.officialName });
+            setShowOnboarding(userData.needsOnboarding || !userData.officialName || false);
           } else {
             let role = 'pending';
             if (currentUser.email === 'machariag605@gmail.com' || currentUser.email === 'danuthiaandassociates@gmail.com') {
@@ -487,18 +488,18 @@ export default function ClientPortal() {
       <div className="min-h-[calc(100vh-6rem)] flex flex-col items-center justify-center bg-concrete dark:bg-charcoal p-6 text-center transition-colors duration-500">
         <div className="max-w-md w-full bg-charcoal dark:bg-charcoal text-concrete p-10 md:p-16 relative z-10 transition-colors duration-500">
           <div className="flex justify-center mb-10">
-            <div className="w-16 h-16 rounded-none border border-accent/30 flex items-center justify-center bg-charcoal dark:bg-charcoal shadow-[0_0_30px_rgba(184,134,11,0.1)] transition-colors duration-500">
-              <Clock size={20} className="text-accent" strokeWidth={1.5} />
+            <div className="w-16 h-16 rounded-none border border-concrete/30 flex items-center justify-center bg-charcoal dark:bg-charcoal shadow-[0_0_30px_rgba(255,255,255,0.1)] transition-colors duration-500">
+              <Clock size={20} className="text-concrete" strokeWidth={1.5} />
             </div>
           </div>
-          <h1 className="font-display text-3xl font-light tracking-tight mb-4">Pending Approval</h1>
-          <p className="text-steel font-light leading-relaxed mb-8">
-            Your account is currently pending approval. Access to the client portal is restricted to active clients of Danuthia & Co. We will notify you once your account has been verified.
+          <h1 className="font-display text-3xl font-light tracking-tight mb-4 text-concrete">Pending Approval</h1>
+          <p className="text-concrete/70 font-light leading-relaxed mb-8">
+            Your account is currently pending approval. Access to the client portal is restricted to active clients of Danuthia & Associates. We will notify you once your account has been verified.
           </p>
           <Magnetic className="w-full">
             <button 
               onClick={handleSignOut}
-              className="w-full bg-transparent border border-accent text-accent py-4 font-bold uppercase tracking-widest hover:bg-accent hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 text-xs"
+              className="w-full bg-transparent border border-concrete text-concrete py-4 font-bold uppercase tracking-widest hover:bg-concrete hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 text-xs"
             >
               <LogOut size={16} />
               Sign Out
@@ -525,7 +526,7 @@ export default function ClientPortal() {
               Client Portal
             </h1>
             <p className="text-steel font-mono text-xs uppercase tracking-[0.2em]">
-              Welcome back, {user?.displayName || 'Client'}
+              Profile: {user?.officialName || user?.displayName || 'Establishing Identity...'}
             </p>
           </div>
           
@@ -538,7 +539,7 @@ export default function ClientPortal() {
               >
                 <Bell size={18} />
                 {notifications.filter(n => !n.read).length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent text-concrete text-[10px] flex items-center justify-center rounded-none font-bold">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent text-concrete dark:text-charcoal text-[10px] flex items-center justify-center rounded-none font-bold">
                     {notifications.filter(n => !n.read).length}
                   </span>
                 )}
@@ -662,7 +663,7 @@ export default function ClientPortal() {
                       <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Current Phase</h3>
                       <p className="font-display text-2xl text-charcoal dark:text-concrete">Design Development</p>
                     </div>
-                    <a href="https://calendly.com/your-firm/consultation" target="_blank" rel="noopener noreferrer" className="bg-accent text-concrete px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-accent/90 transition-colors">
+                    <a href="https://calendly.com/your-firm/consultation" target="_blank" rel="noopener noreferrer" className="bg-accent text-concrete dark:text-charcoal px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-accent/90 transition-colors">
                       Schedule
                     </a>
                   </div>
@@ -698,6 +699,24 @@ export default function ClientPortal() {
                             </div>
                             <p className="text-charcoal/70 dark:text-concrete/70 font-light leading-relaxed mb-6 transition-colors duration-500">{update.description}</p>
                             
+                            {update.fileUrl && (
+                              <div className="mb-6 p-4 bg-charcoal/5 dark:bg-concrete/5 border border-steel/10 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <FileText size={18} className="text-accent" />
+                                  <span className="font-mono text-[10px] uppercase tracking-widest text-charcoal dark:text-concrete">
+                                    {update.fileName || 'Attached Document'}
+                                  </span>
+                                </div>
+                                <a 
+                                  href={update.fileUrl} 
+                                  download={update.fileName || 'document'}
+                                  className="flex items-center gap-2 px-4 py-2 bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal font-mono text-[10px] uppercase font-bold tracking-widest hover:bg-accent hover:text-white transition-colors"
+                                >
+                                  <Download size={14} /> Download
+                                </a>
+                              </div>
+                            )}
+
                             {update.imageUrl && (
                               <div className="mt-6 aspect-[16/9] bg-concrete dark:bg-charcoal relative overflow-hidden transition-colors duration-500">
                                 <img 
@@ -893,7 +912,7 @@ export default function ClientPortal() {
                             <div className="absolute bottom-6 right-6 flex gap-3">
                               <button 
                                 onClick={() => setIsModelFullScreen(true)}
-                                className="p-3 bg-charcoal/80 text-concrete hover:bg-accent transition-colors"
+                                className="p-3 bg-charcoal/80 dark:bg-concrete/80 text-concrete dark:text-charcoal hover:bg-accent dark:hover:bg-accent hover:text-concrete dark:hover:text-charcoal transition-colors"
                               >
                                 <Maximize2 size={16} />
                               </button>
@@ -947,7 +966,7 @@ export default function ClientPortal() {
                               key={cat}
                               onClick={() => setCategoryFilter(cat)}
                               className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors ${
-                                categoryFilter === cat ? 'bg-accent text-concrete' : 'text-steel hover:text-charcoal dark:hover:text-concrete'
+                                categoryFilter === cat ? 'bg-accent text-concrete dark:text-charcoal' : 'text-steel hover:text-charcoal dark:hover:text-concrete'
                               }`}
                             >
                               {cat}
@@ -961,16 +980,28 @@ export default function ClientPortal() {
                           onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <input 
+                              type="checkbox" 
+                              id="consent-checkbox-portal"
+                              checked={docConsent}
+                              onChange={(e) => setDocConsent(e.target.checked)}
+                              className="shrink-0 accent-accent"
+                            />
+                            <label htmlFor="consent-checkbox-portal" className="text-[10px] font-mono text-concrete/70 leading-relaxed cursor-pointer">
+                              I consent to the Privacy Policy & Terms.
+                            </label>
+                          </div>
                           <input 
                             type="file" 
                             id="doc-upload-vault" 
                             className="hidden" 
                             onChange={handleFileUpload}
-                            disabled={uploadingDoc}
+                            disabled={uploadingDoc || !docConsent}
                           />
                           <label 
                             htmlFor="doc-upload-vault" 
-                            className={`cursor-pointer flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest border border-charcoal dark:border-concrete px-6 py-3 hover:bg-charcoal hover:text-concrete dark:hover:bg-concrete dark:hover:text-charcoal transition-all duration-300 ${uploadingDoc ? 'opacity-50 pointer-events-none' : ''}`}
+                            className={`cursor-pointer flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest border border-charcoal dark:border-concrete px-6 py-3 hover:bg-charcoal hover:text-concrete dark:hover:bg-concrete dark:hover:text-charcoal transition-all duration-300 ${(uploadingDoc || !docConsent) ? 'opacity-50 pointer-events-none' : ''}`}
                           >
                             <Upload size={14} />
                             {uploadingDoc ? 'Uploading...' : 'Upload New'}

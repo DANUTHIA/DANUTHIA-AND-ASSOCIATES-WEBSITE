@@ -90,7 +90,7 @@ export default function Terms() {
             <section>
               <h2 className="font-display text-2xl font-bold uppercase tracking-tight mb-4 text-accent">7. Intellectual Property Rights</h2>
               <p className="font-mono text-sm leading-relaxed opacity-80">
-                Other than the content you own, under these Terms, Danuthia & Associates and/or its licensors own all the intellectual property rights and materials contained in this Website. You are granted a limited license only for purposes of viewing the material contained on this Website.
+                All architectural blueprints, 3D renders, site plans, and digital content displayed on this platform remain the exclusive intellectual property of Danuthia & Associates. Unauthorized reproduction or distribution is strictly prohibited.
               </p>
             </section>
 
@@ -118,7 +118,7 @@ export default function Terms() {
             <section>
               <h2 className="font-display text-2xl font-bold uppercase tracking-tight mb-4 text-accent">10. Disclaimers and Limitation of Liability</h2>
               <p className="font-mono text-sm leading-relaxed opacity-80">
-                This Website is provided "as is," with all faults. In no event shall Danuthia & Associates, nor any of its officers, directors, and employees, be held liable for anything arising out of or in any way connected with your use of this Website. Furthermore, Danuthia & Associates shall not be liable for any indirect, incidental, or consequential damages arising from construction delays, material price fluctuations, labor disputes, or failure to obtain necessary building permits and zoning approvals from local authorities.
+                Danuthia & Associates provides this platform as a digital interface for project exploration. We are not liable for any direct or indirect damages arising from the use of preliminary digital models, AI-generated estimates, or service interruptions. Formal liability is only established upon the signing of a physical, legally binding construction or consulting contract.
               </p>
             </section>
 

@@ -45,10 +45,59 @@
         },
         "role": {
           "type": "string",
-          "enum": ["client", "admin"]
+          "enum": ["client", "admin", "project_manager", "architect", "surveyor", "pending_staff", "pending"]
+        },
+        "officialName": {
+          "type": "string",
+          "description": "The official name of the user (e.g., Jane Doe)."
+        },
+        "title": {
+          "type": "string",
+          "description": "The professional title of the user (e.g., Senior Planner)."
         }
       },
       "required": ["email", "role"]
+    },
+    "InternalLog": {
+      "title": "Internal Technical Log",
+      "description": "An internal progress log submitted by staff for PM review.",
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string",
+          "description": "The ID of the project context."
+        },
+        "staffName": {
+          "type": "string",
+          "description": "Email or name of the staff member."
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the staff member at submission time."
+        },
+        "message": {
+          "type": "string",
+          "description": "Technical details of progress or blocks."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending_review", "reviewed"],
+          "description": "Review status by PM."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "Optional attachment URL (base64 or storage link)."
+        },
+        "fileName": {
+          "type": "string",
+          "description": "Optional name of the attachment."
+        }
+      },
+      "required": ["projectId", "staffName", "role", "message", "status", "createdAt"]
     },
     "ProjectUpdate": {
       "title": "Project Update",
@@ -75,6 +124,14 @@
           "type": "string",
           "format": "date-time",
           "description": "When the update was posted."
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "Optional attachment URL."
+        },
+        "fileName": {
+          "type": "string",
+          "description": "Optional attachment name."
         }
       },
       "required": ["clientId", "title", "description", "createdAt"]
@@ -347,6 +404,12 @@
         "$ref": "#/entities/Testimonial"
       },
       "description": "Stores client testimonials."
+    },
+    "/internalLogs/{logId}": {
+      "schema": {
+        "$ref": "#/entities/InternalLog"
+      },
+      "description": "Stores internal staff technical logs for PM review."
     }
   }
 }

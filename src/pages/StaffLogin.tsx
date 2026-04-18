@@ -1,39 +1,56 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, provider, db, handleFirestoreError, OperationType } from '../firebase';
-import { signInWithPopup } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { motion } from 'motion/react';
-import { Lock, ArrowRight } from 'lucide-react';
+import { Shield, ArrowRight } from 'lucide-react';
 import Magnetic from '../components/Magnetic';
 
-export default function Login() {
+export default function StaffLogin() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
     setError('');
+
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      setError('Please enter your staff email address.');
+      setIsLoading(false);
+      return;
+    }
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email format (e.g., name@company.com).');
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const result = await signInWithPopup(auth, provider);
+      const customProvider = new GoogleAuthProvider();
+      customProvider.setCustomParameters({ login_hint: email });
+      
+      const result = await signInWithPopup(auth, customProvider);
       const user = result.user;
       
-      // Ensure user document exists in 'users' collection
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
       
       if (!userDoc.exists()) {
         await setDoc(userDocRef, {
           email: user.email,
-          role: 'pending'
+          role: 'pending_staff'
         });
       }
 
-      navigate('/portal');
+      navigate('/staff-portal');
     } catch (err: any) {
       if (err?.code === 'auth/popup-closed-by-user' || (err instanceof Error && err.message.includes('popup-closed-by-user'))) {
-        // User intentionally closed the popup, so we just abort quietly
         console.log('Authentication popup was closed by the user.');
       } else {
         handleFirestoreError(err, OperationType.GET, 'users');
@@ -46,7 +63,6 @@ export default function Login() {
 
   return (
     <div className="min-h-[calc(100vh-6rem)] flex items-center justify-center bg-concrete dark:bg-charcoal p-6 relative overflow-hidden transition-colors duration-500">
-      {/* Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
         <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[60%] border-[1px] border-steel/10 dark:border-concrete/10 rounded-full blur-3xl opacity-50 transition-colors duration-500"></div>
         <div className="absolute bottom-[-10%] left-[-5%] w-[50%] h-[50%] border-[1px] border-accent/10 rounded-full blur-3xl opacity-30"></div>
@@ -60,15 +76,15 @@ export default function Login() {
       >
         <div className="flex justify-center mb-10">
           <div className="w-16 h-16 rounded-none border border-concrete/30 flex items-center justify-center bg-charcoal dark:bg-charcoal shadow-[0_0_30px_rgba(255,255,255,0.1)] transition-colors duration-500">
-            <Lock size={20} className="text-concrete" strokeWidth={1.5} />
+            <Shield size={20} className="text-concrete" strokeWidth={1.5} />
           </div>
         </div>
         
         <h1 className="font-display text-4xl font-light tracking-tight text-center mb-4 text-concrete">
-          Client Portal
+          Staff Portal
         </h1>
         <p className="text-concrete/70 font-mono text-[10px] uppercase tracking-[0.15em] text-center mb-12 leading-relaxed">
-          Are you a client? Sign in to get updated on your project.
+          Authorized internal staff login.
         </p>
 
         {error && (
@@ -77,29 +93,37 @@ export default function Login() {
           </div>
         )}
 
-        <Magnetic className="w-full">
-          <button
-            onClick={handleLogin}
-            disabled={isLoading}
-            className="w-full bg-transparent border border-concrete text-concrete py-4 font-bold uppercase tracking-widest hover:bg-concrete hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed text-xs"
-          >
-            <span>{isLoading ? 'Authenticating...' : 'Sign in with Google'}</span>
-            {!isLoading && <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform duration-500" strokeWidth={1.5} />}
-          </button>
-        </Magnetic>
+        <form onSubmit={handleLogin} className="space-y-6">
+          <div>
+            <label htmlFor="email" className="block text-concrete/70 text-[10px] font-mono uppercase tracking-widest mb-2">
+              Staff Email Address
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="e.g. employee@danuthiaandassociates.com"
+              className="w-full bg-transparent border border-concrete/30 focus:border-concrete text-concrete px-4 py-3 text-sm font-mono outline-none transition-colors placeholder:text-concrete/30"
+            />
+          </div>
+          
+          <Magnetic className="w-full pt-4">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-transparent border border-concrete text-concrete py-4 font-bold uppercase tracking-widest hover:bg-concrete hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+            >
+              <span>{isLoading ? 'Authenticating...' : 'Continue to Sign In'}</span>
+              {!isLoading && <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform duration-500" strokeWidth={1.5} />}
+            </button>
+          </Magnetic>
+        </form>
 
         <div className="mt-12 pt-8 border-t border-concrete/20 transition-colors duration-500 flex flex-col items-center gap-4">
           <p className="text-center text-concrete/70 text-xs font-light leading-relaxed">
-            Access is restricted to active clients of Danuthia & Associates.
+            Access is strictly restricted to employees of Danuthia & Associates.
           </p>
-          <button
-            onClick={() => {
-              navigate('/#book');
-            }}
-            className="text-concrete text-[10px] font-bold uppercase tracking-widest hover:text-white transition-colors duration-300 border-b border-concrete/30 hover:border-concrete pb-1"
-          >
-            Not a client yet? Register with us today.
-          </button>
         </div>
       </motion.div>
     </div>

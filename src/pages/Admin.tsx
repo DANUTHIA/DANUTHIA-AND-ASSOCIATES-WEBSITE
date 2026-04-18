@@ -30,6 +30,8 @@ interface AppUser {
   id: string;
   email: string;
   role: string;
+  officialName?: string;
+  title?: string;
 }
 
 interface ProjectUpdate {
@@ -72,7 +74,7 @@ interface Milestone {
 export default function Admin() {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'newsletter' | 'updates' | 'messages' | 'documents' | 'users' | 'milestones' | 'analytics' | 'testimonials'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'newsletter' | 'updates' | 'messages' | 'documents' | 'users' | 'milestones' | 'analytics' | 'testimonials' | 'staff'>('overview');
   
   const [requests, setRequests] = useState<BookingRequest[]>([]);
   const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
@@ -318,8 +320,12 @@ export default function Admin() {
   const handleLogin = async () => {
     try {
       await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Login failed", error);
+    } catch (err: any) {
+      if (err?.code === 'auth/popup-closed-by-user' || (err instanceof Error && err.message.includes('popup-closed-by-user'))) {
+        console.log('Authentication popup was closed by the user.');
+      } else {
+        console.error("Login failed", err);
+      }
     }
   };
 
@@ -554,9 +560,30 @@ export default function Admin() {
         <Magnetic>
           <button 
             onClick={handleLogin}
-            className="bg-charcoal text-concrete px-8 py-4 font-bold uppercase tracking-widest hover:bg-accent transition-all duration-300"
+            className="bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal px-8 py-4 font-bold uppercase tracking-widest hover:bg-accent dark:hover:bg-accent hover:text-concrete dark:hover:text-charcoal transition-all duration-300"
           >
             Sign in with Google
+          </button>
+        </Magnetic>
+      </div>
+    );
+  }
+
+  const isHeadAdmin = user.email === 'machariag605@gmail.com' || user.email === 'danuthiaandassociates@gmail.com';
+
+  if (!isHeadAdmin) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-8">
+        <h1 className="font-display text-4xl font-bold uppercase tracking-tighter mb-4 text-red-600">Access Denied</h1>
+        <p className="text-charcoal/70 mb-8 max-w-md text-center">
+          Your account ({user.email}) does not have administrative privileges. Only authorized head emails can access this interface.
+        </p>
+        <Magnetic>
+          <button 
+            onClick={handleLogout}
+            className="bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal px-8 py-4 font-bold uppercase tracking-widest hover:bg-accent dark:hover:bg-accent hover:text-concrete dark:hover:text-charcoal transition-all duration-300"
+          >
+            Sign Out
           </button>
         </Magnetic>
       </div>
@@ -1141,7 +1168,7 @@ export default function Admin() {
                   <button 
                     type="submit"
                     disabled={isCreatingUpdate}
-                    className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-8 py-4 font-mono text-[10px] uppercase tracking-[0.2em] hover:bg-accent dark:hover:bg-accent transition-colors disabled:opacity-50"
+                    className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-8 py-4 font-mono text-[10px] uppercase tracking-[0.2em] hover:bg-accent dark:hover:bg-accent hover:text-concrete dark:hover:text-charcoal transition-colors disabled:opacity-50"
                   >
                     {isCreatingUpdate ? (editingUpdateId ? 'Updating...' : 'Posting...') : (editingUpdateId ? 'Update Project' : 'Post Update')}
                   </button>
@@ -1315,7 +1342,7 @@ export default function Admin() {
                   <button 
                     type="submit"
                     disabled={isCreatingMilestone}
-                    className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-8 py-4 font-mono text-[10px] uppercase tracking-[0.2em] hover:bg-accent dark:hover:bg-accent transition-colors disabled:opacity-50"
+                    className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-8 py-4 font-mono text-[10px] uppercase tracking-[0.2em] hover:bg-accent dark:hover:bg-accent hover:text-concrete dark:hover:text-charcoal transition-colors disabled:opacity-50"
                   >
                     {isCreatingMilestone ? (editingMilestoneId ? 'Updating...' : 'Adding...') : (editingMilestoneId ? 'Update Milestone' : 'Add Milestone')}
                   </button>
@@ -1494,7 +1521,7 @@ export default function Admin() {
                         <button
                           type="submit"
                           disabled={!adminReply.trim() || sendingReply}
-                          className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-6 py-3 hover:bg-accent dark:hover:bg-accent transition-colors duration-300 disabled:opacity-50 flex items-center justify-center"
+                          className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-6 py-3 hover:bg-accent dark:hover:bg-accent hover:text-concrete dark:hover:text-charcoal transition-colors duration-300 disabled:opacity-50 flex items-center justify-center"
                         >
                           <Send size={16} strokeWidth={1.5} />
                         </button>
@@ -1619,7 +1646,7 @@ export default function Admin() {
                         />
                         <label 
                           htmlFor="admin-doc-upload" 
-                          className={`cursor-pointer flex items-center gap-3 text-[10px] font-mono uppercase tracking-[0.2em] bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-6 py-3 hover:bg-accent dark:hover:bg-accent transition-colors ${uploadingDoc ? 'opacity-50 pointer-events-none' : ''}`}
+                          className={`cursor-pointer flex items-center gap-3 text-[10px] font-mono uppercase tracking-[0.2em] bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-6 py-3 hover:bg-accent dark:hover:bg-accent hover:text-concrete dark:hover:text-charcoal transition-colors ${uploadingDoc ? 'opacity-50 pointer-events-none' : ''}`}
                         >
                           <Upload size={14} strokeWidth={1.5} />
                           {uploadingDoc ? 'Uploading...' : 'Upload Document'}
@@ -1698,42 +1725,59 @@ export default function Admin() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-concrete/30 dark:bg-steel/10 border-b border-steel/20 dark:border-steel/40">
-                      <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-steel font-medium">Email</th>
-                      <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-steel font-medium">ID</th>
-                      <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-steel font-medium">Role</th>
-                      <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-steel font-medium text-right">Actions</th>
+                      <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-steel font-medium">Identity & Portfolio</th>
+                      <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-steel font-medium">Designation & Role</th>
+                      <th className="p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-steel font-medium text-right">Access Controls</th>
                     </tr>
                   </thead>
                   <tbody>
                     {users.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="p-8 text-center text-steel font-light text-sm">No users found.</td>
+                        <td colSpan={3} className="p-8 text-center text-steel font-light text-sm">No users found in database.</td>
                       </tr>
                     ) : (
                       users.map((u) => (
                         <tr key={u.id} className="border-b border-steel/10 dark:border-steel/20 hover:bg-concrete/20 dark:hover:bg-steel/10 transition-colors">
-                          <td className="p-6 font-medium text-charcoal dark:text-concrete text-sm">{u.email}</td>
-                          <td className="p-6 font-mono text-[10px] text-steel uppercase tracking-widest">{u.id}</td>
                           <td className="p-6">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-widest ${
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold">
+                                {u.officialName ? u.officialName.charAt(0).toUpperCase() : u.email.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="font-medium text-charcoal dark:text-concrete text-sm">{u.officialName || 'Identity Not Established'}</p>
+                                <p className="text-[10px] text-steel font-mono uppercase tracking-widest">{u.email}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-6">
+                            <p className="text-xs text-charcoal/80 dark:text-concrete/80 font-light mb-2">{u.title || 'Role details pending'}</p>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest ${
                               u.role === 'admin' ? 'bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal' :
+                              u.role.includes('staff') || ['project_manager', 'architect', 'surveyor'].includes(u.role) ? 'bg-blue-100 text-blue-800 border border-blue-200' :
                               u.role === 'client' ? 'bg-accent/10 text-accent border border-accent/20' :
                               'bg-yellow-100 text-yellow-800 border border-yellow-200'
                             }`}>
-                              {u.role}
+                              {u.role.replace('_', ' ')}
                             </span>
                           </td>
                           <td className="p-6 text-right">
-                            <select
-                              value={u.role}
-                              onChange={(e) => updateUserRole(u.id, e.target.value)}
-                              className="bg-transparent border border-steel/30 dark:border-steel/50 text-charcoal dark:text-concrete text-xs rounded px-2 py-1 focus:outline-none focus:border-accent dark:focus:border-accent transition-colors"
-                              disabled={u.id === user?.uid}
-                            >
-                              <option value="pending" className="dark:bg-charcoal">Pending</option>
-                              <option value="client" className="dark:bg-charcoal">Client</option>
-                              <option value="admin" className="dark:bg-charcoal">Admin</option>
-                            </select>
+                            <div className="flex flex-col items-end gap-2">
+                              <select
+                                value={u.role}
+                                onChange={(e) => updateUserRole(u.id, e.target.value)}
+                                className="bg-transparent border border-steel/20 dark:border-steel/40 text-charcoal dark:text-concrete text-[10px] font-mono uppercase tracking-widest rounded px-3 py-2 focus:outline-none focus:border-accent dark:focus:border-accent transition-colors"
+                                disabled={u.id === user?.uid}
+                              >
+                                <option value="pending" className="bg-concrete dark:bg-charcoal">Pending Client</option>
+                                <option value="pending_staff" className="bg-concrete dark:bg-charcoal">Pending Staff</option>
+                                <option value="client" className="bg-concrete dark:bg-charcoal">Active Client</option>
+                                <option value="project_manager" className="bg-concrete dark:bg-charcoal">Project Manager</option>
+                                <option value="architect" className="bg-concrete dark:bg-charcoal">Architect / Engineer</option>
+                                <option value="surveyor" className="bg-concrete dark:bg-charcoal">Surveyor / Planner</option>
+                                <option value="admin" className="bg-concrete dark:bg-charcoal">System Admin</option>
+                              </select>
+                              <p className="text-[9px] text-steel/60 font-mono tracking-tighter">UID: {u.id.substring(0, 12)}...</p>
+                            </div>
                           </td>
                         </tr>
                       ))

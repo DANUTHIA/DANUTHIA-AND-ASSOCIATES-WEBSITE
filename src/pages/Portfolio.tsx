@@ -10,12 +10,12 @@ const projects = [
     id: 1,
     title: "Nairobi Tech Hub", 
     category: "Commercial", 
-    img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop",
-    diagram: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop",
+    img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop",
+    diagram: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop",
     images: [
-      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1503387762-592dee58ef4e?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1541888946425-d81bb19480c5?q=80&w=800&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497366811353-68a6daefba28?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1554469384-e58fac16e23a?q=80&w=1600&auto=format&fit=crop"
     ],
     description: "A 15-story sustainable commercial center designed to foster innovation in Nairobi's growing tech sector. The design utilizes a high-performance post-tensioned concrete frame to maximize open floor plans while integrating advanced passive cooling systems and a signature brutalist facade.",
     sustainablePrinciples: [
@@ -25,9 +25,12 @@ const projects = [
       "Low-carbon concrete"
     ],
     materials: [
-      { name: "Raw Concrete", description: "Exposed structural finish", textureUrl: "https://images.unsplash.com/photo-1590069261209-48e3b9737d12?q=80&w=400&auto=format&fit=crop" },
-      { name: "Structural Steel", description: "High-tensile framework", textureUrl: "https://images.unsplash.com/photo-1504917595217-d4f5ebe612b0?q=80&w=400&auto=format&fit=crop" },
-      { name: "Low-E Glass", description: "High-performance glazing", textureUrl: "https://images.unsplash.com/photo-1594905190545-57223062828b?q=80&w=400&auto=format&fit=crop" }
+      { name: "Raw Concrete", description: "Exposed structural finish", textureUrl: "https://images.unsplash.com/photo-1590069261209-48e3b9737d12?q=80&w=1600&auto=format&fit=crop" },
+      { name: "Structural Steel", description: "High-tensile framework", textureUrl: "https://images.unsplash.com/photo-1504917595217-d4f5ebe612b0?q=80&w=1600&auto=format&fit=crop" }
+    ],
+    processGallery: [
+      { type: "concept", url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop", caption: "Initial Massing Sketches" },
+      { type: "plan", url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop", caption: "Ground Floor Public Integration" }
     ],
     client: "TechVentures Africa",
     year: "2025",
@@ -42,12 +45,12 @@ const projects = [
     id: 2,
     title: "Karen Luxury Villa", 
     category: "Residential", 
-    img: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=800&auto=format&fit=crop",
-    diagram: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop",
+    img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1600&auto=format&fit=crop",
+    diagram: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop",
     images: [
-      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1613545325278-f24b0c68c463?q=80&w=1600&auto=format&fit=crop"
     ],
     description: "This residential masterpiece redefines luxury through architectural precision and site-specific design. The villa features a complex cantilevered roof structure and seamless glass-to-glass corners, blending modern minimalism with the natural topography of the Karen suburbs.",
     sustainablePrinciples: [
@@ -69,12 +72,12 @@ const projects = [
     id: 3,
     title: "The Loft Office", 
     category: "Interior Design", 
-    img: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=800&auto=format&fit=crop",
-    diagram: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop",
+    img: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1600&auto=format&fit=crop",
+    diagram: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop",
     images: [
-      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1519642918688-7e43b19245d8?q=80&w=800&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497366811353-68a6daefba28?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497215410103-6cb4a4130090?q=80&w=1600&auto=format&fit=crop"
     ],
     description: "An interior transformation that optimizes workflow through spatial engineering and biophilic design. The project features exposed structural elements, custom acoustic baffles, and a flexible modular layout designed for the modern creative workforce.",
     sustainablePrinciples: [
@@ -96,12 +99,12 @@ const projects = [
     id: 4,
     title: "Mombasa Transit Terminal", 
     category: "Aviation & Transportation", 
-    img: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?q=80&w=800&auto=format&fit=crop",
-    diagram: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop",
+    img: "https://images.unsplash.com/photo-1413844053676-e137b7ca57fa?q=80&w=1600&auto=format&fit=crop",
+    diagram: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop",
     images: [
-      "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1473163928189-3f4b2c7e33e6?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1506765515384-028b60a970df?q=80&w=800&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1413844053676-e137b7ca57fa?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1545622780-6bc53716a495?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1506765515384-028b60a970df?q=80&w=1600&auto=format&fit=crop"
     ],
     description: "A large-scale infrastructure project designed for extreme coastal conditions and high commuter volume. The center features a revolutionary aerodynamic roof structure that facilitates massive natural airflow, reducing the need for active cooling in Mombasa's humid climate.",
     sustainablePrinciples: [
@@ -123,12 +126,12 @@ const projects = [
     id: 5,
     title: "Kisumu Medical Center", 
     category: "Healthcare", 
-    img: "https://images.unsplash.com/photo-1586773860418-d372a676f045?q=80&w=800&auto=format&fit=crop",
-    diagram: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop",
+    img: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=1600&auto=format&fit=crop",
+    diagram: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop",
     images: [
-      "https://images.unsplash.com/photo-1586773860418-d372a676f045?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1516549655169-df83a0774514?q=80&w=800&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1536882240095-0379873feb4e?q=80&w=1600&auto=format&fit=crop"
     ],
     description: "A state-of-the-art regional hospital focused on patient-centered care and operational efficiency. The design integrates healing gardens and maximizes natural light to improve patient outcomes and staff well-being.",
     sustainablePrinciples: [
@@ -150,12 +153,12 @@ const projects = [
     id: 6,
     title: "Nairobi Science & Tech Park", 
     category: "Science & Technology", 
-    img: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=800&auto=format&fit=crop",
-    diagram: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop",
+    img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=1600&auto=format&fit=crop",
+    diagram: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop",
     images: [
-      "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1507413245164-6160d8298b31?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=800&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1507413245164-6160d8298b31?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=1600&auto=format&fit=crop"
     ],
     description: "A collaborative research environment designed to accelerate innovation in biotechnology and renewable energy. The facility features flexible lab spaces, advanced filtration systems, and a high-performance envelope.",
     sustainablePrinciples: [
@@ -177,12 +180,17 @@ const projects = [
     id: 7,
     title: "Tana River Bridge", 
     category: "Infrastructure", 
-    img: "https://images.unsplash.com/photo-1545143333-11bb321d5b88?q=80&w=800&auto=format&fit=crop",
-    diagram: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop",
+    img: "https://images.unsplash.com/photo-1513828583688-c52646db42da?q=80&w=1600&auto=format&fit=crop",
+    diagram: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop",
     images: [
-      "https://images.unsplash.com/photo-1545143333-11bb321d5b88?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1513828583688-c52646db42da?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1522333323-32663f1010a6?q=80&w=800&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1513828583688-c52646db42da?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1522333323-32663f1010a6?q=80&w=1600&auto=format&fit=crop"
+    ],
+    processGallery: [
+      { type: "concept", url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop", caption: "Initial Suspension Sketch" },
+      { type: "elevation", url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop", caption: "Longitudinal Elevation" },
+      { type: "render", url: "https://images.unsplash.com/photo-1513828583688-c52646db42da?q=80&w=1600&auto=format&fit=crop", caption: "Final Structural Rendering" },
     ],
     description: "A pinnacle of structural engineering spanning the Tana River. This cable-stayed bridge spans 400 meters, utilizing high-tensile steel and high-performance concrete with integrated structural health monitoring sensors.",
     sustainablePrinciples: [
@@ -203,9 +211,9 @@ const projects = [
 ];
 
 const HERO_IMAGES = [
-  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1200&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=1200&auto=format&fit=crop"
+  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=1600&auto=format&fit=crop"
 ];
 
 const fadeInUp: any = {
@@ -225,7 +233,7 @@ export default function Portfolio() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [heroImageIndex, setHeroImageIndex] = useState(0);
-  const [viewMode, setViewMode] = useState<'photo' | 'diagram'>('photo');
+  const [viewMode, setViewMode] = useState<'photo' | 'diagram' | 'process'>('photo');
   const [showTechnicalSpecs, setShowTechnicalSpecs] = useState(false);
   const [hoveredIndexImage, setHoveredIndexImage] = useState<string | null>(null);
   const [displayMode, setDisplayMode] = useState<'grid' | 'index' | 'timeline' | 'map'>('grid');
@@ -348,41 +356,36 @@ export default function Portfolio() {
         {displayMode === 'grid' && (
           <motion.div 
             layout
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1"
+            className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8"
           >
             <AnimatePresence mode="popLayout">
               {filteredProjects.map((project, index) => (
                 <motion.div 
                   layout
-                  initial={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.5 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.8 }}
                   key={project.id} 
-                  className="group relative aspect-square overflow-hidden cursor-pointer bg-charcoal"
+                  className="group relative cursor-pointer break-inside-avoid"
                   onClick={() => { setSelectedId(project.id); setCurrentImageIndex(0); }}
                 >
-                  <img 
-                    src={project.img} 
-                    alt={project.title} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-40  group-hover:mix-blend-normal"
-                    referrerPolicy="no-referrer"
-                  />
-                  
-                  {/* Hover Overlay - Refined for Desktop, Always-on for Mobile */}
-                  <div className="absolute inset-0 flex flex-col justify-end p-6 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-t from-charcoal/90 via-charcoal/40 to-transparent">
-                    <div className="translate-y-0 lg:translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                      <span className="text-accent font-mono text-[10px] uppercase tracking-widest mb-2 block">
-                        {project.category}
-                      </span>
-                      <h3 className="font-display text-2xl md:text-3xl font-bold uppercase tracking-tight text-concrete mb-2">
+                  <div className="overflow-hidden bg-charcoal/5">
+                    <img 
+                      src={project.img} 
+                      alt={project.title} 
+                      className="w-full h-auto object-cover transition-transform duration-1000 group-hover:scale-105"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                  <div className="mt-4 flex justify-between items-start opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                    <div>
+                      <h3 className="font-display text-xl font-medium tracking-tight text-charcoal dark:text-concrete">
                         {project.title}
                       </h3>
-                      <div className="flex items-center gap-2 mt-2 text-concrete/80 font-mono text-[10px] uppercase tracking-widest">
-                        <span>{project.location}</span>
-                        <span className="w-1 h-1 bg-accent rounded-full"></span>
-                        <span>{project.year}</span>
-                      </div>
+                      <p className="font-mono text-[10px] uppercase tracking-widest text-charcoal/50 dark:text-concrete/50 mt-1">
+                        {project.category}
+                      </p>
                     </div>
                   </div>
                 </motion.div>
@@ -556,13 +559,27 @@ export default function Portfolio() {
               className="bg-concrete dark:bg-charcoal w-full max-w-7xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col md:flex-row border border-steel/30 dark:border-concrete/20 transition-colors duration-500"
               onClick={e => e.stopPropagation()}
             >
-              <div className="w-full md:w-3/5 h-[50vh] md:h-auto relative bg-charcoal dark:bg-charcoal group transition-colors duration-500">
-                <img 
-                  src={viewMode === 'photo' ? (selectedProject.images ? selectedProject.images[currentImageIndex] : selectedProject.img) : (selectedProject.diagram || selectedProject.img)} 
-                  alt={selectedProject.title} 
-                  className="w-full h-full object-cover transition-all duration-700"
-                  referrerPolicy="no-referrer"
-                />
+              <div className="w-full md:w-3/5 h-[50vh] md:h-auto relative bg-charcoal dark:bg-charcoal group transition-colors duration-500 overflow-hidden">
+                {viewMode === 'process' && selectedProject.processGallery ? (
+                  <div className="absolute inset-0 overflow-y-auto no-scrollbar snap-y snap-mandatory bg-concrete dark:bg-charcoal">
+                    {selectedProject.processGallery.map((process, idx) => (
+                      <div key={idx} className="h-full w-full relative snap-start flex flex-col justify-center items-center p-8 md:p-16">
+                        <span className="absolute top-8 left-8 text-[10px] font-mono text-charcoal/50 dark:text-concrete/50 uppercase tracking-[0.2em]">0{idx + 1} // {process.type}</span>
+                        <div className="w-full h-[70%] relative overflow-hidden border border-steel/10 bg-black/5 dark:bg-black/20">
+                          <img src={process.url} className="w-full h-full object-contain p-4 mix-blend-multiply dark:mix-blend-normal" alt={process.caption} referrerPolicy="no-referrer" />
+                        </div>
+                        <p className="mt-8 font-mono text-xs uppercase tracking-widest text-charcoal dark:text-concrete">{process.caption}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <img 
+                    src={viewMode === 'photo' ? (selectedProject.images ? selectedProject.images[currentImageIndex] : selectedProject.img) : (selectedProject.diagram || selectedProject.img)} 
+                    alt={selectedProject.title} 
+                    className="w-full h-full object-cover transition-all duration-700"
+                    referrerPolicy="no-referrer"
+                  />
+                )}
                 
                 <TechnicalOverlay active={showTechnicalSpecs} />
                 
@@ -570,19 +587,25 @@ export default function Portfolio() {
                 <div className="absolute top-6 left-6 flex bg-charcoal/50 backdrop-blur-md rounded-none p-1 border border-steel/20 z-30">
                   <button 
                     onClick={() => setViewMode('photo')}
-                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${viewMode === 'photo' ? 'bg-accent text-concrete' : 'text-concrete hover:text-accent'}`}
+                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${viewMode === 'photo' ? 'bg-accent text-concrete dark:text-charcoal' : 'text-concrete hover:text-accent dark:hover:text-concrete'}`}
                   >
                     Photo
                   </button>
                   <button 
                     onClick={() => setViewMode('diagram')}
-                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${viewMode === 'diagram' ? 'bg-accent text-concrete' : 'text-concrete hover:text-accent'}`}
+                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${viewMode === 'diagram' ? 'bg-accent text-concrete dark:text-charcoal' : 'text-concrete hover:text-accent dark:hover:text-concrete'}`}
                   >
                     Diagram
                   </button>
                   <button 
+                    onClick={() => setViewMode('process')}
+                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${viewMode === 'process' ? 'bg-accent text-concrete dark:text-charcoal' : 'text-concrete hover:text-accent dark:hover:text-concrete'}`}
+                  >
+                    Process
+                  </button>
+                  <button 
                     onClick={() => setShowTechnicalSpecs(!showTechnicalSpecs)}
-                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${showTechnicalSpecs ? 'bg-accent text-concrete' : 'text-concrete hover:text-accent'}`}
+                    className={`px-4 py-2 rounded-none text-xs font-bold uppercase tracking-widest transition-all ${showTechnicalSpecs ? 'bg-accent text-concrete dark:text-charcoal' : 'text-concrete hover:text-accent dark:hover:text-concrete'}`}
                   >
                     <Layers size={16} />
                   </button>
@@ -667,7 +690,7 @@ export default function Portfolio() {
                           key={idx} 
                           className="flex items-center gap-4 p-5 rounded-none bg-concrete dark:bg-charcoal border border-steel/10 dark:border-concrete/10 hover:border-accent/40 hover:bg-accent/5 transition-all duration-500 group/item shadow-sm hover:shadow-md"
                         >
-                          <div className="w-12 h-12 rounded-none bg-accent/10 flex items-center justify-center text-accent group-hover/item:bg-accent group-hover/item:text-concrete transition-all duration-500 flex-shrink-0 shadow-inner">
+                          <div className="w-12 h-12 rounded-none bg-accent/10 flex items-center justify-center text-accent group-hover/item:bg-accent group-hover/item:text-concrete dark:group-hover/item:text-charcoal transition-all duration-500 flex-shrink-0 shadow-inner">
                             {getPrincipleIcon(principle)}
                           </div>
                           <div className="flex flex-col">

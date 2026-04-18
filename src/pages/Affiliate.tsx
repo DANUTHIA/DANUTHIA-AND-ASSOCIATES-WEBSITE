@@ -43,7 +43,7 @@ export default function Affiliate() {
             </div>
             <motion.div variants={fadeInUp} className="pb-2">
               <p className="text-lg md:text-xl text-concrete/80 font-light leading-relaxed border-l border-accent pl-6">
-                Partner with Danuthia & Co. Earn exclusive commissions by referring high-value architectural and urban planning projects.
+                Partner with Danuthia & Associates. Earn exclusive commissions by referring high-value architectural and urban planning projects.
               </p>
             </motion.div>
           </div>
@@ -81,7 +81,7 @@ export default function Affiliate() {
           <p className="text-charcoal/70 dark:text-concrete/70 mb-10 font-light leading-relaxed transition-colors duration-500">
             Our affiliate program is open to real estate agents, financial advisors, and industry professionals. Contact us to discuss partnership terms and register as an official affiliate.
           </p>
-          <a href="mailto:partnerships@danuthiaandassociates.com" className="inline-flex items-center justify-between p-6 bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal hover:bg-accent dark:hover:bg-accent hover:text-charcoal dark:hover:text-charcoal transition-all duration-500 group w-full md:w-auto min-w-[300px]">
+          <a href="mailto:partnerships@danuthiaandassociates.com" className="inline-flex items-center justify-between p-6 bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal hover:bg-accent dark:hover:bg-accent hover:text-concrete dark:hover:text-charcoal transition-all duration-500 group w-full md:w-auto min-w-[300px]">
             <span className="font-bold uppercase tracking-widest mr-8 text-sm">Apply Now</span>
             <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
           </a>

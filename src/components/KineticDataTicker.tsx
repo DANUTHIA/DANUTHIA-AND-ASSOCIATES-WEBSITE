@@ -9,7 +9,7 @@ const TICKER_ITEMS = [
 
 export default function KineticDataTicker() {
   return (
-    <div className="fixed bottom-0 left-0 w-full bg-accent text-concrete py-1 overflow-hidden z-[9999] border-t border-concrete/20">
+    <div className="fixed bottom-0 left-0 w-full bg-accent text-concrete dark:text-charcoal py-1 overflow-hidden z-[9999] border-t border-concrete/20">
       <motion.div 
         className="flex whitespace-nowrap"
         animate={{ x: ["0%", "-50%"] }}

@@ -65,7 +65,7 @@ export default function About() {
             </div>
             <motion.div variants={fadeInUp} className="pb-2">
               <p className="text-lg md:text-xl text-concrete/80 font-light leading-relaxed border-l border-accent pl-6">
-                Danuthia & Co. is a premier architectural and urban planning firm based in Nairobi, Kenya. We believe in designing spaces that respect the past while building for the future.
+                Danuthia & Associates. is a premier architectural and urban planning firm based in Nairobi, Kenya. We believe in designing spaces that respect the past while building for the future.
               </p>
             </motion.div>
           </div>
@@ -80,7 +80,7 @@ export default function About() {
             whileInView={{ scale: 1 }}
             transition={{ duration: 1.5 }}
             viewport={{ once: true }}
-            src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?q=80&w=2000&auto=format&fit=crop" 
+            src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?q=80&w=1600&auto=format&fit=crop" 
             alt="Architectural detail" 
             className="w-full h-full object-cover "
             referrerPolicy="no-referrer"
@@ -222,7 +222,7 @@ export default function About() {
           </motion.div>
           <motion.div variants={fadeInUp} className="relative aspect-video bg-charcoal overflow-hidden">
             <img 
-              src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200&auto=format&fit=crop" 
+              src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1600&auto=format&fit=crop" 
               alt="Global Network" 
               className="w-full h-full object-cover opacity-50 "
               referrerPolicy="no-referrer"
@@ -291,7 +291,7 @@ export default function About() {
             <motion.div variants={fadeInUp} className="group relative border border-charcoal/20 dark:border-concrete/20 bg-concrete dark:bg-charcoal overflow-hidden transition-colors duration-500">
               <div className="aspect-square overflow-hidden relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop" 
+                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1600&auto=format&fit=crop" 
                   alt="Dr. E. Vance" 
                   className="w-full h-full object-cover  opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700 mix-blend-multiply dark:"
                   referrerPolicy="no-referrer"
@@ -318,7 +318,7 @@ export default function About() {
             <motion.div variants={fadeInUp} className="group relative border border-charcoal/20 dark:border-concrete/20 bg-concrete dark:bg-charcoal overflow-hidden transition-colors duration-500">
               <div className="aspect-square overflow-hidden relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=800&auto=format&fit=crop" 
+                  src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1600&auto=format&fit=crop" 
                   alt="M. Rossi" 
                   className="w-full h-full object-cover  opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700 mix-blend-multiply dark:"
                   referrerPolicy="no-referrer"
@@ -345,7 +345,7 @@ export default function About() {
             <motion.div variants={fadeInUp} className="group relative border border-charcoal/20 dark:border-concrete/20 bg-concrete dark:bg-charcoal overflow-hidden transition-colors duration-500">
               <div className="aspect-square overflow-hidden relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=800&auto=format&fit=crop" 
+                  src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1600&auto=format&fit=crop" 
                   alt="A. Chen" 
                   className="w-full h-full object-cover  opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700 mix-blend-multiply dark:"
                   referrerPolicy="no-referrer"

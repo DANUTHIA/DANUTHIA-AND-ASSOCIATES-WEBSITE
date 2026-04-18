@@ -42,6 +42,7 @@ export default function Home() {
   const [projectType, setProjectType] = useState('');
   const [preferredDate, setPreferredDate] = useState('');
   const [description, setDescription] = useState('');
+  const [consent, setConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -143,22 +144,22 @@ export default function Home() {
   };
 
   return (
-    <main className="bg-concrete dark:bg-charcoal transition-colors duration-500 bg-blueprint-grid">
-      {/* Section 1: Hero - Full Bleed Brutalist */}
-      <section ref={heroRef} className="relative h-screen w-full overflow-hidden bg-charcoal">
+    <main className="bg-concrete dark:bg-charcoal transition-colors duration-500">
+      {/* Section 1: Hero - Full Bleed Minimalist */}
+      <section ref={heroRef} className="relative h-[90vh] w-full overflow-hidden bg-charcoal m-4 rounded-xl">
         <motion.div style={{ y }} className="absolute inset-0 w-full h-[130%] -top-[15%]">
           <video 
             autoPlay 
             loop 
             muted 
             playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-70"
+            className="absolute inset-0 w-full h-full object-cover opacity-80"
           >
             <source src={HERO_VIDEO} type="video/mp4" />
           </video>
         </motion.div>
         
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent pointer-events-none"></div>
+        <div className="absolute inset-0 bg-black/20 pointer-events-none"></div>
         
         <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-16 lg:p-24 z-10">
           <motion.div 
@@ -167,72 +168,72 @@ export default function Home() {
             variants={staggerContainer}
             className="max-w-5xl"
           >
-            <motion.h1 variants={fadeInUp} className="font-display text-6xl md:text-8xl lg:text-[8rem] font-bold leading-[0.85] tracking-tighter mb-8 text-concrete uppercase">
-              Danuthia <br/> & Co.
+            <motion.h1 variants={fadeInUp} className="font-display text-5xl md:text-7xl lg:text-[7rem] font-medium leading-[1] tracking-tight mb-8 text-white uppercase">
+              Danuthia <br/> & Associates.
             </motion.h1>
-            <motion.div variants={fadeInUp} className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-t border-concrete/20 pt-8">
-              <p className="text-lg md:text-2xl text-concrete/80 font-light leading-relaxed max-w-xl">
+            <motion.div variants={fadeInUp} className="flex flex-col md:flex-row md:items-end justify-between gap-8 pt-8">
+              <p className="text-lg md:text-xl text-white/90 font-light leading-relaxed max-w-md">
                 Agile, data-driven planning and architectural precision for the next generation of sustainable development.
               </p>
               <div className="flex items-center gap-6">
-                <Link to="/portfolio" className="group flex items-center justify-center w-16 h-16 rounded-none border border-concrete/30 hover:border-accent hover:bg-accent transition-all duration-500">
-                  <ArrowRight size={20} className="text-concrete group-hover:translate-x-1 transition-transform duration-500" />
+                <Link to="/portfolio" className="group flex items-center justify-center w-12 h-12 rounded-full border border-white/50 hover:bg-white hover:text-charcoal transition-all duration-500">
+                  <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform duration-500" />
                 </Link>
-                <span className="text-xs font-mono uppercase tracking-widest text-concrete/50">Explore Work</span>
+                <span className="text-xs font-mono uppercase tracking-widest text-white/70">Explore Work</span>
               </div>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* Infinite Ticker - BIG Aesthetic */}
-      <div className="w-full overflow-hidden bg-accent text-charcoal py-4 border-y border-charcoal dark:border-concrete flex whitespace-nowrap">
+      {/* Infinite Ticker - Minimalist */}
+      <div className="w-full overflow-hidden py-8 flex whitespace-nowrap opacity-60">
         <motion.div 
-          className="flex gap-8 items-center font-display text-xl md:text-2xl font-bold uppercase tracking-widest"
+          className="flex gap-12 items-center font-sans text-sm tracking-[0.2em] uppercase"
           animate={{ x: [0, -1035] }}
-          transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+          transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
         >
           <span>Urban Planning</span>
-          <span className="opacity-50">+</span>
+          <span className="opacity-30">•</span>
           <span>Architectural Design</span>
-          <span className="opacity-50">+</span>
+          <span className="opacity-30">•</span>
           <span>Spatial Analysis</span>
-          <span className="opacity-50">+</span>
+          <span className="opacity-30">•</span>
           <span>Sustainable Development</span>
-          <span className="opacity-50">+</span>
+          <span className="opacity-30">•</span>
           <span>Project Management</span>
-          <span className="opacity-50">+</span>
+          <span className="opacity-30">•</span>
           <span>Parametric Modeling</span>
-          <span className="opacity-50">+</span>
+          <span className="opacity-30">•</span>
           <span>Urban Planning</span>
-          <span className="opacity-50">+</span>
+          <span className="opacity-30">•</span>
           <span>Architectural Design</span>
-          <span className="opacity-50">+</span>
+          <span className="opacity-30">•</span>
           <span>Spatial Analysis</span>
-          <span className="opacity-50">+</span>
+          <span className="opacity-30">•</span>
           <span>Sustainable Development</span>
-          <span className="opacity-50">+</span>
+          <span className="opacity-30">•</span>
           <span>Project Management</span>
-          <span className="opacity-50">+</span>
+          <span className="opacity-30">•</span>
           <span>Parametric Modeling</span>
-          <span className="opacity-50">+</span>
+          <span className="opacity-30">•</span>
         </motion.div>
       </div>
 
-      {/* Section 2: Expertise - Brutalist Grid */}
+      {/* Section 2: Expertise - Minimalist Grid */}
       <motion.section 
         id="expertise" 
-        className="py-24 md:py-32 px-4 md:px-8 max-w-7xl mx-auto"
+        className="py-24 md:py-32 px-8 max-w-7xl mx-auto"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={staggerContainer}
       >
-        <motion.div variants={fadeInUp} className="mb-16 border-b border-charcoal dark:border-concrete pb-8">
-          <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete transition-colors duration-500">Core Capabilities</h2>
+        <motion.div variants={fadeInUp} className="mb-20">
+          <h2 className="font-display text-3xl md:text-4xl font-medium tracking-tight text-charcoal dark:text-concrete transition-colors duration-500">Core Capabilities</h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-0 border-l border-t border-charcoal dark:border-concrete">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           {[
             { title: "Architectural Drafting", icon: Box, tags: ['ArchiCAD', 'Revit', 'AutoCAD'] },
             { title: "Urban & Regional Planning", icon: Building2, tags: ['Master Planning', 'Zoning'] },
@@ -240,14 +241,14 @@ export default function Home() {
             { title: "Construction Management", icon: HardHat, tags: ['Site Supervision', 'Cost Control'] },
             { title: "Project Management", icon: ClipboardList, tags: ['Agile', 'Scheduling', 'Quality Assurance'] }
           ].map((item, idx) => (
-            <motion.div key={idx} variants={fadeInUp} className="group flex flex-col p-8 border-r border-b border-charcoal dark:border-concrete hover:bg-charcoal hover:text-concrete dark:hover:bg-concrete dark:hover:text-charcoal transition-colors duration-300">
-              <div className="mb-8 text-accent">
-                <item.icon size={32} strokeWidth={1.5} />
+            <motion.div key={idx} variants={fadeInUp} className="group flex flex-col transition-all duration-300">
+              <div className="mb-8 text-charcoal/40 dark:text-concrete/40 group-hover:text-charcoal dark:group-hover:text-concrete transition-colors">
+                <item.icon size={24} strokeWidth={1} />
               </div>
-              <h3 className="font-display text-xl font-bold uppercase tracking-tight mb-4">{item.title}</h3>
-              <div className="flex flex-wrap gap-2 mt-auto">
+              <h3 className="font-sans text-sm font-medium uppercase tracking-widest mb-6">{item.title}</h3>
+              <div className="flex flex-col gap-3 mt-auto">
                 {item.tags.map((tag, i) => (
-                  <span key={i} className="text-[10px] font-mono uppercase tracking-widest border border-current px-2 py-1">
+                  <span key={i} className="text-xs text-charcoal/60 dark:text-concrete/60 mix-blend-multiply">
                     {tag}
                   </span>
                 ))}
@@ -259,26 +260,26 @@ export default function Home() {
 
       {/* Section 2.5: Blueprint to Reality */}
       <motion.section 
-        className="py-24 md:py-32 px-4 md:px-8 max-w-7xl mx-auto border-t border-charcoal dark:border-concrete transition-colors duration-500"
+        className="py-24 md:py-32 px-8 max-w-7xl mx-auto border-t border-charcoal/10 dark:border-concrete/10 transition-colors duration-500"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={staggerContainer}
       >
         <motion.div variants={fadeInUp} className="mb-16 max-w-3xl">
-          <p className="text-accent tracking-[0.2em] text-xs font-mono uppercase mb-4">The Process</p>
-          <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete mb-6 transition-colors duration-500">
+          <p className="text-charcoal/40 dark:text-concrete/40 tracking-[0.2em] text-xs font-sans uppercase mb-4">The Process</p>
+          <h2 className="font-display text-3xl md:text-4xl font-medium tracking-tight text-charcoal dark:text-concrete mb-6 transition-colors duration-500">
             We transform blueprints to reality
           </h2>
-          <p className="text-charcoal/70 dark:text-concrete/70 font-mono text-sm leading-relaxed transition-colors duration-500">
+          <p className="text-charcoal/60 dark:text-concrete/60 font-sans font-light text-xl max-w-2xl leading-relaxed transition-colors duration-500">
             Experience our journey from raw architectural concepts to photorealistic finished environments. Drag the slider to reveal the transformation.
           </p>
         </motion.div>
 
-        <motion.div variants={fadeInUp} className="overflow-hidden border border-charcoal dark:border-concrete">
+        <motion.div variants={fadeInUp} className="overflow-hidden">
           <BeforeAfterSlider 
-            beforeImage="https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=2000&auto=format&fit=crop"
-            afterImage="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?q=80&w=2000&auto=format&fit=crop"
+            beforeImage="https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=1600&auto=format&fit=crop"
+            afterImage="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?q=80&w=1600&auto=format&fit=crop"
             beforeLabel="Raw Space"
             afterLabel="Finished Interior"
           />
@@ -287,20 +288,20 @@ export default function Home() {
 
       {/* Section 2.75: Global Impact Metrics */}
       <motion.section 
-        className="py-24 md:py-32 px-4 md:px-8 max-w-7xl mx-auto border-t border-charcoal dark:border-concrete transition-colors duration-500"
+        className="py-24 md:py-32 px-8 max-w-7xl mx-auto border-t border-charcoal/10 dark:border-concrete/10 transition-colors duration-500"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={staggerContainer}
       >
-        <motion.div variants={fadeInUp} className="mb-16">
-          <p className="text-accent tracking-[0.2em] text-xs font-mono uppercase mb-4">Firm Impact</p>
-          <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete mb-6 transition-colors duration-500">
+        <motion.div variants={fadeInUp} className="mb-20">
+          <p className="text-charcoal/40 dark:text-concrete/40 tracking-[0.2em] text-xs font-sans uppercase mb-4">Firm Impact</p>
+          <h2 className="font-display text-3xl md:text-4xl font-medium tracking-tight text-charcoal dark:text-concrete mb-6 transition-colors duration-500">
             Global Scale & Metrics
           </h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 border-t border-l border-charcoal/20 dark:border-concrete/20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-16">
           {[
             { label: "Total SQM Developed", value: "130,200", suffix: "+" },
             { label: "Active Sites", value: "04", suffix: "" },
@@ -310,50 +311,50 @@ export default function Home() {
             <motion.div 
               key={idx}
               variants={fadeInUp} 
-              className="border-r border-b border-charcoal/20 dark:border-concrete/20 p-8 flex flex-col justify-between min-h-[200px] hover:bg-charcoal/5 dark:hover:bg-concrete/5 transition-colors"
+              className="flex flex-col min-h-[140px]"
             >
-              <p className="text-[10px] font-mono uppercase tracking-widest text-charcoal/60 dark:text-concrete/60 mb-8">{metric.label}</p>
-              <div className="flex items-baseline gap-1">
-                <span className="font-display text-6xl font-bold text-charcoal dark:text-concrete tracking-tighter">{metric.value}</span>
-                <span className="font-display text-3xl font-bold text-accent">{metric.suffix}</span>
+              <p className="text-xs font-sans uppercase tracking-[0.2em] text-charcoal/50 dark:text-concrete/50 mb-4">{metric.label}</p>
+              <div className="flex items-baseline gap-1 mt-auto">
+                <span className="font-display text-5xl md:text-6xl font-medium text-charcoal dark:text-concrete tracking-tighter">{metric.value}</span>
+                <span className="font-display text-3xl font-medium text-charcoal/40 dark:text-concrete/40">{metric.suffix}</span>
               </div>
             </motion.div>
           ))}
         </div>
       </motion.section>
 
-      {/* Section 2.8: Project Stories (HOK Style) */}
+      {/* Section 2.8: Project Stories */}
       <motion.section 
-        className="py-24 md:py-32 px-4 md:px-8 max-w-7xl mx-auto border-t border-charcoal dark:border-concrete transition-colors duration-500"
+        className="py-24 md:py-32 px-8 max-w-7xl mx-auto border-t border-charcoal/10 dark:border-concrete/10 transition-colors duration-500"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={staggerContainer}
       >
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
           <motion.div variants={fadeInUp} className="max-w-2xl">
-            <p className="text-accent tracking-[0.2em] text-xs font-mono uppercase mb-4">Narratives</p>
-            <h2 className="font-display text-4xl md:text-6xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete">Project<br/>Stories.</h2>
+            <p className="text-charcoal/40 dark:text-concrete/40 tracking-[0.2em] text-xs font-sans uppercase mb-4">Narratives</p>
+            <h2 className="font-display text-5xl md:text-7xl font-medium tracking-tight text-charcoal dark:text-concrete">Project<br/>Stories.</h2>
           </motion.div>
           <motion.div variants={fadeInUp}>
-            <Link to="/portfolio" className="inline-flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-accent hover:text-charcoal dark:hover:text-concrete transition-colors group">
+            <Link to="/portfolio" className="inline-flex items-center gap-4 text-xs tracking-[0.2em] uppercase text-charcoal/60 dark:text-concrete/60 hover:text-charcoal dark:hover:text-concrete transition-colors group">
               Explore All Stories <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
             </Link>
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
           {[
             {
               title: "Designing for Resilience in Nairobi's Tech Sector",
               desc: "How the Nairobi Tech Hub is setting a new standard for sustainable commercial architecture in East Africa.",
-              img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop",
+              img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop",
               category: "Commercial"
             },
             {
               title: "The Future of Transit: Mombasa's Wave Terminals",
               desc: "Exploring the intersection of aerodynamic engineering and tropical urbanism in our latest infrastructure project.",
-              img: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?q=80&w=1200&auto=format&fit=crop",
+              img: "https://images.unsplash.com/photo-1413844053676-e137b7ca57fa?q=80&w=1600&auto=format&fit=crop",
               category: "Infrastructure"
             }
           ].map((story, idx) => (
@@ -362,42 +363,41 @@ export default function Home() {
               variants={fadeInUp}
               className="group cursor-pointer"
             >
-              <div className="aspect-[16/10] overflow-hidden mb-6 relative">
+              <div className="aspect-[4/3] overflow-hidden mb-8 relative bg-charcoal/5 dark:bg-concrete/5">
                 <img 
                   src={story.img} 
                   alt={story.title} 
-                  className="w-full h-full object-cover  group-hover:-0 group-hover:scale-105 transition-all duration-1000"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-all duration-1000"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute top-6 left-6 bg-accent text-charcoal px-3 py-1 text-[10px] font-mono uppercase tracking-widest font-bold">
-                  {story.category}
-                </div>
               </div>
-              <h3 className="font-display text-2xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete group-hover:text-accent transition-colors mb-4">
+              <div className="text-charcoal/40 dark:text-concrete/40 text-[10px] font-sans uppercase tracking-[0.2em] mb-4">
+                {story.category}
+              </div>
+              <h3 className="font-display text-2xl font-medium tracking-tight text-charcoal dark:text-concrete group-hover:text-charcoal/70 dark:group-hover:text-concrete/70 transition-colors mb-4 pr-8">
                 {story.title}
               </h3>
-              <p className="text-charcoal/60 dark:text-concrete/60 font-mono text-xs leading-relaxed mb-6">
+              <p className="text-charcoal/60 dark:text-concrete/60 font-sans font-light text-sm max-w-md leading-relaxed mb-6">
                 {story.desc}
               </p>
-              <div className="h-[1px] w-0 group-hover:w-full bg-accent transition-all duration-700"></div>
             </motion.div>
           ))}
         </div>
       </motion.section>
 
-      {/* Section 3: Project Archive - Brutalist Grid */}
+      {/* Section 3: Project Archive - Minimalist Grid */}
       <motion.section 
         id="research" 
-        className="bg-charcoal dark:bg-charcoal text-concrete py-24 md:py-32 transition-colors duration-500"
+        className="text-charcoal dark:text-concrete py-24 md:py-32 transition-colors duration-500"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={staggerContainer}
       >
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8 border-b border-concrete/20 pb-8">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
             <motion.div variants={fadeInUp} className="max-w-2xl">
-              <p className="text-accent tracking-[0.2em] text-xs font-mono uppercase mb-4">Selected Works</p>
+              <p className="text-charcoal/40 dark:text-concrete/40 tracking-[0.2em] text-xs font-sans uppercase mb-4">Selected Works</p>
               <h2 className="font-display text-5xl md:text-6xl font-bold uppercase tracking-tight">Project & Research Archive</h2>
             </motion.div>
             <motion.div variants={fadeInUp}>
@@ -410,9 +410,9 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border-l border-t border-concrete/20">
             {[
-              { title: "Ahero Flood Mitigation", category: "Topographical drainage analysis", img: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=800&auto=format&fit=crop" },
-              { title: "Maseno Environmental", category: "Land-use mapping", img: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=800&auto=format&fit=crop" },
-              { title: "Public Parks Network", category: "GIS Feature class mapping", img: "https://images.unsplash.com/photo-1505159940484-eb2b9f2588e2?q=80&w=800&auto=format&fit=crop" }
+              { title: "Ahero Flood Mitigation", category: "Topographical drainage analysis", img: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=1600&auto=format&fit=crop" },
+              { title: "Maseno Environmental", category: "Land-use mapping", img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=1600&auto=format&fit=crop" },
+              { title: "Public Parks Network", category: "GIS Feature class mapping", img: "https://images.unsplash.com/photo-1505159940484-eb2b9f2588e2?q=80&w=1600&auto=format&fit=crop" }
             ].map((project, idx) => (
               <Link to="/portfolio" key={idx} className="group cursor-pointer block border-r border-b border-concrete/20 p-8 hover:bg-concrete hover:text-charcoal transition-colors duration-300">
                 <motion.div variants={fadeInUp} className="flex flex-col h-full">
@@ -540,7 +540,7 @@ export default function Home() {
                   <Magnetic>
                     <button 
                       onClick={() => setSubmitSuccess(false)}
-                      className="text-[10px] font-mono uppercase tracking-widest text-accent hover:text-concrete transition-colors pb-1 border-b border-accent/30 hover:border-concrete"
+                      className="text-[10px] font-mono uppercase tracking-widest text-concrete hover:text-white transition-colors pb-1 border-b border-concrete/30 hover:border-concrete"
                     >
                       Submit Another Request
                     </button>
@@ -549,7 +549,7 @@ export default function Home() {
               ) : (
                 <form className="space-y-10" onSubmit={handleSubmit}>
                   {submitError && (
-                    <div className="text-accent text-[10px] font-mono uppercase border border-accent p-4">
+                    <div className="text-red-400 text-[10px] font-mono uppercase border border-red-400 p-4">
                       {submitError}
                     </div>
                   )}
@@ -560,12 +560,12 @@ export default function Home() {
                         type="text" 
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-accent transition-colors text-lg peer placeholder-transparent rounded-none"
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-concrete transition-colors text-lg peer placeholder-transparent rounded-none"
                         placeholder="Full Name"
                         id="fullName"
                         required
                       />
-                      <label htmlFor="fullName" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-accent">
+                      <label htmlFor="fullName" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-concrete">
                         Full Name
                       </label>
                     </div>
@@ -575,12 +575,12 @@ export default function Home() {
                         type="email" 
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-accent transition-colors text-lg peer placeholder-transparent rounded-none"
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-concrete transition-colors text-lg peer placeholder-transparent rounded-none"
                         placeholder="Email Address"
                         id="email"
                         required
                       />
-                      <label htmlFor="email" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-accent">
+                      <label htmlFor="email" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-concrete">
                         Email Address
                       </label>
                     </div>
@@ -590,12 +590,12 @@ export default function Home() {
                         type="tel" 
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-accent transition-colors text-lg peer placeholder-transparent rounded-none"
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-concrete transition-colors text-lg peer placeholder-transparent rounded-none"
                         placeholder="Phone Number"
                         id="phone"
                         required
                       />
-                      <label htmlFor="phone" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-accent">
+                      <label htmlFor="phone" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-concrete">
                         Phone Number
                       </label>
                     </div>
@@ -605,12 +605,12 @@ export default function Home() {
                         type="text" 
                         value={locationState}
                         onChange={(e) => setLocationState(e.target.value)}
-                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-accent transition-colors text-lg peer placeholder-transparent rounded-none"
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-concrete transition-colors text-lg peer placeholder-transparent rounded-none"
                         placeholder="Project Location"
                         id="location"
                         required
                       />
-                      <label htmlFor="location" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-accent">
+                      <label htmlFor="location" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-concrete">
                         Project Location
                       </label>
                     </div>
@@ -619,7 +619,7 @@ export default function Home() {
                       <select 
                         value={projectType}
                         onChange={(e) => setProjectType(e.target.value)}
-                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-accent transition-colors text-lg appearance-none cursor-pointer peer rounded-none"
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-concrete transition-colors text-lg appearance-none cursor-pointer peer rounded-none"
                         required
                       >
                         <option value="" disabled className="text-charcoal bg-concrete">Select project type...</option>
@@ -628,7 +628,7 @@ export default function Home() {
                         <option value="interior-design" className="text-charcoal bg-concrete">Interior Design</option>
                         <option value="master-planning" className="text-charcoal bg-concrete">Master Planning</option>
                       </select>
-                      <label className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-accent transition-colors">
+                      <label className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-concrete transition-colors">
                         Project Type
                       </label>
                     </div>
@@ -638,26 +638,39 @@ export default function Home() {
                         type="date" 
                         value={preferredDate}
                         onChange={(e) => setPreferredDate(e.target.value)}
-                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-accent transition-colors text-lg appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full peer rounded-none"
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-concrete transition-colors text-lg appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full peer rounded-none"
                         required
                       />
-                      <label className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-accent transition-colors">
+                      <label className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest peer-focus:text-concrete transition-colors">
                         Preferred Date
                       </label>
-                      <Calendar size={20} className="absolute right-0 top-3 text-concrete/30 pointer-events-none peer-focus:text-accent transition-colors" />
+                      <Calendar size={20} className="absolute right-0 top-3 text-concrete/30 pointer-events-none peer-focus:text-concrete transition-colors" />
                     </div>
 
                     <div className="relative group md:col-span-2">
                       <textarea 
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-accent transition-colors text-lg peer placeholder-transparent rounded-none resize-none h-24 custom-scrollbar"
+                        className="w-full bg-transparent border-b border-concrete/30 py-3 focus:outline-none focus:border-concrete transition-colors text-lg peer placeholder-transparent rounded-none resize-none h-24 custom-scrollbar"
                         placeholder="Project Description"
                         id="description"
                         required
                       />
-                      <label htmlFor="description" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-accent">
+                      <label htmlFor="description" className="absolute left-0 -top-5 text-[10px] font-mono text-concrete/50 uppercase tracking-widest transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-5 peer-focus:text-[10px] peer-focus:text-concrete">
                         Project Description & Vision
+                      </label>
+                    </div>
+
+                    <div className="flex items-start gap-4 md:col-span-2 pt-4">
+                      <input 
+                        type="checkbox" 
+                        id="consent-checkbox-home"
+                        checked={consent}
+                        onChange={(e) => setConsent(e.target.checked)}
+                        className="mt-1 shrink-0 accent-concrete"
+                      />
+                      <label htmlFor="consent-checkbox-home" className="text-xs font-mono text-concrete/70 leading-relaxed cursor-pointer">
+                        I consent to the collection of my data as outlined in the <Link to="/privacy-policy" className="text-white underline font-bold">Privacy Policy</Link> and acknowledge the <Link to="/terms-and-conditions" className="text-white underline font-bold">Terms and Conditions</Link>.
                       </label>
                     </div>
                   </div>
@@ -665,8 +678,8 @@ export default function Home() {
                   <Magnetic className="w-full">
                     <button 
                       type="submit"
-                      disabled={isSubmitting}
-                      className="w-full border border-accent text-accent py-4 font-mono text-[10px] uppercase tracking-widest hover:bg-accent hover:text-charcoal transition-all duration-500 mt-12 flex items-center justify-center gap-4 group disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={isSubmitting || !consent}
+                      className="w-full border border-concrete text-concrete py-4 font-mono text-[10px] uppercase tracking-widest hover:bg-concrete hover:text-charcoal transition-all duration-500 mt-12 flex items-center justify-center gap-4 group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span>{isSubmitting ? 'Submitting...' : 'Submit Request'}</span>
                       {!isSubmitting && <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />}

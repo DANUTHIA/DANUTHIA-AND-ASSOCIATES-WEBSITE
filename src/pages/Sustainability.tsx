@@ -56,7 +56,7 @@ export default function Sustainability() {
             <span className="text-accent">Better World.</span>
           </motion.h1>
           <motion.p variants={fadeInUp} className="text-xl md:text-2xl text-concrete/70 font-light max-w-2xl leading-relaxed border-l border-accent pl-8">
-            At Danuthia & Co., sustainability isn't a feature—it's the foundation. We engineer environments that harmonize human ambition with ecological resilience.
+            At Danuthia & Associates., sustainability isn't a feature—it's the foundation. We engineer environments that harmonize human ambition with ecological resilience.
           </motion.p>
         </motion.div>
       </section>
@@ -72,7 +72,7 @@ export default function Sustainability() {
         >
           <motion.div variants={fadeInUp} className="group">
             <div className="w-16 h-16 bg-accent/10 flex items-center justify-center mb-8 border border-accent/20 group-hover:bg-accent transition-colors duration-500">
-              <Zap size={32} className="text-accent group-hover:text-charcoal transition-colors" />
+              <Zap size={32} className="text-accent group-hover:text-concrete dark:group-hover:text-charcoal transition-colors" />
             </div>
             <h3 className="font-display text-2xl font-bold uppercase mb-4 text-charcoal dark:text-concrete">Net Zero Carbon</h3>
             <p className="text-charcoal/60 dark:text-concrete/60 leading-relaxed">
@@ -82,7 +82,7 @@ export default function Sustainability() {
 
           <motion.div variants={fadeInUp} className="group">
             <div className="w-16 h-16 bg-accent/10 flex items-center justify-center mb-8 border border-accent/20 group-hover:bg-accent transition-colors duration-500">
-              <Droplets size={32} className="text-accent group-hover:text-charcoal transition-colors" />
+              <Droplets size={32} className="text-accent group-hover:text-concrete dark:group-hover:text-charcoal transition-colors" />
             </div>
             <h3 className="font-display text-2xl font-bold uppercase mb-4 text-charcoal dark:text-concrete">Water Resilience</h3>
             <p className="text-charcoal/60 dark:text-concrete/60 leading-relaxed">
@@ -92,7 +92,7 @@ export default function Sustainability() {
 
           <motion.div variants={fadeInUp} className="group">
             <div className="w-16 h-16 bg-accent/10 flex items-center justify-center mb-8 border border-accent/20 group-hover:bg-accent transition-colors duration-500">
-              <Recycle size={32} className="text-accent group-hover:text-charcoal transition-colors" />
+              <Recycle size={32} className="text-accent group-hover:text-concrete dark:group-hover:text-charcoal transition-colors" />
             </div>
             <h3 className="font-display text-2xl font-bold uppercase mb-4 text-charcoal dark:text-concrete">Circular Economy</h3>
             <p className="text-charcoal/60 dark:text-concrete/60 leading-relaxed">
@@ -155,7 +155,7 @@ export default function Sustainability() {
             >
               <div className="absolute inset-0 border border-accent/30 m-8 z-10"></div>
               <img 
-                src="https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=1200&auto=format&fit=crop" 
+                src="https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=1600&auto=format&fit=crop" 
                 alt="Sustainable Urbanism" 
                 className="w-full h-full object-cover  opacity-50"
                 referrerPolicy="no-referrer"
@@ -180,9 +180,13 @@ export default function Sustainability() {
         >
           <h2 className="font-display text-4xl md:text-5xl font-bold uppercase mb-8 text-charcoal dark:text-concrete">Ready to build for the future?</h2>
           <p className="text-charcoal/60 dark:text-concrete/60 mb-12 text-lg">Download our 2026 Sustainability Report to see how we're transforming the built environment.</p>
-          <button className="bg-accent text-charcoal px-12 py-5 font-mono text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal hover:text-accent border border-accent transition-all duration-500">
+          <a 
+            href="/danuthia_2026_sustainability_report.pdf" 
+            download
+            className="inline-block bg-accent text-concrete dark:text-charcoal px-12 py-5 font-mono text-xs font-bold uppercase tracking-[0.2em] hover:bg-transparent hover:text-accent border border-accent transition-all duration-500"
+          >
             Download Report
-          </button>
+          </a>
         </motion.div>
       </section>
     </main>

@@ -37,27 +37,15 @@ export default function CustomCursor() {
   return (
     <>
       <motion.div
-        className="fixed top-0 left-0 w-4 h-4 bg-accent rounded-full pointer-events-none z-[9999] mix-blend-difference hidden md:block"
+        className="fixed top-0 left-0 w-3 h-3 bg-white mix-blend-difference rounded-full pointer-events-none z-[9999] hidden md:block"
         animate={{
-          x: mousePosition.x - 8,
-          y: mousePosition.y - 8,
+          x: mousePosition.x - 6,
+          y: mousePosition.y - 6,
           scale: isHovering ? 3 : 1,
-          opacity: isHovering ? 0.5 : 1
+          opacity: isHovering ? 1 : 1
         }}
-        transition={{ type: "tween", ease: "backOut", duration: 0.15 }}
+        transition={{ type: "tween", ease: "easeOut", duration: 0.1 }}
       />
-      {isHovering && (
-        <motion.div
-          className="fixed top-0 left-0 pointer-events-none z-[10000] hidden md:flex items-center justify-center text-[8px] font-mono font-bold text-concrete mix-blend-difference"
-          animate={{
-            x: mousePosition.x - 20,
-            y: mousePosition.y - 6,
-          }}
-          transition={{ type: "tween", ease: "backOut", duration: 0.15 }}
-        >
-          VIEW
-        </motion.div>
-      )}
     </>
   );
 }

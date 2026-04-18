@@ -10,7 +10,10 @@ import Login from './pages/Login';
 import ClientPortal from './pages/ClientPortal';
 import Careers from './pages/Careers';
 import Affiliate from './pages/Affiliate';
+import StaffLogin from './pages/StaffLogin';
+import StaffPortal from './pages/StaffPortal';
 import Terms from './pages/Terms';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import Logbook from './pages/Logbook';
 import Sustainability from './pages/Sustainability';
 import ScrollToTop from './components/ScrollToTop';
@@ -20,6 +23,7 @@ import CommandPalette from './components/CommandPalette';
 import NoiseOverlay from './components/NoiseOverlay';
 import AIConcierge from './components/AIConcierge';
 import Loader from './components/Loader';
+import CookieBanner from './components/CookieBanner';
 
 export default function App() {
   return (
@@ -31,6 +35,7 @@ export default function App() {
       <CommandPalette />
       <NoiseOverlay />
       <AIConcierge />
+      <CookieBanner />
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
@@ -40,9 +45,12 @@ export default function App() {
           <Route path="services" element={<Services />} />
           <Route path="login" element={<Login />} />
           <Route path="portal" element={<ClientPortal />} />
+          <Route path="staff-login" element={<StaffLogin />} />
+          <Route path="staff-portal" element={<StaffPortal />} />
           <Route path="careers" element={<Careers />} />
           <Route path="affiliate" element={<Affiliate />} />
-          <Route path="terms" element={<Terms />} />
+          <Route path="terms-and-conditions" element={<Terms />} />
+          <Route path="privacy-policy" element={<PrivacyPolicy />} />
           <Route path="logbook" element={<Logbook />} />
           <Route path="sustainability" element={<Sustainability />} />
         </Route>

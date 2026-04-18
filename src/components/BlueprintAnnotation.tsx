@@ -199,7 +199,7 @@ export default function BlueprintAnnotation({ blueprintId, imageUrl, userId, ini
             <button 
               onClick={() => saveAnnotation(newAnnotation.comment || '')} 
               disabled={!newAnnotation.comment?.trim()}
-              className="w-full bg-accent text-concrete py-3 text-xs font-bold uppercase tracking-widest hover:bg-accent/90 transition-colors disabled:opacity-50"
+              className="w-full bg-accent text-concrete dark:text-charcoal py-3 text-xs font-bold uppercase tracking-widest hover:bg-accent/90 transition-colors disabled:opacity-50"
             >
               Save Annotation
             </button>

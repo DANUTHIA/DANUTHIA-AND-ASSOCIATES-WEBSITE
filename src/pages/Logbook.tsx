@@ -24,7 +24,7 @@ const logs = [
     author: 'Dr. E. Vance', 
     status: 'PUBLISHED',
     abstract: 'An exploration into the structural viability of mycelium-based composites when subjected to extreme load-bearing scenarios in urban high-rises. The study demonstrates a 40% reduction in embodied carbon compared to traditional concrete formulations while maintaining acceptable tensile strength.',
-    image: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1000&auto=format&fit=crop'
+    image: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1600&auto=format&fit=crop'
   },
   { 
     id: 'DOC-002', 
@@ -34,7 +34,7 @@ const logs = [
     author: 'J. Macharia', 
     status: 'ARCHIVED',
     abstract: 'Observations from the Nairobi Eastlands adaptive reuse project. Analyzes the long-term corrosion resistance and thermal bridging challenges of utilizing ISO shipping containers for modular affordable housing.',
-    image: 'https://images.unsplash.com/photo-1588557132645-ff567110cafd?q=80&w=1000&auto=format&fit=crop'
+    image: 'https://images.unsplash.com/photo-1588557132645-ff567110cafd?q=80&w=1600&auto=format&fit=crop'
   },
   { 
     id: 'DOC-003', 
@@ -44,7 +44,7 @@ const logs = [
     author: 'M. Rossi', 
     status: 'PEER REVIEW',
     abstract: 'Utilizing machine learning models to predict informal settlement expansion in Sub-Saharan Africa. The paper proposes a parametric zoning framework that adapts to population influx rather than rigidly resisting it.',
-    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1000&auto=format&fit=crop'
+    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop'
   },
   { 
     id: 'DOC-004', 
@@ -54,7 +54,7 @@ const logs = [
     author: 'A. Chen', 
     status: 'PUBLISHED',
     abstract: 'A comprehensive review of passive cooling strategies using high thermal mass materials (rammed earth, adobe) in modern brutalist structures located in arid and semi-arid regions.',
-    image: 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?q=80&w=1000&auto=format&fit=crop'
+    image: 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?q=80&w=1600&auto=format&fit=crop'
   },
   { 
     id: 'DOC-005', 
@@ -64,7 +64,7 @@ const logs = [
     author: 'Dr. E. Vance', 
     status: 'PUBLISHED',
     abstract: 'A 5-year post-occupancy evaluation of the "Concrete Canopy" civic center. The study measures actual energy performance against simulated models, revealing a 15% discrepancy in HVAC efficiency due to unforeseen user behavior.',
-    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1000&auto=format&fit=crop'
+    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop'
   },
 ];
 
