@@ -1,23 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db, handleFirestoreError, OperationType } from '../firebase';
+import { auth, db, handleFirestoreError, OperationType, uploadLargeFile, MAX_FILE_SIZE, CHUNK_SIZE } from '../firebase';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { doc, getDoc, collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp, getDocs, updateDoc, limit, or, and } from 'firebase/firestore';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   LineChart, Line, AreaChart, Area
 } from 'recharts';
-import { LogOut, Hammer, Eye, Map, ClipboardList, PenTool, Trees, HardHat, FileLineChart, ChevronDown, Building2, MessageSquare, Check, Send, Upload, Download, Edit, Users, Activity, Target, TrendingUp } from 'lucide-react';
+import { LogOut, Hammer, Eye, Map, MapPin, Layers, Globe, PieChart, ClipboardList, PenTool, Trees, HardHat, FileLineChart, ChevronDown, Building2, MessageSquare, Check, Send, Upload, Download, Edit, Users, Activity, Target, TrendingUp, X, FileCheck, FileText, Shield, CreditCard, Box } from 'lucide-react';
 import Magnetic from '../components/Magnetic';
-
-// Mock projects for the staff selection feature
-const MOCK_PROJECTS = [
-  { id: 'proj-1', name: 'Nairobi Tech Hub', status: 'In Progress' },
-  { id: 'proj-2', name: 'Mombasa Transit Center', status: 'Planning Phase' },
-  { id: 'proj-3', name: 'Karen Eco-Villa', status: 'Nearing Completion' },
-  { id: 'proj-4', name: 'Westlands Commercial Tower', status: 'Pre-Construction' }
-];
 
 interface StaffUser {
   id: string;
@@ -63,6 +55,8 @@ interface ClientUser {
   id: string;
   email: string;
   officialName?: string;
+  assignedPM?: string;
+  assignedStaff?: string[];
 }
 
 // Component for high-level data charting and project analytics
@@ -143,6 +137,7 @@ const ProjectAnalytics = ({ logs }: { logs: InternalLog[] }) => {
 const InternalTeamChat = ({
   staff,
   user,
+  role,
   projectId,
   selectedStaffMember,
   setSelectedStaffMember,
@@ -150,10 +145,13 @@ const InternalTeamChat = ({
   teamReply,
   setTeamReply,
   sendTeamChat,
-  isSendingTeamChat
+  isSendingTeamChat,
+  staffFilter,
+  setStaffFilter
 }: {
   staff: StaffUser[];
   user: User | null;
+  role: string;
   projectId: string;
   selectedStaffMember: string;
   setSelectedStaffMember: (val: string) => void;
@@ -162,8 +160,17 @@ const InternalTeamChat = ({
   setTeamReply: (val: string) => void;
   sendTeamChat: (e: React.FormEvent) => void;
   isSendingTeamChat: boolean;
+  staffFilter: string;
+  setStaffFilter: (val: string) => void;
 }) => {
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  const filteredStaff = staff.filter(s => 
+    s.officialName?.toLowerCase().includes(staffFilter.toLowerCase()) || 
+    s.email.toLowerCase().includes(staffFilter.toLowerCase()) ||
+    s.role.toLowerCase().includes(staffFilter.toLowerCase()) ||
+    s.title?.toLowerCase().includes(staffFilter.toLowerCase())
+  );
 
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -173,14 +180,14 @@ const InternalTeamChat = ({
     <div className="lg:col-span-3 mt-8 border border-steel/30 dark:border-concrete/20 bg-charcoal/5 dark:bg-charcoal/80 backdrop-blur-sm min-h-[500px] flex flex-col">
       <div className="p-6 border-b border-steel/10 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Users className="text-accent" size={20} />
+          <Shield className="text-accent" size={20} />
           <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold">
-            Inter-Professional Collab Relay
+            {role === 'project_manager' ? 'Direct Specialist Intelligence Line' : 'Project Manager Direct Liaison'}
           </h3>
         </div>
         <div className="flex items-center gap-2">
-          <Activity className="text-green-500" size={12} />
-          <span className="text-[9px] font-mono text-steel uppercase tracking-widest font-bold">Node Sync Alpha</span>
+          <Activity className="text-accent" size={12} />
+          <span className="text-[9px] font-mono text-steel uppercase tracking-widest font-bold">Protocol: Secure Routing</span>
         </div>
       </div>
 
@@ -188,12 +195,19 @@ const InternalTeamChat = ({
         {/* Staff Directory */}
         <div className="w-72 border-r border-steel/10 flex flex-col bg-charcoal/5 dark:bg-charcoal/40">
           <div className="p-4 border-b border-steel/10">
-            <h4 className="font-mono text-[9px] uppercase tracking-widest text-steel mb-2 flex items-center gap-2">
-              <span className="w-1 h-1 bg-accent rounded-full"></span> Available Operatives
+            <h4 className="font-mono text-[9px] uppercase tracking-widest text-steel mb-2 flex items-center gap-2 font-bold">
+              <span className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse"></span> {role === 'project_manager' ? 'Field Specialists' : 'Strategic Management'}
             </h4>
+            <input 
+              type="text" 
+              placeholder={role === 'project_manager' ? "Search Specialists..." : "Search Management..."}
+              value={staffFilter}
+              onChange={(e) => setStaffFilter(e.target.value)}
+              className="w-full bg-transparent border border-steel/10 dark:border-concrete/10 p-2 font-mono text-[8px] uppercase tracking-widest text-charcoal dark:text-concrete outline-none focus:border-accent mt-2"
+            />
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar">
-            {staff.filter(s => s.id !== user?.uid).map(member => (
+            {filteredStaff.filter(s => s.id !== user?.uid).map(member => (
               <button
                 key={member.id}
                 onClick={() => setSelectedStaffMember(member.id)}
@@ -203,10 +217,10 @@ const InternalTeamChat = ({
                   <span className="font-mono text-[10px] font-bold text-charcoal dark:text-concrete">
                     {member.officialName || member.email.split('@')[0]}
                   </span>
-                  <span className="text-[8px] font-mono uppercase text-accent/80 font-bold">{member.role.replace('_', ' ')}</span>
+                  <span className="text-[8px] font-mono uppercase text-accent font-bold tracking-tighter">{member.role.replace('_', ' ')}</span>
                 </div>
                 <span className="font-mono text-[8px] text-steel opacity-60 uppercase tracking-tighter">
-                  {member.title || 'Technical Specialist'}
+                  {member.title || 'Professional Operative'}
                 </span>
               </button>
             ))}
@@ -219,28 +233,32 @@ const InternalTeamChat = ({
             <>
               <div className="p-4 border-b border-steel/5 flex items-center justify-between bg-concrete/10 dark:bg-charcoal/30">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span className="font-mono text-[10px] uppercase font-bold text-accent">
-                    Channel: {staff.find(s => s.id === selectedStaffMember)?.officialName || 'Operative'}
+                  <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></div>
+                  <span className="font-mono text-[10px] uppercase font-bold text-charcoal dark:text-concrete">
+                    Active Channel: {staff.find(s => s.id === selectedStaffMember)?.officialName || 'Project Staff'}
                   </span>
                 </div>
-                <span className="text-[8px] font-mono text-steel uppercase">End-to-End Staff Encryption</span>
+                <div className="flex items-center gap-2">
+                  <Shield size={10} className="text-accent" />
+                  <span className="text-[8px] font-mono text-steel uppercase font-bold tracking-tighter opacity-60 italic">Intelligence Link Encrypted</span>
+                </div>
               </div>
               <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
                 {teamMessages.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center opacity-30 gap-3 grayscale">
-                    <Send size={32} strokeWidth={1} className="-rotate-12" />
-                    <p className="font-mono text-[10px] uppercase tracking-widest">Open professional node</p>
+                  <div className="h-full flex flex-col items-center justify-center opacity-30 gap-3">
+                    <MessageSquare size={32} strokeWidth={1} />
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-center">Protocol initialized. <br/> Awaiting information exchange.</p>
                   </div>
                 ) : (
                   teamMessages.map(msg => {
                     const isMine = msg.senderId === user?.uid;
                     return (
                       <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[75%] p-4 ${isMine ? 'bg-accent/90 text-white' : 'bg-charcoal/90 dark:bg-concrete/90 text-concrete dark:text-charcoal border border-steel/10 shadow-lg'}`}>
+                        <div className={`max-w-[75%] p-4 ${isMine ? 'bg-accent/90 text-white shadow-lg' : 'bg-white dark:bg-charcoal text-charcoal dark:text-concrete border border-steel/10 shadow-md'}`}>
                           <p className="font-mono text-[11px] leading-[1.6]">{msg.text}</p>
                           <div className={`mt-2 font-mono text-[8px] uppercase tracking-tighter opacity-50 flex items-center gap-2 ${isMine ? 'justify-end' : 'justify-start'}`}>
                             <span>{msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Syncing...'}</span>
+                            {isMine && msg.read && <Check size={8} className="text-accent" />}
                           </div>
                         </div>
                       </div>
@@ -256,25 +274,30 @@ const InternalTeamChat = ({
                     type="text"
                     value={teamReply}
                     onChange={(e) => setTeamReply(e.target.value)}
-                    placeholder="Exchange technical info..."
-                    className="flex-1 bg-white/50 dark:bg-charcoal/50 border border-steel/20 dark:border-concrete/20 px-4 py-3 font-mono text-[11px] text-charcoal dark:text-concrete focus:outline-none focus:border-accent"
+                    placeholder={role === 'project_manager' ? "Issue directive/brief..." : "Submit client-specific update to PM..."}
+                    className="flex-1 bg-white/50 dark:bg-charcoal/50 border border-steel/20 dark:border-concrete/20 px-4 py-3 font-mono text-[11px] text-charcoal dark:text-concrete focus:outline-none focus:border-accent transition-all"
                   />
                   <button
                     type="submit"
                     disabled={!teamReply.trim() || isSendingTeamChat}
-                    className="bg-accent text-white px-6 py-3 hover:opacity-90 font-mono text-[10px] uppercase font-bold tracking-widest flex items-center gap-2 disabled:opacity-30"
+                    className="bg-accent text-white px-6 py-3 hover:scale-[1.02] active:scale-95 transition-all font-mono text-[10px] uppercase font-bold tracking-widest flex items-center gap-2 disabled:opacity-30"
                   >
                     Transmit
                   </button>
                 </form>
+                {role !== 'project_manager' && (
+                  <p className="mt-2 text-[8px] font-mono text-center text-steel opacity-50 uppercase tracking-widest leading-relaxed">
+                    Professionals must route all project intelligence through the Project Manager.
+                  </p>
+                )}
               </div>
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-steel opacity-20 p-8 text-center gap-4">
               <Users size={56} strokeWidth={1} />
               <div className="space-y-1">
-                <p className="font-mono text-[11px] uppercase tracking-[0.4em] font-bold">Network Idle</p>
-                <p className="font-mono text-[9px] tracking-widest uppercase">Select a staff member from the regional registry to sync</p>
+                <p className="font-mono text-[11px] uppercase tracking-[0.4em] font-bold">Network Integration Required</p>
+                <p className="font-mono text-[9px] tracking-widest uppercase">Select a strategic operative from the project registry</p>
               </div>
             </div>
           )}
@@ -377,7 +400,9 @@ const PMChatSystem = ({
   chatReply,
   setChatReply,
   sendChat,
-  isSendingChat
+  isSendingChat,
+  clientFilter,
+  setClientFilter
 }: {
   clients: ClientUser[];
   user: User | null;
@@ -388,8 +413,15 @@ const PMChatSystem = ({
   setChatReply: (val: string) => void;
   sendChat: (e: React.FormEvent) => void;
   isSendingChat: boolean;
+  clientFilter: string;
+  setClientFilter: (val: string) => void;
 }) => {
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  const filteredClients = clients.filter(c => 
+    c.officialName?.toLowerCase().includes(clientFilter.toLowerCase()) || 
+    c.email.toLowerCase().includes(clientFilter.toLowerCase())
+  );
 
   React.useEffect(() => {
     if (messagesEndRef.current) {
@@ -419,11 +451,13 @@ const PMChatSystem = ({
             <input 
               type="text" 
               placeholder="Filter Project Database..." 
+              value={clientFilter}
+              onChange={(e) => setClientFilter(e.target.value)}
               className="w-full bg-transparent border border-steel/20 dark:border-concrete/20 p-2 font-mono text-[9px] uppercase tracking-widest text-charcoal dark:text-concrete outline-none focus:border-accent"
             />
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar">
-            {clients.map(client => (
+            {filteredClients.map(client => (
               <button
                 key={client.id}
                 onClick={() => setSelectedChatClient(client.id)}
@@ -503,6 +537,402 @@ const PMChatSystem = ({
   );
 };
 
+// Component for Project Manager to manage project metrics and files
+const ProjectManagementCenter = ({ 
+  selectedClient, 
+  clients,
+  onSelectClient
+}: { 
+  selectedClient: string, 
+  clients: ClientUser[],
+  onSelectClient?: (val: string) => void
+}) => {
+  const [projectData, setProjectData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<'receipt' | 'invoice' | 'image' | 'report' | null>(null);
+
+  // Form states
+  const [daysRemaining, setDaysRemaining] = useState('');
+  const [budgetUtilized, setBudgetUtilized] = useState('');
+  const [currentPhase, setCurrentPhase] = useState('');
+  const [dailySummary, setDailySummary] = useState('');
+  const [nextActivity, setNextActivity] = useState('');
+  
+  // Site Analysis States
+  const [topoSurvey, setTopoSurvey] = useState('');
+  const [solarExposure, setSolarExposure] = useState('');
+  const [windPattern, setWindPattern] = useState('');
+
+  const client = clients.find(c => c.id === selectedClient);
+
+  useEffect(() => {
+    if (!selectedClient) return;
+    setLoading(true);
+    const fetchProject = async () => {
+      try {
+        const docRef = doc(db, 'projects', selectedClient);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setProjectData(data);
+          setDaysRemaining(data.daysRemaining?.toString() || '');
+          setBudgetUtilized(data.budgetUtilized?.toString() || '');
+          setCurrentPhase(data.currentPhase || '');
+          setDailySummary(data.dailySummary || '');
+          setNextActivity(data.nextActivity || '');
+          setTopoSurvey(data.siteAnalysis?.topographical || '');
+          setSolarExposure(data.siteAnalysis?.solarExposure || '');
+          setWindPattern(data.siteAnalysis?.windPattern || '');
+        } else {
+          setProjectData(null);
+          setDaysRemaining('');
+          setBudgetUtilized('');
+          setCurrentPhase('');
+          setDailySummary('');
+          setNextActivity('');
+          setTopoSurvey('');
+          setSolarExposure('');
+          setWindPattern('');
+        }
+      } catch (error) {
+        console.error("Error fetching project:", error);
+      }
+      setLoading(false);
+    };
+    fetchProject();
+  }, [selectedClient]);
+
+  const handleUpdateProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedClient) return;
+    setSaving(true);
+    try {
+      const docRef = doc(db, 'projects', selectedClient);
+      await updateDoc(docRef, {
+        daysRemaining: parseInt(daysRemaining) || 0,
+        budgetUtilized: parseInt(budgetUtilized) || 0,
+        currentPhase,
+        dailySummary,
+        nextActivity,
+        siteAnalysis: {
+          topographical: topoSurvey,
+          solarExposure: solarExposure,
+          windPattern: windPattern
+        },
+        updatedAt: serverTimestamp()
+      }).catch(async (err) => {
+        if (err.code === 'not-found') {
+          const { setDoc } = await import('firebase/firestore');
+          await setDoc(docRef, {
+            clientId: selectedClient,
+            daysRemaining: parseInt(daysRemaining) || 0,
+            budgetUtilized: parseInt(budgetUtilized) || 0,
+            currentPhase,
+            dailySummary,
+            nextActivity,
+            siteAnalysis: {
+              topographical: topoSurvey,
+              solarExposure: solarExposure,
+              windPattern: windPattern
+            },
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        } else {
+          throw err;
+        }
+      });
+      alert('Project updated successfully');
+    } catch (error) {
+      console.error("Error updating project:", error);
+      alert('Failed to update project');
+    }
+    setSaving(false);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'receipt' | 'invoice' | 'image' | 'report') => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedClient) return;
+
+    setUploading(type);
+    
+    try {
+      // In a real app, upload to Storage. For now, we simulate with a dummy URL.
+      const dummyUrl = URL.createObjectURL(file);
+      
+      if (type === 'report') {
+        await addDoc(collection(db, 'technicalReports'), {
+          clientId: selectedClient,
+          title: file.name.split('.')[0],
+          fileName: file.name,
+          fileUrl: dummyUrl,
+          authorId: auth.currentUser?.uid,
+          createdAt: serverTimestamp()
+        });
+      } else if (type === 'invoice') {
+        await addDoc(collection(db, 'invoices'), {
+          clientId: selectedClient,
+          description: `Project Invoice: ${file.name}`,
+          amount: 0, // Admin will set this
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          status: 'unpaid',
+          createdAt: serverTimestamp()
+        });
+      } else {
+        // Vault Document for receipts/images
+        await addDoc(collection(db, 'documents'), {
+          clientId: selectedClient,
+          title: file.name,
+          fileName: file.name,
+          fileUrl: dummyUrl,
+          fileType: file.type,
+          category: type === 'image' ? 'image' : 'document',
+          createdAt: serverTimestamp()
+        });
+      }
+      
+      alert(`${type.charAt(0).toUpperCase() + type.slice(1)} uploaded successfully`);
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert('Upload failed');
+    }
+    setUploading(null);
+  };
+
+  if (!selectedClient) {
+    return (
+      <div className="lg:col-span-3 mt-12 grid grid-cols-1 gap-12 border border-steel/20 p-12 text-center bg-charcoal/5 dark:bg-concrete/5">
+        <div className="flex flex-col items-center justify-center py-10">
+          <Edit className="text-steel/50 mb-6" size={48} strokeWidth={1} />
+          <h3 className="font-display text-2xl font-bold uppercase text-charcoal dark:text-concrete mb-4">Project Control requires Client Context</h3>
+          <p className="font-mono text-xs text-steel uppercase tracking-widest leading-relaxed max-w-md mb-8">
+            You must select a specific client project to synchronize updates to their dashboard. Any updates made here will automatically reflect on their portal.
+          </p>
+          {onSelectClient && (
+            <div className="relative w-full max-w-sm mx-auto">
+              <select
+                value=""
+                onChange={(e) => onSelectClient(e.target.value)}
+                className="w-full appearance-none bg-concrete dark:bg-charcoal border border-steel/50 text-charcoal dark:text-concrete px-6 py-4 text-xs font-mono uppercase tracking-widest focus:outline-none focus:border-accent"
+              >
+                <option value="" disabled>Select Target Client To Continue</option>
+                {clients.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.officialName || c.email}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="lg:col-span-3 mt-12 grid grid-cols-1 lg:grid-cols-12 gap-12 border border-steel/20 p-8">
+      <div className="lg:col-span-12 flex justify-between items-center border-b border-steel/10 pb-6 mb-4">
+        <h2 className="font-display text-4xl font-light tracking-tight flex items-center gap-4">
+          <Edit className="text-accent" size={32} strokeWidth={1} />
+          Project Control Center
+        </h2>
+        <div className="text-right">
+          <p className="text-accent font-mono text-[10px] uppercase tracking-widest font-bold">Client Context</p>
+          <p className="font-display text-xl text-charcoal dark:text-concrete italic">{client?.officialName || client?.email}</p>
+        </div>
+      </div>
+
+      <div className="lg:col-span-7">
+        <form onSubmit={handleUpdateProject} className="space-y-8">
+          <div className="grid grid-cols-2 gap-8">
+            <div className="space-y-2">
+              <label className="text-[10px] font-mono uppercase tracking-widest text-steel font-bold">Days Remaining</label>
+              <input 
+                type="number" 
+                value={daysRemaining}
+                onChange={(e) => setDaysRemaining(e.target.value)}
+                className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/20 p-4 font-mono text-sm outline-none focus:border-accent"
+                placeholder="e.g. 45"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-mono uppercase tracking-widest text-steel font-bold">Budget Utilized (%)</label>
+              <input 
+                type="number" 
+                min="0"
+                max="100"
+                value={budgetUtilized}
+                onChange={(e) => setBudgetUtilized(e.target.value)}
+                className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/20 p-4 font-mono text-sm outline-none focus:border-accent"
+                placeholder="e.g. 65"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono uppercase tracking-widest text-steel font-bold">Current Project Phase</label>
+            <input 
+              type="text" 
+              value={currentPhase}
+              onChange={(e) => setCurrentPhase(e.target.value)}
+              className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/20 p-4 font-mono text-sm outline-none focus:border-accent"
+              placeholder="e.g. Foundation & Substructure"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono uppercase tracking-widest text-steel font-bold">Expected Next Activity / Milestone</label>
+            <input 
+              type="text" 
+              value={nextActivity}
+              onChange={(e) => setNextActivity(e.target.value)}
+              className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/20 p-4 font-mono text-sm outline-none focus:border-accent"
+              placeholder="e.g. Slab casting scheduled for Tuesday"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono uppercase tracking-widest text-steel font-bold">Daily Executive Summary</label>
+            <textarea 
+              rows={6}
+              value={dailySummary}
+              onChange={(e) => setDailySummary(e.target.value)}
+              className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/20 p-6 font-mono text-xs leading-relaxed outline-none focus:border-accent resize-none"
+              placeholder="Provide a high-level summary of today's progress for the client dashboard..."
+            />
+          </div>
+
+          <div className="pt-8 border-t border-steel/10 space-y-8">
+            <div className="flex items-center gap-3">
+              <Map className="text-accent" size={20} />
+              <h3 className="font-mono text-xs uppercase tracking-widest text-charcoal dark:text-concrete font-bold">Site Analysis Data</h3>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-[10px] font-mono uppercase tracking-widest text-steel font-bold mt-2">Topographical Survey Details</label>
+              <textarea 
+                rows={3}
+                value={topoSurvey}
+                onChange={(e) => setTopoSurvey(e.target.value)}
+                className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/20 p-4 font-mono text-xs outline-none focus:border-accent resize-none"
+                placeholder="Enter key topographical findings, elevation changes, soil mechanics notes..."
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[10px] font-mono uppercase tracking-widest text-steel font-bold">Solar Exposure Report</label>
+                <textarea 
+                  rows={4}
+                  value={solarExposure}
+                  onChange={(e) => setSolarExposure(e.target.value)}
+                  className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/20 p-4 font-mono text-xs outline-none focus:border-accent resize-none"
+                  placeholder="Sun path dynamics, shade analysis, optimal orientation notes..."
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-mono uppercase tracking-widest text-steel font-bold">Wind Pattern Data</label>
+                <textarea 
+                  rows={4}
+                  value={windPattern}
+                  onChange={(e) => setWindPattern(e.target.value)}
+                  className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/20 p-4 font-mono text-xs outline-none focus:border-accent resize-none"
+                  placeholder="Prevailing wind directions, seasonal variations, ventilation strategy..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={saving}
+            className="w-full py-5 bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal font-bold uppercase tracking-[0.2em] text-xs hover:bg-accent dark:hover:bg-accent hover:text-white transition-all duration-500 shadow-xl disabled:opacity-50 mt-8"
+          >
+            {saving ? 'Synchronizing Data...' : 'Broadcast to Dashboard'}
+          </button>
+        </form>
+      </div>
+
+      <div className="lg:col-span-5 space-y-12 bg-charcoal/10 dark:bg-concrete/5 p-8 border-l border-steel/10">
+        <div>
+          <h3 className="font-mono text-xs uppercase tracking-widest text-accent font-bold mb-8">Professional Upload Center</h3>
+          
+          <div className="space-y-6">
+            <div>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-steel mb-3 font-bold opacity-60">Technical Reports & Permits</p>
+              <div className="relative group">
+                <input 
+                  type="file" 
+                  onChange={(e) => handleFileUpload(e, 'report')}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  disabled={uploading !== null}
+                />
+                <div className="border border-dashed border-steel/30 p-8 text-center transition-all group-hover:border-accent group-hover:bg-accent/5">
+                  <FileCheck size={24} className="mx-auto mb-3 text-steel group-hover:text-accent" />
+                  <p className="text-[10px] font-mono uppercase text-steel">{uploading === 'report' ? 'Publishing...' : 'Upload Technical Report'}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 text-center">
+              <div className="relative group">
+                <input 
+                  type="file" 
+                  onChange={(e) => handleFileUpload(e, 'receipt')}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  disabled={uploading !== null}
+                />
+                <div className="border border-steel/20 p-6 transition-all group-hover:border-accent group-hover:bg-accent/5">
+                  <CreditCard size={18} className="mx-auto mb-2 text-steel group-hover:text-accent" />
+                  <p className="text-[10px] font-mono uppercase text-steel">{uploading === 'receipt' ? '...' : 'Receipt'}</p>
+                </div>
+              </div>
+
+              <div className="relative group">
+                <input 
+                  type="file" 
+                  onChange={(e) => handleFileUpload(e, 'invoice')}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  disabled={uploading !== null}
+                />
+                <div className="border border-steel/20 p-6 transition-all group-hover:border-accent group-hover:bg-accent/5">
+                  <ClipboardList size={18} className="mx-auto mb-2 text-steel group-hover:text-accent" />
+                  <p className="text-[10px] font-mono uppercase text-steel">{uploading === 'invoice' ? '...' : 'Invoice'}</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-steel mb-3 font-bold opacity-60">Visual Progress Records</p>
+              <div className="relative group">
+                <input 
+                  type="file" 
+                  multiple
+                  onChange={(e) => handleFileUpload(e, 'image')}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  disabled={uploading !== null}
+                />
+                <div className="border border-steel/20 p-8 text-center transition-all group-hover:border-accent group-hover:bg-accent/5">
+                  <Building2 size={24} className="mx-auto mb-3 text-steel group-hover:text-accent" />
+                  <p className="text-[10px] font-mono uppercase text-steel">{uploading === 'image' ? 'Processing...' : 'Upload Site Photos'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-8 border-t border-steel/10">
+          <p className="text-[8px] font-mono text-steel uppercase leading-relaxed font-bold tracking-widest">
+            Note: All technical reports and dashboard updates are visible to the client immediately upon synchronization. Ensure all professional sign-offs are obtained before broadcasting.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 // Component for Project Manager to publish client updates
 const PMUpdateSubmitter = ({
   selectedClient,
@@ -546,9 +976,9 @@ const PMUpdateSubmitter = ({
         {/* Internal Logs Feed */}
         <div className="flex flex-col">
           <div className="flex justify-between items-center mb-4">
-            <h4 className="font-mono text-[10px] uppercase tracking-widest text-steel font-bold">Pending Internal Logs from Staff</h4>
+            <h4 className="font-mono text-[10px] uppercase tracking-widest text-steel font-bold">Project Intelligence Queue (Awaiting Dissemination)</h4>
             <span className="text-[9px] font-mono text-accent bg-accent/10 px-2 py-0.5 rounded-sm">
-              {internalLogs.length} Active Reports
+              {internalLogs.length} Validated Reports
             </span>
           </div>
           
@@ -668,6 +1098,8 @@ const PMUpdateSubmitter = ({
   );
 };
 
+const AUTHORIZED_STAFF_ROLES = ['project_manager', 'architect', 'surveyor', 'admin'];
+
 export default function StaffPortal() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
@@ -697,6 +1129,7 @@ export default function StaffPortal() {
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [chatReply, setChatReply] = useState('');
   const [isSendingChat, setIsSendingChat] = useState(false);
+  const [clientFilter, setClientFilter] = useState('');
 
   // Inter-Professional Chat states
   const [staff, setStaff] = useState<StaffUser[]>([]);
@@ -704,6 +1137,15 @@ export default function StaffPortal() {
   const [teamMessages, setTeamMessages] = useState<InternalMessage[]>([]);
   const [teamReply, setTeamReply] = useState('');
   const [isSendingTeamChat, setIsSendingTeamChat] = useState(false);
+  const [staffFilter, setStaffFilter] = useState('');
+  const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'success' | 'error' | null }>({ text: '', type: null });
+
+  useEffect(() => {
+    if (statusMessage.text) {
+      const timer = setTimeout(() => setStatusMessage({ text: '', type: null }), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [statusMessage]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -717,7 +1159,10 @@ export default function StaffPortal() {
             setDisplayName(userData.officialName || '');
             setUserTitle(userData.title || '');
             
-            if (currentUser.email === 'machariag605@gmail.com' || currentUser.email === 'danuthiaandassociates@gmail.com' || currentUser.email === 'urbanplanning2027@gmail.com') {
+            if (currentUser.email === 'machariag605@gmail.com' || 
+                currentUser.email === 'machariajoseph20222@gmail.com' ||
+                currentUser.email === 'danuthiaandassociates@gmail.com' || 
+                currentUser.email === 'urbanplanning2027@gmail.com') {
               userRole = 'admin';
             }
             setRole(userRole);
@@ -744,7 +1189,7 @@ export default function StaffPortal() {
   }, [navigate]);
 
   useEffect(() => {
-    if (!selectedProject || !role || !user) return;
+    if (!selectedProject || !user || !role || role === 'unauthorized') return;
 
     // Listen to internal logs for the selected project
     // Authorized staff can see all logs for the current project for team coordination
@@ -765,37 +1210,53 @@ export default function StaffPortal() {
   }, [selectedProject, role, user]);
 
   useEffect(() => {
-    if (role === 'project_manager' || role === 'admin') {
-      // Fetch available clients for the PM to route messages to
+    if (AUTHORIZED_STAFF_ROLES.includes(role || '') && user) {
+      // Fetch available clients for the staff to route messages to and work on
       const fetchClients = async () => {
         try {
-          const clientQ = query(collection(db, 'users'), where('role', '==', 'client'));
+          const clientQ = (role === 'admin' || role === 'project_manager')
+            ? query(collection(db, 'users'), where('role', '==', 'client'))
+            : query(collection(db, 'users'), and(
+                where('role', '==', 'client'), 
+                or(where('assignedPM', '==', user.uid), where('assignedStaff', 'array-contains', user.uid))
+              ));
+            
           const snapshot = await getDocs(clientQ);
           const clientList = snapshot.docs.map(doc => ({ 
             id: doc.id, 
             email: doc.data().email,
-            officialName: doc.data().officialName
+            officialName: doc.data().officialName,
+            assignedPM: doc.data().assignedPM,
+            assignedStaff: doc.data().assignedStaff
           })) as ClientUser[];
           setClients(clientList);
           
-          // Pre-select first client if none selected for chat
-          if (clientList.length > 0 && !selectedChatClient) {
+          // Pre-select first client if none selected for dashboard context
+          if (clientList.length > 0 && !selectedProject) {
+            setSelectedProject(clientList[0].id);
             setSelectedChatClient(clientList[0].id);
           }
         } catch (e) {
-          console.warn("Could not fetch clients.");
+          console.warn("Could not fetch clients. Using secondary query path.");
+          // Fallback if index isn't ready
+          const fallbackQ = query(collection(db, 'users'), where('role', '==', 'client'));
+          const snapshot = await getDocs(fallbackQ);
+          const allClients = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ClientUser[];
+          const filtered = (role === 'admin' || role === 'project_manager') ? allClients : allClients.filter(c => c.assignedPM === user.uid);
+          setClients(filtered);
+          if (filtered.length > 0 && !selectedChatClient) setSelectedChatClient(filtered[0].id);
         }
       };
       fetchClients();
     }
-  }, [role, selectedChatClient]);
+  }, [role, user, selectedChatClient]);
 
   // Fetch all staff for internal chat
   useEffect(() => {
     if (role && role !== 'unauthorized') {
       const fetchStaff = async () => {
         try {
-          const staffQ = query(collection(db, 'users'), where('role', 'in', ['project_manager', 'architect', 'surveyor', 'admin']));
+          const staffQ = query(collection(db, 'users'), where('role', 'in', ['project_manager', 'architect', 'surveyor', 'admin', 'staff']));
           const snapshot = await getDocs(staffQ);
           const staffList = snapshot.docs.map(doc => ({ 
             id: doc.id, 
@@ -804,9 +1265,16 @@ export default function StaffPortal() {
           setStaff(staffList);
           
           if (staffList.length > 0 && !selectedStaffMember) {
-            // Find a project manager if I'm not one, or just the first available
-            const pm = staffList.find(s => s.role === 'project_manager' && s.id !== user?.uid);
-            setSelectedStaffMember(pm?.id || staffList.find(s => s.id !== user?.uid)?.id || '');
+            // Find a project manager if I'm not one
+            if (role !== 'project_manager') {
+              // Professionals should see the PM as priority
+              const pm = staffList.find(s => s.role === 'project_manager');
+              setSelectedStaffMember(pm?.id || staffList[0].id);
+            } else {
+              // PMs see other staff (architects, etc)
+              const firstStaff = staffList.find(s => s.id !== user?.uid);
+              setSelectedStaffMember(firstStaff?.id || '');
+            }
           }
         } catch (e) {
           console.warn("Could not fetch staff registry.");
@@ -818,7 +1286,7 @@ export default function StaffPortal() {
 
   // Internal Team Chat Subscription
   useEffect(() => {
-    if (!selectedStaffMember || !user || !selectedProject) return;
+    if (!selectedStaffMember || !user || !selectedProject || !role || role === 'unauthorized') return;
 
     const q = query(
       collection(db, 'internalMessages'),
@@ -844,12 +1312,13 @@ export default function StaffPortal() {
 
       setTeamMessages(conversationMsgs);
 
-      // Handle read status
-      conversationMsgs.forEach(msg => {
-        if (msg.receiverId === user.uid && !msg.read) {
-          updateDoc(doc(db, 'internalMessages', msg.id), { read: true });
-        }
-      });
+      // Handle read status carefully to avoid snapshot loops
+      const unreadForMe = conversationMsgs.filter(msg => msg.receiverId === user.uid && !msg.read);
+      if (unreadForMe.length > 0) {
+        unreadForMe.forEach(msg => {
+          updateDoc(doc(db, 'internalMessages', msg.id), { read: true }).catch(() => {});
+        });
+      }
     });
 
     return () => unsubscribe();
@@ -857,7 +1326,7 @@ export default function StaffPortal() {
 
   // Real-time chat subscription
   useEffect(() => {
-    if (!selectedChatClient || !user || (role !== 'project_manager' && role !== 'admin')) return;
+    if (!selectedChatClient || !user || !role || (role !== 'project_manager' && role !== 'admin')) return;
 
     const messagesQuery = query(
       collection(db, 'messages'),
@@ -872,12 +1341,18 @@ export default function StaffPortal() {
       const msgs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Message[];
       setChatMessages(msgs);
       
-      // Mark unread messages as read
-      msgs.forEach(msg => {
-        if (msg.receiverId === user.uid && !msg.read) {
-          updateDoc(doc(db, 'messages', msg.id), { read: true }).catch(console.error);
-        }
-      });
+      // Mark unread messages directed at staff as read
+      const unreadForStaff = msgs.filter(msg => 
+        (msg.receiverId === user.uid || msg.receiverId === 'admin') && 
+        !msg.read && 
+        msg.senderId !== user.uid
+      );
+      
+      if (unreadForStaff.length > 0) {
+        unreadForStaff.forEach(msg => {
+          updateDoc(doc(db, 'messages', msg.id), { read: true }).catch(() => {});
+        });
+      }
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'messages');
     });
@@ -891,7 +1366,7 @@ export default function StaffPortal() {
 
     // Hard limit of 5MB for selection, but we will compress images to fit Firestore (1MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert("File size exceeds 5MB. Please upload a smaller file.");
+      setStatusMessage({ text: "File size exceeds 5MB. Please upload a smaller file.", type: 'error' });
       return;
     }
 
@@ -927,7 +1402,7 @@ export default function StaffPortal() {
               // Re-compress if still too large
               const smallBase64 = canvas.toDataURL('image/jpeg', 0.4);
               if (smallBase64.length > 1000000) {
-                alert("Image is too complex to fit in the database even after compression. Please use a simpler image.");
+                setStatusMessage({ text: "Image is too complex to fit in the database even after compression. Please use a simpler image.", type: 'error' });
                 return;
               }
               if (target === 'internal') setInternalFile({ url: smallBase64, name: f.name });
@@ -941,9 +1416,9 @@ export default function StaffPortal() {
         };
         reader.readAsDataURL(f);
       } else {
-        // Non-image files (PDFs etc) - strictly capped at 800KB due to Firestore 1MB document limit
-        if (f.size > 800 * 1024) {
-          alert("Documents (PDF/Docs) are currently limited to 800KB to fit database constraints. Please optimize your file.");
+        // Non-image files (PDFs etc) - strictly capped at 10MB due to Firestore chunking support
+        if (f.size > MAX_FILE_SIZE) {
+          setStatusMessage({ text: "Documents are currently limited to 10MB per file.", type: 'error' });
           return;
         }
         const reader = new FileReader();
@@ -966,17 +1441,17 @@ export default function StaffPortal() {
     if (!internalMessage.trim() || !selectedProject || !user) return;
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, 'internalLogs'), {
+      await uploadLargeFile('internalLogs', {
         projectId: selectedProject,
         staffName: displayName || user.email,
         staffTitle: userTitle || role.replace('_', ' ').toUpperCase(),
         role: role,
         message: internalMessage,
         status: 'pending_review',
-        createdAt: serverTimestamp(),
-        fileUrl: internalFile?.url || null,
-        fileName: internalFile?.name || null
-      });
+        fileName: internalFile?.name || null,
+        type: 'log'
+      }, internalFile?.url || '');
+      
       setInternalMessage('');
       setInternalFile(null);
     } catch (error) {
@@ -990,23 +1465,24 @@ export default function StaffPortal() {
     if (!pmUpdateMessage.trim() || !selectedClient || !user) return;
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, 'projectUpdates'), {
+      await uploadLargeFile('projectUpdates', {
         clientId: selectedClient,
         title: `Official Update: ${currentProjectName}`,
         description: pmUpdateMessage,
-        imageUrl: pmFile?.url || null, // Reusing imageUrl for compatibility or adding fileUrl
-        fileUrl: pmFile?.url || null,
         fileName: pmFile?.name || null,
         status: 'published',
-        createdAt: serverTimestamp()
-      });
+        type: 'update',
+        // In the chunked upload, fileData will be empty, so we just set these flags
+        // ClientPortal will need to resolve them
+      }, pmFile?.url || '');
+
       // Mark internal logs as reviewed
       for (const log of internalLogs.filter(l => l.status === 'pending_review')) {
         await updateDoc(doc(db, 'internalLogs', log.id), { status: 'reviewed' });
       }
       setPmUpdateMessage('');
       setPmFile(null);
-      alert("Successfully published curated update to Client Portal!");
+      setStatusMessage({ text: "Successfully published curated update to Client Portal!", type: 'success' });
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'projectUpdates');
     } finally {
@@ -1065,8 +1541,7 @@ export default function StaffPortal() {
     );
   }
 
-  const authorizedRoles = ['project_manager', 'architect', 'surveyor', 'admin'];
-  if (!authorizedRoles.includes(role)) {
+  if (!AUTHORIZED_STAFF_ROLES.includes(role)) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-8 bg-concrete dark:bg-charcoal transition-colors duration-500">
         <div className="max-w-md w-full text-center">
@@ -1108,22 +1583,10 @@ export default function StaffPortal() {
   };
 
   const currentProjectName = selectedProject 
-    ? MOCK_PROJECTS.find(p => p.id === selectedProject)?.name 
+    ? (clients.find(c => c.id === selectedProject)?.officialName || clients.find(c => c.id === selectedProject)?.email || 'Unknown Project')
     : 'System Overview';
 
   const renderDashboardWidgets = () => {
-    if (!selectedProject) {
-      return (
-        <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-steel/30 dark:border-steel/20 bg-white/10 dark:bg-charcoal/10 backdrop-blur-sm">
-          <Building2 size={48} className="text-steel/50 mb-6" strokeWidth={1} />
-          <h3 className="font-display text-2xl font-bold uppercase text-charcoal dark:text-concrete mb-4">No Project Selected</h3>
-          <p className="font-mono text-xs text-steel uppercase tracking-widest leading-relaxed max-w-md">
-            Please select an active project from the dropdown menu above to access your role-specific dashboard context and data.
-          </p>
-        </div>
-      );
-    }
-
     if (role === 'project_manager') {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1174,15 +1637,25 @@ export default function StaffPortal() {
             setChatReply={setChatReply}
             sendChat={sendChat}
             isSendingChat={isSendingChat}
+            clientFilter={clientFilter}
+            setClientFilter={setClientFilter}
           />
 
           {/* Project Analytics */}
           <ProjectAnalytics logs={internalLogs} />
 
+          {/* Project Management Control Center */}
+          <ProjectManagementCenter 
+            selectedClient={selectedProject || ''}
+            clients={clients}
+            onSelectClient={setSelectedProject}
+          />
+
           {/* Internal Team Connectivity */}
           <InternalTeamChat 
             staff={staff}
             user={user}
+            role={role}
             projectId={selectedProject}
             selectedStaffMember={selectedStaffMember}
             setSelectedStaffMember={setSelectedStaffMember}
@@ -1191,63 +1664,261 @@ export default function StaffPortal() {
             setTeamReply={setTeamReply}
             sendTeamChat={sendTeamChat}
             isSendingTeamChat={isSendingTeamChat}
+            staffFilter={staffFilter}
+            setStaffFilter={setStaffFilter}
           />
         </div>
       );
     }
     
-    if (role === 'architect' || role === 'surveyor') {
+    if (role === 'architect') {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {role === 'architect' ? (
-            <>
-              <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md lg:col-span-2">
-                <PenTool className="text-accent mb-4" size={24} />
-                <h3 className="font-mono text-[10px] uppercase tracking-widest text-steel mb-4">Drafts for {currentProjectName}</h3>
-                <ul className="space-y-4 mt-6">
-                  <li className="flex justify-between items-center text-sm font-light border-b border-steel/10 pb-2">
-                    <span>{currentProjectName.split(' ')[0]}_Structural_v3.dwg</span>
-                    <span className="text-accent text-[10px] uppercase tracking-widest font-mono">Pending Review</span>
-                  </li>
-                  <li className="flex justify-between items-center text-sm font-light border-b border-steel/10 pb-2">
-                    <span>{currentProjectName.split(' ')[0]}_Landscape.pdf</span>
-                    <span className="text-accent text-[10px] uppercase tracking-widest font-mono">Changes Req</span>
-                  </li>
-                </ul>
+          <div className="lg:col-span-3 mb-6 p-10 relative overflow-hidden bg-charcoal dark:bg-charcoal text-concrete border border-steel/20 shadow-2xl">
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_1px_1px,#fff_1px,transparent_0)] bg-[length:24px_24px]"></div>
+            <h2 className="relative font-display text-3xl mb-3 text-white flex items-center gap-4"><PenTool className="text-accent" /> Architectural Command Nexus</h2>
+            <p className="relative font-mono text-[10px] text-steel uppercase tracking-widest bg-accent text-white px-2 py-1 inline-block">CLIENT VISIBILITY RESTRICTED</p>
+            <p className="relative font-mono text-xs mt-6 max-w-2xl text-concrete/70 leading-relaxed border-l-2 border-accent pl-4">
+              Authorized access only. Submit schematics, structural drafts, and material logs. Synchronize closely with engineering loads and await PM greenlight before client-facing release.
+            </p>
+          </div>
+
+          <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md lg:col-span-2 shadow-sm relative group overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-150"></div>
+            <Layers className="text-accent mb-6" size={28} strokeWidth={1} />
+            <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-6">Schematic & CAD Drafting Pipeline</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center text-sm font-light border-b border-steel/10 py-3 px-2 hover:bg-steel/5 transition-colors">
+                <span className="font-mono text-xs tracking-tight text-charcoal dark:text-concrete">{currentProjectName.split(' ')[0]}_Elevations_Rev_C.dwg</span>
+                <span className="text-[9px] uppercase tracking-widest font-mono bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal px-2 py-0.5">Under PM Review</span>
               </div>
-              <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md">
-                <Hammer className="text-accent mb-4" size={24} />
-                <h3 className="font-mono text-[10px] uppercase tracking-widest text-steel mb-4">Material Submittals</h3>
-                <p className="font-display text-4xl text-charcoal dark:text-concrete">8</p>
-                <p className="font-mono text-[10px] text-steel mt-4">Samples pending engineering approval for this site.</p>
+              <div className="flex justify-between items-center text-sm font-light border-b border-steel/10 py-3 px-2 hover:bg-steel/5 transition-colors">
+                <span className="font-mono text-xs tracking-tight text-charcoal dark:text-concrete">{currentProjectName.split(' ')[0]}_Floorplan_Base.pdf</span>
+                <span className="text-[9px] uppercase tracking-widest font-mono bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30 px-2 py-0.5">Approved - V1.2</span>
               </div>
-            </>
-          ) : (
-            <>
-              <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md">
-                <Map className="text-accent mb-4" size={24} />
-                <h3 className="font-mono text-[10px] uppercase tracking-widest text-steel mb-4">Site Topography</h3>
-                <p className="font-display text-4xl text-charcoal dark:text-concrete">1</p>
-                <p className="font-mono text-[10px] text-steel mt-4">Master survey available for <span className="text-accent font-bold">{currentProjectName}</span>.</p>
+              <div className="flex justify-between items-center text-sm font-light border-b border-steel/10 py-3 px-2">
+                <span className="font-mono text-xs text-charcoal/50 dark:text-concrete/50 line-through tracking-tight">{currentProjectName.split(' ')[0]}_Interior_Vol.pdf</span>
+                <span className="text-red-500 text-[9px] uppercase tracking-widest font-mono border border-red-500 px-2 py-0.5">Rejected by Eng.</span>
               </div>
-              <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md">
-                <Trees className="text-accent mb-4" size={24} />
-                <h3 className="font-mono text-[10px] uppercase tracking-widest text-steel mb-4">Land Zoning Approvals</h3>
-                <p className="font-display text-4xl text-charcoal dark:text-concrete">2</p>
-                <p className="font-mono text-[10px] text-steel mt-4">Awaiting municipal feedback for this plot.</p>
+            </div>
+            <button className="mt-8 text-[10px] font-mono bg-accent/10 text-accent uppercase tracking-widest font-bold border border-accent/30 hover:bg-accent hover:text-white px-4 py-2 transition-all">
+              Initiate New CAD Upload
+            </button>
+          </div>
+
+          <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md shadow-sm flex flex-col justify-between">
+            <div>
+              <Box className="text-accent mb-6" size={28} strokeWidth={1} />
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">BIM / 3D Visualization Sync</h3>
+              <div className="w-full bg-steel/10 h-1.5 mb-2 overflow-hidden rounded-none">
+                <div className="bg-accent h-full w-[78%] animate-pulse"></div>
               </div>
-              <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md">
-                <div className="w-full h-32 bg-steel/10 flex items-center justify-center mb-6 border border-steel/20">
-                  <span className="font-mono text-xs uppercase tracking-widest text-steel/80 flex flex-col items-center gap-2">
-                    <Trees size={16} />GIS Map Context: {currentProjectName}
-                  </span>
-                </div>
-                <button className="w-full py-3 bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal text-[10px] font-bold uppercase tracking-widest hover:bg-accent hover:text-white transition-colors">
-                  Open GIS Toolkit
-                </button>
+              <p className="font-mono text-[9px] text-steel uppercase tracking-widest mb-6 flex justify-between"><span>Render Node Status</span><span className="text-accent font-bold">78%</span></p>
+            </div>
+            <div className="border-t border-steel/10 pt-4">
+              <p className="font-mono text-[10px] leading-relaxed text-charcoal dark:text-concrete/80 flex items-start gap-2">
+                <span className="animate-pulse h-2 w-2 mt-1 rounded-full bg-green-500 flex-shrink-0"></span>
+                Processing high-fidelity global illumination array on the main atrium view. Awaiting geometry cache lock.
+              </p>
+            </div>
+          </div>
+
+          <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md lg:col-span-3 flex flex-col md:flex-row justify-between items-center gap-6 shadow-sm">
+            <div className="flex-1">
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-2 flex items-center gap-3"><Trees size={16} className="text-accent"/> Material Submittals & Finishes Log</h3>
+              <p className="font-mono text-[10px] text-steel max-w-lg">Propose material specs, swatches, and fixture catalogues for final client approval via Project Manager routing.</p>
+            </div>
+            <div className="flex gap-4">
+              <div className="w-16 h-16 rounded-md border border-steel/20 bg-[#E6D5C3] shadow-[inset_0_2px_10px_rgba(0,0,0,0.1)] flex flex-col items-center justify-center relative group">
+                <span className="text-[10px] font-mono font-bold text-black/50">WC-01</span>
+                <span className="text-[8px] opacity-0 group-hover:opacity-100 absolute -bottom-6 tracking-widest font-mono whitespace-nowrap text-steel transition-opacity">Warm Concrete</span>
               </div>
-            </>
-          )}
+              <div className="w-16 h-16 rounded-md border border-steel/20 bg-[#2B2B2B] shadow-[inset_0_2px_10px_rgba(0,0,0,0.1)] flex flex-col items-center justify-center relative group">
+                <span className="text-[10px] font-mono font-bold text-white/50">ST-04</span>
+                <span className="text-[8px] opacity-0 group-hover:opacity-100 absolute -bottom-6 tracking-widest font-mono whitespace-nowrap text-steel transition-opacity">Matte Steel</span>
+              </div>
+              <div className="w-16 h-16 rounded-md border border-dashed border-steel/50 flex flex-col items-center justify-center text-steel cursor-pointer hover:text-accent hover:border-accent hover:bg-accent/5 transition-all">
+                <span className="text-2xl font-light mb-1">+</span>
+                <span className="text-[8px] font-mono uppercase tracking-widest">Add Spec</span>
+              </div>
+            </div>
+          </div>
+
+          <InternalLogSubmitter 
+            internalMessage={internalMessage}
+            setInternalMessage={setInternalMessage}
+            internalFile={internalFile}
+            setInternalFile={setInternalFile}
+            handleFileUpload={handleFileUpload}
+            submitInternalLog={submitInternalLog}
+            isSubmitting={isSubmitting}
+            internalLogs={internalLogs}
+          />
+
+          <ProjectAnalytics logs={internalLogs} />
+
+          <InternalTeamChat 
+            staff={staff}
+            user={user}
+            role={role}
+            projectId={selectedProject}
+            selectedStaffMember={selectedStaffMember}
+            setSelectedStaffMember={setSelectedStaffMember}
+            teamMessages={teamMessages}
+            teamReply={teamReply}
+            setTeamReply={setTeamReply}
+            sendTeamChat={sendTeamChat}
+            isSendingTeamChat={isSendingTeamChat}
+            staffFilter={staffFilter}
+            setStaffFilter={setStaffFilter}
+          />
+        </div>
+      );
+    }
+
+    if (role === 'engineer') {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-3 mb-6 p-10 relative overflow-hidden bg-[#1a1a24] text-concrete border border-red-900 shadow-2xl">
+            <div className="absolute inset-0 opacity-20 bg-[linear-gradient(rgba(239,68,68,0.15)_1px,transparent_1px),linear-gradient(90deg,rgba(239,68,68,0.15)_1px,transparent_1px)] bg-[length:30px_30px]"></div>
+            <h2 className="relative font-display text-3xl mb-3 text-white flex items-center gap-4"><HardHat className="text-red-500" /> Engineering Control Operations</h2>
+            <p className="relative font-mono text-[10px] text-red-300 uppercase tracking-widest bg-red-900/50 px-2 py-1 inline-block border border-red-500/30">CLIENT VISIBILITY RESTRICTED</p>
+            <p className="relative font-mono text-xs mt-6 max-w-2xl text-concrete/70 leading-relaxed border-l-2 border-red-500 pl-4">
+              Structural analysis, load testing, and MEP integration hub. Validate architectural schematics against mechanical realities and enforce code compliance parameters.
+            </p>
+          </div>
+
+          <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md lg:col-span-1 shadow-sm flex flex-col justify-between">
+            <div>
+              <Activity className="text-red-500 mb-6" size={28} strokeWidth={1} />
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">Structural Load Models</h3>
+              <ul className="space-y-4 font-mono text-[10px] text-charcoal dark:text-concrete">
+                 <li className="flex justify-between border-b border-steel/10 pb-2"><span>Dead Load Max</span><span className="text-charcoal dark:text-concrete font-bold">450 kN/m²</span></li>
+                 <li className="flex justify-between border-b border-steel/10 pb-2"><span>Live Load Est.</span><span className="text-charcoal dark:text-concrete font-bold">120 kN/m²</span></li>
+                 <li className="flex justify-between border-b border-steel/10 pb-2"><span>Wind Shear Index</span><span className="text-red-500 font-bold">Cat 4 Guard</span></li>
+              </ul>
+            </div>
+            <div className="mt-6 pt-4 border-t border-steel/10">
+              <button className="w-full text-center text-[9px] font-mono text-red-500 uppercase tracking-widest font-bold border border-red-500/30 hover:bg-red-500 hover:text-white py-2 transition-colors">
+                Run Simulation Matrix
+              </button>
+            </div>
+          </div>
+
+          <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md lg:col-span-2 shadow-sm flex flex-col justify-between">
+            <div>
+              <Shield className="text-red-500 mb-6" size={28} strokeWidth={1} />
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">MEP Integration & Code Compliance</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left font-mono text-[10px]">
+                  <thead>
+                    <tr className="border-b border-steel/10 text-steel uppercase tracking-widest">
+                      <th className="pb-3">System ID</th>
+                      <th className="pb-3">Discipline</th>
+                      <th className="pb-3">Status</th>
+                      <th className="pb-3 text-right">Clearance</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-charcoal dark:text-concrete">
+                    <tr className="border-b border-steel/5">
+                      <td className="py-3 font-bold">MECH-HVAC-01</td>
+                      <td className="py-3">Mechanical</td>
+                      <td className="py-3 text-green-500 uppercase">Routing Accepted</td>
+                      <td className="py-3 text-right text-steel">L2 Compliant</td>
+                    </tr>
+                    <tr className="border-b border-steel/5">
+                      <td className="py-3 font-bold">ELEC-MAIN-04</td>
+                      <td className="py-3">Electrical</td>
+                      <td className="py-3 text-red-500 uppercase">Clash Detected</td>
+                      <td className="py-3 text-right text-red-500">Conflicts Arch. Wall</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 font-bold">PLUM-SANI-02</td>
+                      <td className="py-3">Plumbing</td>
+                      <td className="py-3 text-accent uppercase">Under Review</td>
+                      <td className="py-3 text-right text-steel">Pending Signoff</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          
+          <InternalLogSubmitter 
+            internalMessage={internalMessage}
+            setInternalMessage={setInternalMessage}
+            internalFile={internalFile}
+            setInternalFile={setInternalFile}
+            handleFileUpload={handleFileUpload}
+            submitInternalLog={submitInternalLog}
+            isSubmitting={isSubmitting}
+            internalLogs={internalLogs}
+          />
+
+          <ProjectAnalytics logs={internalLogs} />
+
+          <InternalTeamChat 
+            staff={staff}
+            user={user}
+            role={role}
+            projectId={selectedProject}
+            selectedStaffMember={selectedStaffMember}
+            setSelectedStaffMember={setSelectedStaffMember}
+            teamMessages={teamMessages}
+            teamReply={teamReply}
+            setTeamReply={setTeamReply}
+            sendTeamChat={sendTeamChat}
+            isSendingTeamChat={isSendingTeamChat}
+            staffFilter={staffFilter}
+            setStaffFilter={setStaffFilter}
+          />
+        </div>
+      );
+    }
+    
+    if (role === 'surveyor') {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-3 mb-6 p-10 relative overflow-hidden bg-[#1A2622] text-[#EAE6D7] border border-steel/20 shadow-2xl">
+            <div className="absolute right-0 top-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] w-full h-full"></div>
+            <h2 className="relative font-display text-3xl mb-3 text-[#EAE6D7] flex items-center gap-4"><Map className="text-accent" /> Spatial Analysis Nexus</h2>
+            <p className="relative font-mono text-[10px] uppercase tracking-widest bg-accent text-white px-2 py-1 inline-block shadow-md">CLIENT VISIBILITY RESTRICTED</p>
+            <p className="relative font-mono text-xs mt-6 max-w-2xl text-[#EAE6D7]/70 leading-relaxed">
+              Record topographical deviations, log spatial data, and track zoning compliance. All field measurements must be escalated to the Project Manager prior to client issuance.
+            </p>
+          </div>
+
+          <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md shadow-sm">
+            <Map className="text-accent mb-6" size={28} strokeWidth={1} />
+            <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">Topographical Sync</h3>
+            <p className="font-display text-4xl text-charcoal dark:text-concrete">14<span className="text-lg text-steel">ms</span></p>
+            <p className="font-mono text-[10px] text-steel mt-4 leading-relaxed">Latency to central GIS repository. Data streaming nominal.</p>
+          </div>
+
+          <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md shadow-sm">
+            <Trees className="text-accent mb-6" size={28} strokeWidth={1} />
+            <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">Municipal Zoning</h3>
+            <div className="flex items-center gap-4 mt-6">
+              <div className="relative w-16 h-16 rounded-full border-4 border-steel/10 flex items-center justify-center">
+                <span className="font-mono text-xs font-bold text-accent">75%</span>
+                <svg className="absolute inset-0 w-full h-full -rotate-90">
+                  <circle cx="30" cy="30" r="28" fill="none" strokeWidth="4" className="stroke-accent" strokeDasharray="175" strokeDashoffset="44" />
+                </svg>
+              </div>
+              <p className="font-mono text-[9px] text-charcoal dark:text-concrete uppercase tracking-widest leading-relaxed">Compliance rating verified against local parameters.</p>
+            </div>
+          </div>
+
+          <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md lg:col-span-1 shadow-sm flex flex-col justify-between">
+            <div>
+              <Activity className="text-accent mb-6" size={28} strokeWidth={1} />
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">Sensor Uplink</h3>
+              <ul className="space-y-3 font-mono text-[10px] text-charcoal dark:text-concrete">
+                 <li className="flex justify-between border-b border-steel/10 pb-2"><span>Drone Unit Alpha</span><span className="text-green-500">Active</span></li>
+                 <li className="flex justify-between border-b border-steel/10 pb-2"><span>Ground Station C</span><span className="text-accent uppercase tracking-widest">Calibrating</span></li>
+              </ul>
+            </div>
+          </div>
           
           <InternalLogSubmitter 
             internalMessage={internalMessage}
@@ -1267,6 +1938,7 @@ export default function StaffPortal() {
           <InternalTeamChat 
             staff={staff}
             user={user}
+            role={role}
             projectId={selectedProject}
             selectedStaffMember={selectedStaffMember}
             setSelectedStaffMember={setSelectedStaffMember}
@@ -1275,6 +1947,186 @@ export default function StaffPortal() {
             setTeamReply={setTeamReply}
             sendTeamChat={sendTeamChat}
             isSendingTeamChat={isSendingTeamChat}
+            staffFilter={staffFilter}
+            setStaffFilter={setStaffFilter}
+          />
+        </div>
+      );
+    }
+
+    if (role === 'planner') {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-3 mb-6 p-10 relative overflow-hidden bg-gradient-to-br from-green-900/90 to-charcoal text-concrete border border-green-500/20 shadow-2xl">
+            <div className="absolute inset-0 opacity-10 bg-[linear-gradient(45deg,#22c55e_1px,transparent_1px),linear-gradient(-45deg,#22c55e_1px,transparent_1px)] bg-[length:20px_20px]"></div>
+            <h2 className="relative font-display text-3xl mb-3 text-white flex items-center gap-4"><Map className="text-green-500" /> Urban Planning Nexus</h2>
+            <p className="relative font-mono text-[10px] text-green-300 uppercase tracking-widest bg-green-500/20 px-2 py-1 inline-block border border-green-500/30">CLIENT VISIBILITY RESTRICTED</p>
+          </div>
+
+          {/* Master Plan Overlay Module */}
+          <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md lg:col-span-2 shadow-sm flex flex-col justify-between">
+            <div>
+              <Layers className="text-green-500 mb-6" size={28} strokeWidth={1} />
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">Master Plan Overlay</h3>
+              <div className="h-48 w-full bg-steel/5 border border-steel/10 flex items-center justify-center relative overflow-hidden">
+                <div className="absolute w-full h-[1px] bg-green-500/20 top-1/2"></div>
+                <div className="absolute h-full w-[1px] bg-green-500/20 left-1/2"></div>
+                <MapPin className="text-green-500 absolute top-1/4 left-1/3 animate-pulse" size={16} />
+                <MapPin className="text-accent absolute bottom-1/3 right-1/4 animate-pulse opacity-50" size={16} />
+                <p className="font-mono text-[10px] text-steel uppercase tracking-widest">Awaiting GIS Data Sync</p>
+              </div>
+            </div>
+            <div className="mt-6 pt-4 border-t border-steel/10">
+              <p className="font-mono text-[9px] text-charcoal dark:text-concrete uppercase tracking-widest leading-relaxed">Zoning constraints locked to municipal API feed.</p>
+            </div>
+          </div>
+
+          <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md lg:col-span-1 shadow-sm flex flex-col justify-between">
+            <div>
+              <Globe className="text-green-500 mb-6" size={28} strokeWidth={1} />
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">Environmental Impact</h3>
+              <ul className="space-y-4 font-mono text-[10px] text-charcoal dark:text-concrete">
+                 <li className="flex justify-between border-b border-steel/10 pb-2"><span>Green Space Ratio</span><span className="text-green-500">42%</span></li>
+                 <li className="flex justify-between border-b border-steel/10 pb-2"><span>Solar Irradiance</span><span className="text-accent uppercase tracking-widest">Optimized</span></li>
+                 <li className="flex justify-between border-b border-steel/10 pb-2"><span>Permeability Target</span><span className="text-steel">Pending</span></li>
+              </ul>
+            </div>
+          </div>
+          
+          <InternalLogSubmitter 
+            internalMessage={internalMessage}
+            setInternalMessage={setInternalMessage}
+            internalFile={internalFile}
+            setInternalFile={setInternalFile}
+            handleFileUpload={handleFileUpload}
+            submitInternalLog={submitInternalLog}
+            isSubmitting={isSubmitting}
+            internalLogs={internalLogs}
+          />
+
+          <ProjectAnalytics logs={internalLogs} />
+
+          <InternalTeamChat 
+            staff={staff}
+            user={user}
+            role={role}
+            projectId={selectedProject}
+            selectedStaffMember={selectedStaffMember}
+            setSelectedStaffMember={setSelectedStaffMember}
+            teamMessages={teamMessages}
+            teamReply={teamReply}
+            setTeamReply={setTeamReply}
+            sendTeamChat={sendTeamChat}
+            isSendingTeamChat={isSendingTeamChat}
+            staffFilter={staffFilter}
+            setStaffFilter={setStaffFilter}
+          />
+        </div>
+      );
+    }
+
+    if (role === 'financial_analyst') {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-3 mb-6 p-10 relative overflow-hidden bg-charcoal text-concrete border border-blue-900 shadow-2xl">
+            <div className="absolute inset-0 opacity-20 bg-[linear-gradient(rgba(59,130,246,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.1)_1px,transparent_1px)] bg-[length:40px_40px]"></div>
+            <h2 className="relative font-display text-3xl mb-3 text-white flex items-center gap-4"><PieChart className="text-blue-500" /> Financial Analysis Nexus</h2>
+            <p className="relative font-mono text-[10px] text-blue-300 uppercase tracking-widest bg-blue-900/50 px-2 py-1 inline-block border border-blue-500/30">CLIENT VISIBILITY RESTRICTED</p>
+          </div>
+
+          <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md lg:col-span-1 shadow-sm flex flex-col justify-between">
+            <div>
+              <CreditCard className="text-blue-500 mb-6" size={28} strokeWidth={1} />
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">Cash Flow Projection</h3>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-[10px] font-mono text-steel uppercase mb-1">
+                    <span>Q3 Allocation</span>
+                    <span className="text-accent font-bold">78%</span>
+                  </div>
+                  <div className="w-full bg-steel/10 h-1 rounded-full overflow-hidden">
+                    <div className="bg-blue-500 h-full w-[78%]"></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-[10px] font-mono text-steel uppercase mb-1">
+                    <span>Variance Margin</span>
+                    <span className="text-green-500 font-bold">+2.4%</span>
+                  </div>
+                  <div className="w-full bg-steel/10 h-1 rounded-full overflow-hidden">
+                    <div className="bg-green-500 h-full w-[60%] opacity-80"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md lg:col-span-2 shadow-sm flex flex-col justify-between">
+            <div>
+              <TrendingUp className="text-blue-500 mb-6" size={28} strokeWidth={1} />
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">Budget Variance Ledger</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left font-mono text-[10px]">
+                  <thead>
+                    <tr className="border-b border-steel/10 text-steel uppercase tracking-widest">
+                      <th className="pb-3">Cost Center</th>
+                      <th className="pb-3">Forecast</th>
+                      <th className="pb-3">Actual</th>
+                      <th className="pb-3 text-right">Variance</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-charcoal dark:text-concrete">
+                    <tr className="border-b border-steel/5">
+                      <td className="py-3">Architectural Drafting</td>
+                      <td className="py-3">$14,500</td>
+                      <td className="py-3">$14,100</td>
+                      <td className="py-3 text-right text-green-500">-$400</td>
+                    </tr>
+                    <tr className="border-b border-steel/5">
+                      <td className="py-3">Site Surveying</td>
+                      <td className="py-3">$8,200</td>
+                      <td className="py-3">$8,900</td>
+                      <td className="py-3 text-right text-red-500">+$700</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3">Material Procurement</td>
+                      <td className="py-3">$45,000</td>
+                      <td className="py-3 text-accent italic">Pending</td>
+                      <td className="py-3 text-right text-steel">-</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          
+          <InternalLogSubmitter 
+            internalMessage={internalMessage}
+            setInternalMessage={setInternalMessage}
+            internalFile={internalFile}
+            setInternalFile={setInternalFile}
+            handleFileUpload={handleFileUpload}
+            submitInternalLog={submitInternalLog}
+            isSubmitting={isSubmitting}
+            internalLogs={internalLogs}
+          />
+
+          <ProjectAnalytics logs={internalLogs} />
+
+          <InternalTeamChat 
+            staff={staff}
+            user={user}
+            role={role}
+            projectId={selectedProject}
+            selectedStaffMember={selectedStaffMember}
+            setSelectedStaffMember={setSelectedStaffMember}
+            teamMessages={teamMessages}
+            teamReply={teamReply}
+            setTeamReply={setTeamReply}
+            sendTeamChat={sendTeamChat}
+            isSendingTeamChat={isSendingTeamChat}
+            staffFilter={staffFilter}
+            setStaffFilter={setStaffFilter}
           />
         </div>
       );
@@ -1282,22 +2134,28 @@ export default function StaffPortal() {
 
     // Admin or fallback
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md">
-          <h3 className="font-mono text-[10px] uppercase tracking-widest text-steel mb-4">System Alerts</h3>
-          <p className="font-display text-4xl text-accent">0</p>
-          <p className="font-mono text-[10px] text-steel mt-4">No critical system events for <span className="text-accent font-bold">{currentProjectName}</span>.</p>
-        </div>
-        <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md lg:col-span-2">
-          <h3 className="font-mono text-[10px] uppercase tracking-widest text-steel mb-4">Global Network Status</h3>
-          <div className="flex items-center gap-2 mt-4">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-            <p className="font-mono text-xs text-charcoal dark:text-concrete uppercase tracking-widest">Core Secured. All permissions strict.</p>
+      <div className="space-y-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md">
+            <h3 className="font-mono text-[10px] uppercase tracking-widest text-steel mb-4">System Alerts</h3>
+            <p className="font-display text-4xl text-accent">0</p>
+            <p className="font-mono text-[10px] text-steel mt-4">No critical system events for <span className="text-accent font-bold">{currentProjectName}</span>.</p>
           </div>
-          <button onClick={() => navigate('/admin')} className="mt-8 px-6 py-3 border border-charcoal/20 dark:border-concrete/20 text-[10px] font-bold uppercase tracking-widest hover:bg-charcoal hover:text-concrete dark:hover:bg-concrete dark:hover:text-charcoal transition-colors">
-            Jump to Master Admin
-          </button>
+          <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md lg:col-span-2">
+            <h3 className="font-mono text-[10px] uppercase tracking-widest text-steel mb-4">Global Network Status</h3>
+            <div className="flex items-center gap-2 mt-4">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+              <p className="font-mono text-xs text-charcoal dark:text-concrete uppercase tracking-widest">Core Secured. All permissions strict.</p>
+            </div>
+          </div>
         </div>
+
+        {role === 'admin' && (
+          <ProjectManagementCenter 
+            selectedClient={selectedProject || selectedChatClient}
+            clients={clients}
+          />
+        )}
       </div>
     );
   };
@@ -1327,9 +2185,9 @@ export default function StaffPortal() {
                 className="w-full appearance-none bg-transparent border border-steel/30 dark:border-steel/50 text-charcoal dark:text-concrete px-4 py-3 pr-10 text-xs font-mono uppercase tracking-widest focus:outline-none focus:border-accent dark:focus:border-accent transition-colors"
               >
                 <option value="" disabled className="bg-concrete dark:bg-charcoal">Select Context Project</option>
-                {MOCK_PROJECTS.map((project) => (
-                  <option key={project.id} value={project.id} className="bg-concrete dark:bg-charcoal text-charcoal dark:text-concrete">
-                    {project.name}
+                {clients.map((client) => (
+                  <option key={client.id} value={client.id} className="bg-concrete dark:bg-charcoal text-charcoal dark:text-concrete">
+                    {client.officialName || client.email.split('@')[0]}
                   </option>
                 ))}
               </select>
@@ -1363,9 +2221,6 @@ export default function StaffPortal() {
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
               Live Context: <span className="font-bold text-accent">{currentProjectName}</span>
             </h2>
-            <p className="font-mono text-[10px] text-steel uppercase tracking-widest mt-2 ml-4">
-              Status: {MOCK_PROJECTS.find(p => p.id === selectedProject)?.status}
-            </p>
           </div>
         )}
 
@@ -1377,6 +2232,24 @@ export default function StaffPortal() {
           {renderDashboardWidgets()}
         </motion.div>
       </div>
+
+      {/* Global Status Notification */}
+      <AnimatePresence>
+        {statusMessage.text && (
+          <motion.div
+            initial={{ opacity: 0, x: 50, y: 10 }}
+            animate={{ opacity: 1, x: 0, y: 10 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className={`fixed bottom-10 right-10 z-[200] p-5 shadow-2xl border-l-4 font-mono text-[10px] uppercase tracking-widest flex items-center gap-4 backdrop-blur-xl ${statusMessage.type === 'error' ? 'bg-red-500/90 text-white border-l-red-900' : 'bg-accent/90 text-white border-l-white'}`}
+          >
+            {statusMessage.type === 'error' ? <X size={16} /> : <Check size={16} />}
+            {statusMessage.text}
+            <button onClick={() => setStatusMessage({ text: '', type: null })} className="ml-4 opacity-50 hover:opacity-100">
+              <X size={12} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Profile Modal */}
       {isProfileModalOpen && (

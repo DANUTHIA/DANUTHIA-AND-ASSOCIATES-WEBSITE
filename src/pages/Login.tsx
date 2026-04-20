@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, provider, db, handleFirestoreError, OperationType } from '../firebase';
 import { signInWithPopup } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { motion } from 'motion/react';
 import { Lock, ArrowRight } from 'lucide-react';
 import Magnetic from '../components/Magnetic';
@@ -26,7 +26,9 @@ export default function Login() {
       if (!userDoc.exists()) {
         await setDoc(userDocRef, {
           email: user.email,
-          role: 'pending'
+          role: 'pending',
+          needsOnboarding: true,
+          createdAt: serverTimestamp()
         });
       }
 
@@ -93,10 +95,9 @@ export default function Login() {
             Access is restricted to active clients of Danuthia & Associates.
           </p>
           <button
-            onClick={() => {
-              navigate('/#book');
-            }}
-            className="text-concrete text-[10px] font-bold uppercase tracking-widest hover:text-white transition-colors duration-300 border-b border-concrete/30 hover:border-concrete pb-1"
+            onClick={handleLogin}
+            disabled={isLoading}
+            className="text-concrete text-[10px] font-bold uppercase tracking-widest hover:text-white transition-colors duration-300 border-b border-concrete/30 hover:border-concrete pb-1 disabled:opacity-50"
           >
             Not a client yet? Register with us today.
           </button>

@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db, handleFirestoreError, OperationType } from '../firebase';
+import { auth, db, handleFirestoreError, OperationType, uploadLargeFile, downloadLargeFile, MAX_FILE_SIZE } from '../firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, query, where, onSnapshot, orderBy, addDoc, serverTimestamp, or, updateDoc, doc, getDoc, limit } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   LogOut, FileText, Calendar, Clock, Download, MessageSquare, 
   Send, Upload, CheckCircle2, Loader2, Circle, Box, CreditCard, 
-  Bell, ChevronRight, Check, AlertCircle, X, Maximize2, Shield
+  Bell, ChevronRight, Check, AlertCircle, X, Maximize2, Shield,
+  FileCheck, Activity
 } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stage, Gltf, Environment } from '@react-three/drei';
@@ -15,7 +16,6 @@ import Magnetic from '../components/Magnetic';
 import { Skeleton } from '../components/Skeleton';
 import OnboardingWizard from '../components/OnboardingWizard';
 import BlueprintAnnotation from '../components/BlueprintAnnotation';
-import AdminDashboard from '../components/AdminDashboard';
 
 interface Message {
   id: string;
@@ -34,6 +34,8 @@ interface VaultDocument {
   fileData: string;
   uploadedBy: string;
   createdAt: any;
+  hasChunks?: boolean;
+  totalChunks?: number;
 }
 
 interface Milestone {
@@ -73,6 +75,96 @@ interface AppNotification {
   createdAt: any;
 }
 
+interface ProjectUpdate {
+  id: string;
+  clientId: string;
+  title: string;
+  description: string;
+  imageUrl?: string;
+  fileUrl?: string;
+  fileName?: string;
+  createdAt: any;
+  hasChunks?: boolean;
+}
+
+const ResolvedUpdate = ({ update }: { update: ProjectUpdate }) => {
+  const [resolvedData, setResolvedData] = useState<string | null>(null);
+  const [resolving, setResolving] = useState(false);
+
+  useEffect(() => {
+    if (update.hasChunks && !resolvedData && !resolving) {
+      setResolving(true);
+      downloadLargeFile(update)
+        .then(data => setResolvedData(data))
+        .catch(err => console.error("Update resolution failed", err))
+        .finally(() => setResolving(false));
+    }
+  }, [update, resolvedData, resolving]);
+
+  const finalUrl = resolvedData || update.imageUrl || update.fileUrl;
+  const isImage = (update.imageUrl || (resolvedData && resolvedData.startsWith('data:image'))) && !update.fileName;
+
+  const handleUpdateDownload = () => {
+    if (!finalUrl) return;
+    const link = document.createElement('a');
+    link.href = finalUrl;
+    link.download = update.fileName || 'update-asset';
+    link.click();
+  };
+
+  return (
+    <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 hover:border-accent/30 transition-colors duration-500">
+      <div className="flex justify-between items-start mb-6">
+        <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete transition-colors duration-500">{update.title}</h3>
+        <span className="text-[10px] font-mono text-steel uppercase tracking-widest border border-steel/20 dark:border-concrete/20 px-3 py-1.5 transition-colors duration-500">
+          {update.createdAt?.toDate().toLocaleDateString()}
+        </span>
+      </div>
+      <p className="text-charcoal/70 dark:text-concrete/70 font-light leading-relaxed mb-6 transition-colors duration-500">{update.description}</p>
+      
+      {(update.fileName || (resolvedData && !isImage)) && (
+        <div className="mb-6 p-4 bg-charcoal/5 dark:bg-concrete/5 border border-steel/10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <FileText size={18} className="text-accent" />
+            <span className="font-mono text-[10px] uppercase tracking-widest text-charcoal dark:text-concrete">
+              {update.fileName || 'Attached Document'}
+            </span>
+          </div>
+          {resolving ? (
+            <div className="flex items-center gap-2 px-4 py-2 text-steel font-mono text-[10px] uppercase">
+              <Loader2 size={12} className="animate-spin" /> Resolving...
+            </div>
+          ) : (
+            <button 
+              onClick={handleUpdateDownload}
+              className="flex items-center gap-2 px-4 py-2 bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal font-mono text-[10px] uppercase font-bold tracking-widest hover:bg-accent hover:text-white transition-colors"
+            >
+              <Download size={14} /> Download
+            </button>
+          )}
+        </div>
+      )}
+
+      {isImage && (
+        <div className="mt-6 aspect-[16/9] bg-concrete dark:bg-charcoal relative overflow-hidden transition-colors duration-500">
+          {resolving ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-steel/5">
+              <Loader2 size={24} className="animate-spin text-accent" />
+            </div>
+          ) : (
+            <img 
+              src={finalUrl} 
+              alt="Project Update" 
+              className="object-cover w-full h-full hover:scale-105 transition-transform duration-1000" 
+              referrerPolicy="no-referrer"
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function ClientPortal() {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
@@ -108,10 +200,28 @@ export default function ClientPortal() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [selectedBlueprint, setSelectedBlueprint] = useState<VaultDocument | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [projectData, setProjectData] = useState<any>(null);
+  const [projectLoading, setProjectLoading] = useState(true);
+  const [technicalReports, setTechnicalReports] = useState<any[]>([]);
+  const [reportsLoading, setReportsLoading] = useState(true);
+  const [emailUnverified, setEmailUnverified] = useState(false);
   const [selectedModel, setSelectedModel] = useState<ProjectModel | null>(null);
   const [isModelFullScreen, setIsModelFullScreen] = useState(false);
   const [payingInvoice, setPayingInvoice] = useState<string | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState<string | null>(null);
+  const [isResolvingBlueprint, setIsResolvingBlueprint] = useState(false);
+
+  const handleOpenBlueprint = async (doc: VaultDocument) => {
+    setIsResolvingBlueprint(true);
+    try {
+      const fullData = await downloadLargeFile(doc);
+      setSelectedBlueprint({ ...doc, fileData: fullData });
+    } catch (error) {
+      console.error("Resolution failed", error);
+    } finally {
+      setIsResolvingBlueprint(false);
+    }
+  };
   
   // Testimonial states
   const [testimonial, setTestimonial] = useState({ rating: 5, comment: '', projectType: 'Residential' });
@@ -119,6 +229,68 @@ export default function ClientPortal() {
   const [testimonialSuccess, setTestimonialSuccess] = useState(false);
   
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  const fetchUserData = async (currentUser: any) => {
+    if (!currentUser) return;
+    try {
+      const userDocRef = doc(db, 'users', currentUser.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        let role = userData.role;
+        const adminEmails = [
+          'machariag605@gmail.com',
+          'machariajoseph20222@gmail.com',
+          'danuthiaandassociates@gmail.com',
+          'urbanplanning2027@gmail.com'
+        ];
+        
+        if (adminEmails.includes(currentUser.email)) {
+          role = 'admin';
+          if (userData.role !== 'admin') {
+            await updateDoc(userDocRef, { role: 'admin' });
+          }
+        }
+
+        setUser({ 
+          ...currentUser, 
+          role: role, 
+          needsOnboarding: userData.needsOnboarding, 
+          officialName: userData.officialName,
+          assignedPM: userData.assignedPM
+        });
+        setShowOnboarding(userData.needsOnboarding || !userData.officialName || false);
+
+        if (userData.assignedPM) {
+          const pmDoc = await getDoc(doc(db, 'users', userData.assignedPM));
+          if (pmDoc.exists()) {
+            setProjectData(prev => ({ ...prev, pmInfo: pmDoc.data() }));
+          }
+        }
+
+        const projectDoc = await getDoc(doc(db, 'projects', currentUser.uid));
+        if (projectDoc.exists()) {
+          setProjectData(prev => ({ ...prev, ...projectDoc.data() }));
+        }
+      } else {
+        const adminEmails = [
+          'machariag605@gmail.com',
+          'machariajoseph20222@gmail.com',
+          'danuthiaandassociates@gmail.com',
+          'urbanplanning2027@gmail.com'
+        ];
+        let role = adminEmails.includes(currentUser.email) ? 'admin' : 'pending';
+        setUser({ ...currentUser, role: role });
+      }
+    } catch (error) {
+      console.error("Error fetching user role:", error);
+      setUser({ ...currentUser, role: 'pending' });
+    } finally {
+      setProjectLoading(false);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -131,33 +303,12 @@ export default function ClientPortal() {
       if (!currentUser) {
         navigate('/login');
       } else {
-        try {
-          const userDocRef = doc(db, 'users', currentUser.uid);
-          const userDoc = await getDoc(userDocRef);
-          
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            let role = userData.role;
-            if (currentUser.email === 'machariag605@gmail.com' || currentUser.email === 'danuthiaandassociates@gmail.com' || currentUser.email === 'urbanplanning2027@gmail.com') {
-              role = 'admin';
-              if (userData.role !== 'admin') {
-                await updateDoc(userDocRef, { role: 'admin' });
-              }
-            }
-            setUser({ ...currentUser, role: role, needsOnboarding: userData.needsOnboarding, officialName: userData.officialName });
-            setShowOnboarding(userData.needsOnboarding || !userData.officialName || false);
-          } else {
-            let role = 'pending';
-            if (currentUser.email === 'machariag605@gmail.com' || currentUser.email === 'danuthiaandassociates@gmail.com') {
-              role = 'admin';
-            }
-            setUser({ ...currentUser, role: role });
-          }
-        } catch (error) {
-          console.error("Error fetching user role:", error);
-          setUser({ ...currentUser, role: 'pending' });
+        if (!currentUser.emailVerified) {
+          setEmailUnverified(true);
+          setLoading(false);
+          return;
         }
-        setLoading(false);
+        await fetchUserData(currentUser);
       }
     });
     return () => unsubscribe();
@@ -231,12 +382,13 @@ export default function ClientPortal() {
       setMessages(data);
       setMessagesLoading(false);
       
-      // Mark unread messages as read
-      data.forEach(msg => {
-        if (msg.receiverId === user.uid && !msg.read) {
-          updateDoc(doc(db, 'messages', msg.id), { read: true }).catch(console.error);
-        }
-      });
+      // Mark unread messages as read carefully to avoid snapshot loops
+      const unreadForMe = data.filter(msg => msg.receiverId === user.uid && !msg.read);
+      if (unreadForMe.length > 0) {
+        unreadForMe.forEach(msg => {
+          updateDoc(doc(db, 'messages', msg.id), { read: true }).catch(() => {});
+        });
+      }
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'messages');
     });
@@ -312,6 +464,20 @@ export default function ClientPortal() {
       handleFirestoreError(error, OperationType.GET, 'notifications');
     });
 
+    const reportsQuery = query(
+      collection(db, 'technicalReports'),
+      where('clientId', '==', user.uid),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribeReports = onSnapshot(reportsQuery, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setTechnicalReports(data);
+      setReportsLoading(false);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'technicalReports');
+    });
+
     return () => {
       unsubscribeUpdates();
       unsubscribeMessages();
@@ -320,6 +486,7 @@ export default function ClientPortal() {
       unsubscribeInvoices();
       unsubscribeModels();
       unsubscribeNotifications();
+      unsubscribeReports();
     };
   }, [user]);
 
@@ -376,11 +543,13 @@ export default function ClientPortal() {
     e.preventDefault();
     if (!newMessage.trim() || !user) return;
 
+    const pmId = projectData?.pmInfo?.id || user.assignedPM || 'admin';
+
     setSendingMessage(true);
     try {
       await addDoc(collection(db, 'messages'), {
         senderId: user.uid,
-        receiverId: 'admin', // Generic admin receiver
+        receiverId: pmId,
         text: newMessage.trim(),
         createdAt: serverTimestamp(),
         read: false
@@ -406,8 +575,8 @@ export default function ClientPortal() {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    if (file.size > 1024 * 1024) { // 1MB limit for Firestore
-      setUploadError('File size must be less than 1MB.');
+    if (file.size > MAX_FILE_SIZE) {
+      setUploadError('File size must be less than 10MB.');
       return;
     }
 
@@ -419,14 +588,12 @@ export default function ClientPortal() {
       reader.onload = async (event) => {
         const base64String = event.target?.result as string;
         
-        await addDoc(collection(db, 'documents'), {
+        await uploadLargeFile('documents', {
           clientId: user.uid,
           fileName: file.name,
           fileType: file.type || 'application/octet-stream',
-          fileData: base64String,
           uploadedBy: user.uid,
-          createdAt: serverTimestamp()
-        });
+        }, base64String);
         
         setUploadingDoc(false);
       };
@@ -442,11 +609,17 @@ export default function ClientPortal() {
     }
   };
 
-  const handleDownload = (doc: VaultDocument) => {
-    const link = document.createElement('a');
-    link.href = doc.fileData;
-    link.download = doc.fileName;
-    link.click();
+  const handleDownload = async (doc: VaultDocument) => {
+    try {
+      const fullData = await downloadLargeFile(doc);
+      const link = document.createElement('a');
+      link.href = fullData;
+      link.download = doc.fileName;
+      link.click();
+    } catch (error) {
+      console.error("Download failed", error);
+      alert("Failed to reconstruct file. Please try again.");
+    }
   };
 
   const handleSubmitTestimonial = async (e: React.FormEvent) => {
@@ -483,7 +656,34 @@ export default function ClientPortal() {
     );
   }
 
-  if (user?.role === 'pending') {
+  if (emailUnverified) {
+    return (
+      <div className="min-h-[calc(100vh-6rem)] flex flex-col items-center justify-center bg-concrete dark:bg-charcoal p-6 text-center transition-colors duration-500">
+        <div className="max-w-md w-full bg-charcoal dark:bg-charcoal text-concrete p-10 md:p-16 relative z-10 transition-colors duration-500">
+          <div className="flex justify-center mb-10">
+            <div className="w-16 h-16 rounded-none border border-concrete/30 flex items-center justify-center bg-charcoal dark:bg-charcoal shadow-[0_0_30px_rgba(255,255,255,0.1)] transition-colors duration-500">
+              <Shield size={20} className="text-concrete" strokeWidth={1.5} />
+            </div>
+          </div>
+          <h1 className="font-display text-3xl font-light tracking-tight mb-4 text-concrete">Verify Email</h1>
+          <p className="text-concrete/70 font-light leading-relaxed mb-8">
+            Access restricted to verified email addresses exclusively. Please verify your email address to continue.
+          </p>
+          <Magnetic className="w-full">
+            <button 
+              onClick={handleSignOut}
+              className="w-full bg-transparent border border-concrete text-concrete py-4 font-bold uppercase tracking-widest hover:bg-concrete hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 text-xs"
+            >
+              <LogOut size={16} />
+              Sign Out
+            </button>
+          </Magnetic>
+        </div>
+      </div>
+    );
+  }
+
+  if (user?.role === 'pending' && !showOnboarding) {
     return (
       <div className="min-h-[calc(100vh-6rem)] flex flex-col items-center justify-center bg-concrete dark:bg-charcoal p-6 text-center transition-colors duration-500">
         <div className="max-w-md w-full bg-charcoal dark:bg-charcoal text-concrete p-10 md:p-16 relative z-10 transition-colors duration-500">
@@ -494,7 +694,34 @@ export default function ClientPortal() {
           </div>
           <h1 className="font-display text-3xl font-light tracking-tight mb-4 text-concrete">Pending Approval</h1>
           <p className="text-concrete/70 font-light leading-relaxed mb-8">
-            Your account is currently pending approval. Access to the client portal is restricted to active clients of Danuthia & Associates. We will notify you once your account has been verified.
+            Confirmation mandated by an administrator. Your account is currently pending approval. Access to the client portal is restricted to active clients of Danuthia & Associates. We will notify you once your account has been verified.
+          </p>
+          <Magnetic className="w-full">
+            <button 
+              onClick={handleSignOut}
+              className="w-full bg-transparent border border-concrete text-concrete py-4 font-bold uppercase tracking-widest hover:bg-concrete hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 text-xs"
+            >
+              <LogOut size={16} />
+              Sign Out
+            </button>
+          </Magnetic>
+        </div>
+      </div>
+    );
+  }
+
+  if (user?.role === 'client' && !projectData && !projectLoading && !showOnboarding) {
+    return (
+      <div className="min-h-[calc(100vh-6rem)] flex flex-col items-center justify-center bg-concrete dark:bg-charcoal p-6 text-center transition-colors duration-500">
+        <div className="max-w-md w-full bg-charcoal dark:bg-charcoal text-concrete p-10 md:p-16 relative z-10 transition-colors duration-500">
+          <div className="flex justify-center mb-10">
+            <div className="w-16 h-16 rounded-none border border-concrete/30 flex items-center justify-center bg-charcoal dark:bg-charcoal shadow-[0_0_30px_rgba(255,255,255,0.1)] transition-colors duration-500">
+              <Shield size={20} className="text-concrete" strokeWidth={1.5} />
+            </div>
+          </div>
+          <h1 className="font-display text-3xl font-light tracking-tight mb-4 text-concrete">Assigning Manager</h1>
+          <p className="text-concrete/70 font-light leading-relaxed mb-8">
+            You will be notified on the portal once assigned to a project manager.
           </p>
           <Magnetic className="w-full">
             <button 
@@ -515,7 +742,11 @@ export default function ClientPortal() {
       {showOnboarding && user && (
         <OnboardingWizard 
           userId={user.uid} 
-          onComplete={() => setShowOnboarding(false)} 
+          onComplete={async () => {
+            setShowOnboarding(false);
+            setProjectLoading(true);
+            await fetchUserData(auth.currentUser);
+          }} 
         />
       )}
       <div className="max-w-7xl mx-auto">
@@ -610,10 +841,10 @@ export default function ClientPortal() {
             { id: 'timeline', label: 'Timeline', icon: Calendar },
             { id: '3d-models', label: '3D Models', icon: Box },
             { id: 'vault', label: 'Vault', icon: FileText },
+            { id: 'reports', label: 'Technical Reports', icon: FileCheck },
             { id: 'payments', label: 'Payments', icon: CreditCard },
             { id: 'messages', label: 'Messages', icon: MessageSquare },
             { id: 'feedback', label: 'Feedback', icon: CheckCircle2 },
-            ...(user?.role === 'admin' ? [{ id: 'admin', label: 'Admin', icon: Shield }] : []),
           ].map(tab => (
             <button
               key={tab.id}
@@ -649,19 +880,19 @@ export default function ClientPortal() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500">
                     <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Days Remaining</h3>
-                    <p className="font-display text-4xl text-charcoal dark:text-concrete">42</p>
+                    <p className="font-display text-4xl text-charcoal dark:text-concrete">{projectData?.daysRemaining ?? 'TBD'}</p>
                   </div>
                   <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500">
                     <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Budget Utilized</h3>
                     <div className="w-full bg-steel/20 h-2 mb-2">
-                      <div className="bg-accent h-full" style={{ width: '68%' }}></div>
+                      <div className="bg-accent h-full" style={{ width: `${projectData?.budgetUtilized ?? 0}%` }}></div>
                     </div>
-                    <p className="font-display text-xl text-charcoal dark:text-concrete">68%</p>
+                    <p className="font-display text-xl text-charcoal dark:text-concrete">{projectData?.budgetUtilized ?? 0}%</p>
                   </div>
                   <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500 flex justify-between items-center">
                     <div>
                       <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Current Phase</h3>
-                      <p className="font-display text-2xl text-charcoal dark:text-concrete">Design Development</p>
+                      <p className="font-display text-2xl text-charcoal dark:text-concrete">{projectData?.currentPhase ?? 'Initializing'}</p>
                     </div>
                     <a href="https://calendly.com/your-firm/consultation" target="_blank" rel="noopener noreferrer" className="bg-accent text-concrete dark:text-charcoal px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-accent/90 transition-colors">
                       Schedule
@@ -671,6 +902,25 @@ export default function ClientPortal() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                   <div className="lg:col-span-8 space-y-12">
+                    {/* Project Summary */}
+                    {projectData?.dailySummary && (
+                      <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20">
+                        <h2 className="font-display text-xl font-light tracking-tight mb-4 flex items-center gap-3">
+                          <Activity size={18} className="text-accent" />
+                          Project Status Update
+                        </h2>
+                        <p className="text-steel font-light leading-relaxed">
+                          {projectData.dailySummary}
+                        </p>
+                        {projectData.nextActivity && (
+                          <div className="mt-8 pt-8 border-t border-steel/10">
+                            <h4 className="text-[10px] font-mono uppercase tracking-[0.2em] text-accent mb-2">Next Milestone</h4>
+                            <p className="text-sm font-medium">{projectData.nextActivity}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     <h2 className="font-display text-2xl font-light tracking-tight flex items-center gap-4">
                       <Clock className="text-accent" size={20} strokeWidth={1.5} />
                       Recent Updates
@@ -687,47 +937,7 @@ export default function ClientPortal() {
                     ) : (
                       <div className="space-y-8">
                         {updates.map((update) => (
-                          <div 
-                            key={update.id}
-                            className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 hover:border-accent/30 transition-colors duration-500"
-                          >
-                            <div className="flex justify-between items-start mb-6">
-                              <h3 className="font-display text-2xl font-light text-charcoal dark:text-concrete transition-colors duration-500">{update.title}</h3>
-                              <span className="text-[10px] font-mono text-steel uppercase tracking-widest border border-steel/20 dark:border-concrete/20 px-3 py-1.5 transition-colors duration-500">
-                                {update.createdAt?.toDate().toLocaleDateString()}
-                              </span>
-                            </div>
-                            <p className="text-charcoal/70 dark:text-concrete/70 font-light leading-relaxed mb-6 transition-colors duration-500">{update.description}</p>
-                            
-                            {update.fileUrl && (
-                              <div className="mb-6 p-4 bg-charcoal/5 dark:bg-concrete/5 border border-steel/10 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <FileText size={18} className="text-accent" />
-                                  <span className="font-mono text-[10px] uppercase tracking-widest text-charcoal dark:text-concrete">
-                                    {update.fileName || 'Attached Document'}
-                                  </span>
-                                </div>
-                                <a 
-                                  href={update.fileUrl} 
-                                  download={update.fileName || 'document'}
-                                  className="flex items-center gap-2 px-4 py-2 bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal font-mono text-[10px] uppercase font-bold tracking-widest hover:bg-accent hover:text-white transition-colors"
-                                >
-                                  <Download size={14} /> Download
-                                </a>
-                              </div>
-                            )}
-
-                            {update.imageUrl && (
-                              <div className="mt-6 aspect-[16/9] bg-concrete dark:bg-charcoal relative overflow-hidden transition-colors duration-500">
-                                <img 
-                                  src={update.imageUrl} 
-                                  alt="Project Update" 
-                                  className="object-cover w-full h-full hover:scale-105 transition-transform duration-1000" 
-                                  referrerPolicy="no-referrer"
-                                />
-                              </div>
-                            )}
-                          </div>
+                          <ResolvedUpdate key={update.id} update={update} />
                         ))}
                       </div>
                     )}
@@ -1046,11 +1256,12 @@ export default function ClientPortal() {
                                 <td className="py-4 text-right">
                                   <div className="flex justify-end gap-2">
                                     <button 
-                                      onClick={() => setSelectedBlueprint(doc)}
-                                      className="p-2 text-steel hover:text-accent transition-colors"
+                                      onClick={() => handleOpenBlueprint(doc)}
+                                      className="p-2 text-steel hover:text-accent transition-colors disabled:opacity-50"
+                                      disabled={isResolvingBlueprint}
                                       title="Annotate"
                                     >
-                                      <MessageSquare size={16} />
+                                      {isResolvingBlueprint ? <Loader2 size={16} className="animate-spin" /> : <MessageSquare size={16} />}
                                     </button>
                                     <button 
                                       onClick={() => handleDownload(doc)}
@@ -1097,6 +1308,68 @@ export default function ClientPortal() {
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'reports' && (
+              <div className="space-y-12">
+                <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 transition-colors duration-500">
+                  <div className="flex justify-between items-center mb-12">
+                    <h2 className="font-display text-4xl font-light tracking-tight flex items-center gap-4">
+                      <FileCheck className="text-accent" size={32} strokeWidth={1} />
+                      Technical Reports
+                    </h2>
+                    <p className="text-steel font-mono text-[10px] uppercase tracking-[0.2em]">Professional Documentation</p>
+                  </div>
+
+                  {reportsLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 w-full" />)}
+                    </div>
+                  ) : technicalReports.length === 0 ? (
+                    <div className="py-24 text-center border border-dashed border-steel/20">
+                      <FileCheck size={48} className="text-steel/20 mx-auto mb-6" strokeWidth={1} />
+                      <p className="text-steel font-light">No technical reports have been published yet.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {technicalReports.map((report) => (
+                        <div 
+                          key={report.id}
+                          className="group bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-6 hover:border-accent transition-all duration-500 flex flex-col justify-between"
+                        >
+                          <div>
+                            <div className="flex justify-between items-start mb-6">
+                              <div className="p-3 bg-charcoal/5 dark:bg-concrete/5 group-hover:bg-accent/10 transition-colors">
+                                <FileText size={20} className="text-steel group-hover:text-accent" />
+                              </div>
+                              <span className="text-[10px] font-mono text-steel uppercase tracking-widest">
+                                {report.createdAt?.toDate().toLocaleDateString()}
+                              </span>
+                            </div>
+                            <h3 className="font-display text-xl font-light mb-2 group-hover:text-accent transition-colors">{report.title}</h3>
+                            <p className="text-[10px] text-steel font-mono uppercase tracking-tighter mb-6">
+                              Reference: #{report.id.slice(0, 8).toUpperCase()}
+                            </p>
+                          </div>
+                          
+                          <button 
+                            onClick={() => {
+                              const link = document.createElement('a');
+                              link.href = report.fileUrl;
+                              link.download = report.fileName;
+                              link.click();
+                            }}
+                            className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest py-3 border-t border-steel/10 group-hover:text-accent transition-colors mt-4"
+                          >
+                            <Download size={12} />
+                            Download Report
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1206,11 +1479,13 @@ export default function ClientPortal() {
                   <div className="flex justify-between items-center mb-6 pb-6 border-b border-steel/10">
                     <h2 className="font-display text-2xl font-light tracking-tight flex items-center gap-3 text-charcoal dark:text-concrete transition-colors duration-500">
                       <MessageSquare className="text-accent" size={20} strokeWidth={1.5} />
-                      Project Manager
+                      {projectData?.pmInfo?.officialName || 'Project Manager'}
                     </h2>
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                      <span className="text-[10px] font-mono text-steel uppercase tracking-widest">Online</span>
+                      <span className="text-[10px] font-mono text-steel uppercase tracking-widest">
+                        {projectData?.pmInfo?.title || 'Direct Liaison'}
+                      </span>
                     </div>
                   </div>
                   
@@ -1260,10 +1535,6 @@ export default function ClientPortal() {
                   </form>
                 </div>
               </div>
-            )}
-
-            {activeTab === 'admin' && user?.role === 'admin' && (
-              <AdminDashboard />
             )}
           </motion.div>
         </AnimatePresence>

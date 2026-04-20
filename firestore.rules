@@ -111,49 +111,84 @@ service cloud.firestore {
     //
     // ===============================================================
 
+    // Collection: projects
+    // Document ID: clientId
+    // Fields:
+    //   - clientId: string (required, immutable)
+    //   - daysRemaining: number
+    //   - dailySummary: string
+    //   - budgetUtilized: number
+    //   - currentPhase: string
+    //   - nextActivity: string
+    //   - pmId: string
+    //   - updatedAt: timestamp
+    //
+    // Collection: technicalReports
+    // Document ID: Auto-generated
+    // Fields:
+    //   - clientId: string (required, immutable)
+    //   - title: string (required)
+    //   - fileUrl: string (required)
+    //   - fileName: string (required)
+    //   - authorId: string (required, immutable)
+    //   - createdAt: timestamp (required, immutable)
+
     // ===============================================================
     // Helper Functions
     // ===============================================================
     
     function isAuthenticated() {
-      return request.auth != null && request.auth.token.email_verified == true;
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isAuthenticated();
     }
     
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
+
+    function isVerifiedOwner(userId) {
+      return isVerifiedUser() && request.auth.uid == userId;
+    }
     
     function isDocOwner() {
-      return isAuthenticated() && request.auth.uid == resource.data.userId;
+      return isVerifiedUser() && request.auth.uid == resource.data.userId;
     }
     
     function isAdmin() {
-      return isAuthenticated() && 
+      return isVerifiedUser() && 
         ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
-        (request.auth.token.email == "machariag605@gmail.com") ||
-        (request.auth.token.email == "danuthiaandassociates@gmail.com") ||
-        (request.auth.token.email == "urbanplanning2027@gmail.com"));
+        (request.auth.token.email in ["machariag605@gmail.com", "machariajoseph20222@gmail.com", "danuthiaandassociates@gmail.com", "urbanplanning2027@gmail.com"]));
     }
 
     function isStaff() {
-      return isAuthenticated() && (isAdmin() || 
+      return isVerifiedUser() && (isAdmin() || 
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['project_manager', 'architect', 'surveyor']));
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['project_manager', 'architect', 'surveyor', 'planner', 'financial_analyst', 'engineer']));
     }
 
     function isPM() {
-      return isAuthenticated() && (isAdmin() || 
+      return isVerifiedUser() && 
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'project_manager'));
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'project_manager');
     }
 
-    function isPMOrClient(clientId) {
-      return isPM() || isOwner(clientId);
+    function isAssignedStaff(clientId) {
+      return isStaff() && (
+        isAdmin() || 
+        (exists(/databases/$(database)/documents/users/$(clientId)) && 
+         (('assignedPM' in get(/databases/$(database)/documents/users/$(clientId)).data && get(/databases/$(database)/documents/users/$(clientId)).data.assignedPM == request.auth.uid) || 
+          ('assignedStaff' in get(/databases/$(database)/documents/users/$(clientId)).data && 
+           get(/databases/$(database)/documents/users/$(clientId)).data.assignedStaff is list && 
+           request.auth.uid in get(/databases/$(database)/documents/users/$(clientId)).data.assignedStaff)))
+      );
     }
 
     function hasOnlyAllowedFields(allowedFields) {
-      return request.resource.data.keys().hasOnly(allowedFields);
+      return request.resource.data.keys().removeAll(allowedFields).size() == 0;
     }
 
     function hasRequiredFields(requiredFields) {
@@ -164,9 +199,39 @@ service cloud.firestore {
       return dateStr is string && dateStr.matches("^\\d{4}-\\d{2}-\\d{2}$");
     }
 
+    function isValidId(id) {
+       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
     // ===============================================================
     // Domain Validators
     // ===============================================================
+
+    function isValidProject() {
+      let data = request.resource.data;
+      return hasOnlyAllowedFields(['clientId', 'daysRemaining', 'dailySummary', 'budgetUtilized', 'currentPhase', 'nextActivity', 'pmId', 'updatedAt']) &&
+             hasRequiredFields(['clientId', 'updatedAt']) &&
+             data.clientId is string &&
+             (!('daysRemaining' in data) || data.daysRemaining is number) &&
+             (!('dailySummary' in data) || data.dailySummary is string) &&
+             (!('budgetUtilized' in data) || data.budgetUtilized is number) &&
+             (!('currentPhase' in data) || data.currentPhase is string) &&
+             (!('nextActivity' in data) || data.nextActivity is string) &&
+             (!('pmId' in data) || data.pmId is string) &&
+             data.updatedAt is timestamp;
+    }
+
+    function isValidTechnicalReport() {
+      let data = request.resource.data;
+      return hasOnlyAllowedFields(['clientId', 'title', 'fileUrl', 'fileName', 'authorId', 'createdAt']) &&
+             hasRequiredFields(['clientId', 'title', 'fileUrl', 'fileName', 'authorId', 'createdAt']) &&
+             data.clientId is string &&
+             data.title is string && data.title.size() > 0 &&
+             data.fileUrl is string &&
+             data.fileName is string &&
+             data.authorId is string &&
+             data.createdAt is timestamp;
+    }
 
     function isValidBookingRequest() {
       let data = request.resource.data;
@@ -184,16 +249,25 @@ service cloud.firestore {
              data.status in ['pending', 'reviewed', 'contacted'];
     }
 
+
+
     function isValidUser() {
       let data = request.resource.data;
-      return hasOnlyAllowedFields(['email', 'role', 'officialName', 'title']) &&
+      return hasOnlyAllowedFields(['email', 'role', 'officialName', 'title', 'needsOnboarding', 'goals', 'phone', 'location', 'createdAt', 'updatedAt', 'assignedPM', 'assignedStaff']) &&
              hasRequiredFields(['email', 'role']) &&
              data.email is string && data.email.size() > 0 && data.email.size() <= 150 &&
-             data.role in ['pending', 'pending_staff', 'client', 'admin', 'project_manager', 'architect', 'surveyor'] &&
+             data.role in ['pending', 'pending_staff', 'client', 'admin', 'project_manager', 'architect', 'surveyor', 'planner', 'financial_analyst', 'engineer'] &&
              (!('officialName' in data) || (data.officialName is string && data.officialName.size() <= 100)) &&
-             (!('title' in data) || (data.title is string && data.title.size() <= 100));
+             (!('title' in data) || (data.title is string && data.title.size() <= 100)) &&
+             (!('phone' in data) || (data.phone is string && data.phone.size() <= 50)) &&
+             (!('location' in data) || (data.location is string && data.location.size() <= 200)) &&
+             (!('needsOnboarding' in data) || (data.needsOnboarding is bool)) &&
+             (!('goals' in data) || (data.goals is list)) &&
+             (!('assignedPM' in data) || (data.assignedPM is string)) &&
+             (!('assignedStaff' in data) || (data.assignedStaff is list)) &&
+             (!('createdAt' in data) || (data.createdAt is timestamp)) &&
+             (!('updatedAt' in data) || (data.updatedAt is timestamp));
     }
-
     function isValidNewsletter() {
       let data = request.resource.data;
       return hasOnlyAllowedFields(['email', 'createdAt']) &&
@@ -356,14 +430,14 @@ service cloud.firestore {
     // ===============================================================
 
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
+      allow read: if (isValidId(userId) && isOwner(userId)) || isStaff();
       // Only allow users to create their own profile with 'pending' or 'pending_staff' role, or admin can create any
-      allow create: if isAuthenticated() && isValidUser() && 
+      allow create: if isValidId(userId) && isAuthenticated() && isValidUser() && 
                     ((isOwner(userId) && (request.resource.data.role == 'pending' || request.resource.data.role == 'pending_staff')) || isAdmin());
       // Only admin can update roles
-      allow update: if isAuthenticated() && isValidUser() && 
+      allow update: if isValidId(userId) && isAuthenticated() && isValidUser() && 
                     ((isOwner(userId) && request.resource.data.role == resource.data.role && request.resource.data.email == resource.data.email) || isAdmin());
-      allow delete: if isAdmin();
+      allow delete: if isValidId(userId) && isAdmin();
     }
 
     match /newsletter/{docId} {
@@ -400,7 +474,7 @@ service cloud.firestore {
 
     match /projectUpdates/{updateId} {
       // Clients can read their own updates, admins can read all
-      allow read: if (isAuthenticated() && resource.data.clientId == request.auth.uid) || isAdmin();
+      allow read: if (isVerifiedUser() && resource.data.clientId == request.auth.uid) || isAdmin();
       
       // Only admins can create, update, or delete project updates
       allow create: if isAdmin() && isValidProjectUpdate() && request.resource.data.createdAt == request.time;
@@ -409,27 +483,27 @@ service cloud.firestore {
     }
 
     match /milestones/{milestoneId} {
-      allow read: if isAuthenticated() && (resource.data.clientId == request.auth.uid || isAdmin());
+      allow read: if isVerifiedUser() && (resource.data.clientId == request.auth.uid || isAdmin());
       allow create: if isAdmin() && isValidMilestone() && request.resource.data.createdAt == request.time;
       allow update: if isAdmin() && isValidMilestone() && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.clientId == resource.data.clientId;
       allow delete: if isAdmin();
     }
 
     match /annotations/{annotationId} {
-      allow read: if isAuthenticated() && (resource.data.authorId == request.auth.uid || isAdmin());
-      allow create: if isAuthenticated() && isValidAnnotation() && 
+      allow read: if isVerifiedUser() && (resource.data.authorId == request.auth.uid || isAdmin());
+      allow create: if isVerifiedUser() && isValidAnnotation() && 
                     request.resource.data.createdAt == request.time &&
                     request.resource.data.authorId == request.auth.uid;
       allow update: if false;
-      allow delete: if isAuthenticated() && (resource.data.authorId == request.auth.uid || isAdmin());
+      allow delete: if isVerifiedUser() && (resource.data.authorId == request.auth.uid || isAdmin());
     }
 
     match /messages/{messageId} {
       // Users can read messages where they are the sender or receiver, admins/PMs can read all
-      allow read: if isAuthenticated() && (resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid || isAdmin() || isPM());
+      allow read: if isVerifiedUser() && (isAdmin() || isPM() || resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid);
       
       // Users can create messages if they are the sender. Clients can only send to 'admin' (global) or a PM.
-      allow create: if isAuthenticated() && isValidMessage() && 
+      allow create: if isVerifiedUser() && isValidMessage() && 
                     request.resource.data.senderId == request.auth.uid &&
                     request.resource.data.createdAt == request.time &&
                     (request.resource.data.receiverId == 'admin' || isAdmin() || isPM() || 
@@ -437,7 +511,7 @@ service cloud.firestore {
                       get(/databases/$(database)/documents/users/$(request.resource.data.receiverId)).data.role == 'project_manager'));
                     
       // Users can only update the 'read' status of messages they received
-      allow update: if isAuthenticated() && isValidMessage() &&
+      allow update: if isVerifiedUser() && isValidMessage() &&
                     request.resource.data.senderId == resource.data.senderId &&
                     request.resource.data.receiverId == resource.data.receiverId &&
                     request.resource.data.text == resource.data.text &&
@@ -451,13 +525,13 @@ service cloud.firestore {
     }
 
     match /documents/{documentId} {
-      allow read: if isAuthenticated() && (resource.data.clientId == request.auth.uid || isAdmin());
-      allow create: if isAuthenticated() && isValidDocument() && 
+      allow read: if isVerifiedUser() && (resource.data.clientId == request.auth.uid || isAdmin());
+      allow create: if isVerifiedUser() && isValidDocument() && 
                     request.resource.data.createdAt == request.time &&
                     request.resource.data.uploadedBy == request.auth.uid &&
                     (request.resource.data.clientId == request.auth.uid || isAdmin());
       allow update: if false;
-      allow delete: if isAuthenticated() && (resource.data.uploadedBy == request.auth.uid || isAdmin());
+      allow delete: if isVerifiedUser() && (resource.data.uploadedBy == request.auth.uid || isAdmin());
     }
 
     match /clientLeads/{leadId} {
@@ -468,25 +542,25 @@ service cloud.firestore {
     }
 
     match /invoices/{invoiceId} {
-      allow read: if isAuthenticated() && (resource.data.clientId == request.auth.uid || isAdmin());
+      allow read: if isVerifiedUser() && (resource.data.clientId == request.auth.uid || isAdmin());
       allow create: if isAdmin() && isValidInvoice() && request.resource.data.createdAt == request.time;
       allow update: if isAdmin() && isValidInvoice() && request.resource.data.createdAt == resource.data.createdAt;
       allow delete: if isAdmin();
     }
 
     match /projectModels/{modelId} {
-      allow read: if isAuthenticated() && (resource.data.clientId == request.auth.uid || isAdmin());
+      allow read: if isVerifiedUser() && (resource.data.clientId == request.auth.uid || isAdmin());
       allow create: if isAdmin() && isValidProjectModel() && request.resource.data.createdAt == request.time;
       allow update: if isAdmin() && isValidProjectModel() && request.resource.data.createdAt == resource.data.createdAt;
       allow delete: if isAdmin();
     }
 
     match /notifications/{notificationId} {
-      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow read: if isVerifiedUser() && (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if isAdmin() && isValidNotification() && request.resource.data.createdAt == request.time;
-      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin()) &&
+      allow update: if isVerifiedUser() && (resource.data.userId == request.auth.uid || isAdmin()) &&
                     isValidNotification() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
-      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isVerifiedUser() && (resource.data.userId == request.auth.uid || isAdmin());
     }
 
     match /testimonials/{testimonialId} {
@@ -494,11 +568,11 @@ service cloud.firestore {
       allow read: if (resource.data.approved == true) || isAdmin();
       
       // Authenticated users can create their own testimonials (initially unapproved)
-      allow create: if isAuthenticated() && isValidTestimonial() && 
+      allow create: if isVerifiedUser() && isValidTestimonial() && 
                     request.resource.data.clientId == request.auth.uid &&
                     request.resource.data.approved == false &&
                     request.resource.data.createdAt == request.time;
-                    
+      
       // Only admins can update (approve) or delete testimonials
       allow update: if isAdmin() && isValidTestimonial() && 
                     request.resource.data.createdAt == resource.data.createdAt &&
@@ -507,31 +581,51 @@ service cloud.firestore {
     }
 
     match /internalLogs/{logId} {
-      // PMs and Admins can read all logs. Staff can read all logs for projects they are assigned to (simplified to isStaff for now)
-      allow read: if isStaff();
+      // PMs and Admins can read all logs. Staff can read all logs for projects they are assigned to
+      allow read: if isAdmin() || (isStaff() && isAssignedStaff(resource.data.projectId));
       
       // Any authorized staff can create a log
       allow create: if isStaff() && isValidInternalLog() && 
+                    isAssignedStaff(request.resource.data.projectId) &&
                     request.resource.data.status == 'pending_review' &&
                     request.resource.data.createdAt == request.time;
                     
       // PMs and Admins can update status to 'reviewed'
-      allow update: if isPM() && isValidInternalLog() &&
+      allow update: if isStaff() && isValidInternalLog() &&
+                    isAssignedStaff(resource.data.projectId) &&
+                    (isAdmin() || (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'project_manager' && request.resource.data.status == 'reviewed')) &&
                     request.resource.data.projectId == resource.data.projectId &&
                     request.resource.data.staffName == resource.data.staffName &&
                     request.resource.data.role == resource.data.role &&
                     request.resource.data.message == resource.data.message &&
-                    request.resource.data.createdAt == resource.data.createdAt &&
-                    (request.resource.data.status == 'reviewed' || isAdmin());
+                    request.resource.data.createdAt == resource.data.createdAt;
                     
       allow delete: if isAdmin();
     }
 
     match /internalMessages/{messageId} {
-      allow read: if isStaff();
-      allow create: if isStaff() && isValidInternalChat() && request.resource.data.createdAt == request.time;
+      allow read: if isAdmin() || (isStaff() && isAssignedStaff(resource.data.projectId) && (resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid));
+      allow create: if isStaff() && isValidInternalChat() && 
+                    isAssignedStaff(request.resource.data.projectId) &&
+                    request.resource.data.createdAt == request.time;
       allow update: if isStaff() && (resource.data.receiverId == request.auth.uid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
       allow delete: if isAdmin();
+    }
+
+    match /projects/{clientId} {
+      allow read: if isAdmin() || isOwner(clientId) || isAssignedStaff(clientId);
+      allow create, update: if isAdmin() || (isStaff() && isAssignedStaff(clientId) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'project_manager');
+      allow delete: if isAdmin();
+    }
+
+    match /technicalReports/{reportId} {
+      allow read: if isAdmin() || (isVerifiedUser() && resource.data.clientId == request.auth.uid) || isAssignedStaff(resource.data.clientId);
+      allow create: if isStaff() && isValidTechnicalReport() && 
+                    isAssignedStaff(request.resource.data.clientId) &&
+                    request.resource.data.createdAt == request.time && 
+                    request.resource.data.authorId == request.auth.uid;
+      allow update: if false;
+      allow delete: if isAdmin() || (isStaff() && resource.data.authorId == request.auth.uid);
     }
   }
 }

@@ -7,6 +7,8 @@ interface ClientUser {
   id: string;
   email: string;
   role: string;
+  officialName?: string;
+  assignedPM?: string;
 }
 
 export default function AdminDashboard() {
@@ -26,24 +28,24 @@ export default function AdminDashboard() {
     return () => unsubscribe();
   }, []);
 
-  const handleApprove = async (userId: string) => {
+  const handleUpdateRole = async (userId: string, newRole: string) => {
     try {
-      await updateDoc(doc(db, 'users', userId), { role: 'client' });
+      await updateDoc(doc(db, 'users', userId), { role: newRole });
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, 'users');
     }
   };
 
-  const handleRevoke = async (userId: string) => {
+  const handleAssignPM = async (userId: string, pmId: string) => {
     try {
-      await updateDoc(doc(db, 'users', userId), { role: 'pending' });
+      await updateDoc(doc(db, 'users', userId), { assignedPM: pmId });
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, 'users');
     }
   };
 
   const handleDelete = async (userId: string) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
+    if (window.confirm('Are you sure you want to delete this user? This action is irreversible.')) {
       try {
         await deleteDoc(doc(db, 'users', userId));
       } catch (error) {
@@ -53,90 +55,155 @@ export default function AdminDashboard() {
   };
 
   if (loading) {
-    return <div className="p-8 text-steel font-mono text-xs uppercase tracking-widest">Loading users...</div>;
+    return <div className="p-8 text-steel font-mono text-xs uppercase tracking-widest flex items-center gap-3">
+      <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+      Syncing Intelligence...
+    </div>;
   }
 
-  const pendingUsers = users.filter(u => u.role === 'pending');
-  const approvedClients = users.filter(u => u.role === 'client');
+  const pendingUsers = users.filter(u => u.role === 'pending' || !u.role);
+  const clients = users.filter(u => u.role === 'client');
+  const staff = users.filter(u => u.role && ['project_manager', 'architect', 'surveyor', 'planner', 'financial_analyst', 'engineer', 'staff'].includes(u.role));
+  const projectManagers = users.filter(u => u.role === 'project_manager');
   const admins = users.filter(u => u.role === 'admin');
 
   return (
-    <div className="space-y-12">
-      <div>
-        <h2 className="font-display text-2xl font-light mb-6 flex items-center gap-3">
-          <Clock className="text-accent" size={24} />
-          Pending Approvals ({pendingUsers.length})
-        </h2>
+    <div className="space-y-16">
+      {/* Pending Approvals */}
+      <section>
+        <div className="flex justify-between items-center mb-8 border-b border-steel/10 pb-4">
+          <h2 className="font-display text-4xl font-light tracking-tight flex items-center gap-4">
+            <Clock className="text-accent" size={32} strokeWidth={1} />
+            Access Approvals
+          </h2>
+          <span className="text-[10px] font-mono text-accent bg-accent/10 px-4 py-1 font-bold uppercase tracking-widest">
+            {pendingUsers.length} Requested
+          </span>
+        </div>
+        
         {pendingUsers.length === 0 ? (
-          <p className="text-steel font-mono text-xs uppercase tracking-widest">No pending users.</p>
+          <div className="p-12 border border-dashed border-steel/20 text-center">
+            <p className="text-steel font-mono text-[10px] uppercase tracking-widest font-bold">No pending intelligence requests.</p>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             {pendingUsers.map(user => (
-              <div key={user.id} className="border border-steel/20 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-charcoal/5 dark:bg-concrete/5">
+              <div key={user.id} className="border border-steel/20 p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-charcoal/5 dark:bg-concrete/5 transition-all hover:border-accent/40 group">
                 <div>
-                  <p className="font-bold text-sm">{user.email}</p>
-                  <p className="text-[10px] font-mono text-steel uppercase tracking-widest mt-1">ID: {user.id}</p>
+                  <h3 className="font-bold text-sm mb-1">{user.email}</h3>
+                  <p className="text-[10px] font-mono text-steel uppercase tracking-widest">{user.officialName || "Awaiting Identification"}</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button 
-                    onClick={() => handleApprove(user.id)}
-                    className="p-2 bg-accent text-concrete dark:text-charcoal hover:bg-accent/80 transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-widest"
+                    onClick={() => handleUpdateRole(user.id, 'client')}
+                    className="px-4 py-2 bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal hover:bg-accent dark:hover:bg-accent hover:text-white transition-all text-[10px] font-bold uppercase tracking-widest shadow-lg"
                   >
-                    <Check size={14} /> Approve
+                    Client
+                  </button>
+                  <button 
+                    onClick={() => handleUpdateRole(user.id, 'project_manager')}
+                    className="px-4 py-2 border border-accent/30 text-accent hover:bg-accent hover:text-white transition-all text-[10px] font-bold uppercase tracking-widest"
+                  >
+                    PM
                   </button>
                   <button 
                     onClick={() => handleDelete(user.id)}
-                    className="p-2 border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-concrete transition-colors"
-                    title="Delete User"
+                    className="px-4 py-2 border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-all text-[10px] font-bold uppercase tracking-widest"
                   >
-                    <X size={14} />
+                    Deny
                   </button>
                 </div>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </section>
 
-      <div>
-        <h2 className="font-display text-2xl font-light mb-6 flex items-center gap-3">
-          <User className="text-accent" size={24} />
-          Approved Clients ({approvedClients.length})
-        </h2>
-        {approvedClients.length === 0 ? (
-          <p className="text-steel font-mono text-xs uppercase tracking-widest">No approved clients.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {approvedClients.map(user => (
-              <div key={user.id} className="border border-steel/20 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <p className="font-bold text-sm">{user.email}</p>
-                  <p className="text-[10px] font-mono text-steel uppercase tracking-widest mt-1">ID: {user.id}</p>
-                </div>
-                <button 
-                  onClick={() => handleRevoke(user.id)}
-                  className="px-4 py-2 border border-steel/30 text-steel hover:border-accent hover:text-accent transition-colors text-xs font-bold uppercase tracking-widest"
-                >
-                  Revoke Access
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div>
-        <h2 className="font-display text-2xl font-light mb-6 flex items-center gap-3">
-          <Shield className="text-accent" size={24} />
-          Administrators ({admins.length})
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {admins.map(user => (
-            <div key={user.id} className="border border-accent/30 p-6 bg-accent/5">
-              <p className="font-bold text-sm">{user.email}</p>
-              <p className="text-[10px] font-mono text-accent uppercase tracking-widest mt-1">Administrator</p>
+      {/* Role Management Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        <div className="lg:col-span-8 space-y-12">
+          {/* Active Clients */}
+          <section>
+            <h3 className="font-display text-2xl font-light mb-6 flex items-center gap-3">
+              <User className="text-accent" size={24} strokeWidth={1.5} />
+              Active Project Stakeholders
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-steel/10 text-[10px] font-mono text-steel uppercase tracking-widest font-bold">
+                    <th className="pb-4">Email / ID</th>
+                    <th className="pb-4">Assigned PM</th>
+                    <th className="pb-4 text-right">Role Management</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-steel/5">
+                  {clients.map(user => (
+                    <tr key={user.id} className="group hover:bg-concrete/30 dark:hover:bg-charcoal/30">
+                      <td className="py-4">
+                        <p className="text-xs font-bold">{user.email}</p>
+                        <p className="text-[9px] font-mono text-steel uppercase tracking-tighter opacity-70 italic">{user.id}</p>
+                      </td>
+                      <td className="py-4">
+                        <select 
+                          className="bg-transparent border border-steel/20 p-2 text-[10px] font-mono uppercase tracking-widest focus:border-accent outline-none w-full"
+                          value={user.assignedPM || ''}
+                          onChange={(e) => handleAssignPM(user.id, e.target.value)}
+                        >
+                          <option value="">Unassigned</option>
+                          {projectManagers.map(pm => (
+                            <option key={pm.id} value={pm.id}>{pm.officialName || pm.email}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="py-4 text-right">
+                        <select 
+                          className="bg-transparent border border-steel/20 p-2 text-[10px] font-mono uppercase tracking-widest focus:border-accent outline-none"
+                          value={user.role}
+                          onChange={(e) => handleUpdateRole(user.id, e.target.value)}
+                        >
+                          <option value="client">Client</option>
+                          <option value="pending">Revoke Access</option>
+                          <option value="project_manager">Project Manager</option>
+                          <option value="architect">Architect</option>
+                          <option value="surveyor">Surveyor</option>
+                          <option value="planner">Planner</option>
+                          <option value="engineer">Engineer</option>
+                          <option value="financial_analyst">Financial Analyst</option>
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ))}
+          </section>
+        </div>
+
+        <div className="lg:col-span-4 space-y-12">
+          {/* Internal Staff */}
+          <section className="bg-charcoal dark:bg-charcoal text-concrete p-8 transition-colors duration-500">
+            <h3 className="font-display text-xl font-light mb-6 flex items-center gap-3">
+              <Shield className="text-accent" size={20} strokeWidth={1.5} />
+              Internal Intelligence Network
+            </h3>
+            <div className="space-y-6">
+              {staff.map(user => (
+                <div key={user.id} className="pb-6 border-b border-steel/10 last:border-0">
+                  <p className="text-xs font-bold mb-1">{user.email}</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-mono text-accent uppercase tracking-widest font-bold italic">{user.role.replace('_', ' ')}</span>
+                    <button 
+                      onClick={() => handleUpdateRole(user.id, 'client')}
+                      className="text-[9px] text-steel hover:text-accent font-bold uppercase tracking-widest transition-colors underline"
+                    >
+                      Demote to Client
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
       </div>
     </div>

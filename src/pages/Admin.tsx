@@ -32,6 +32,8 @@ interface AppUser {
   role: string;
   officialName?: string;
   title?: string;
+  assignedPM?: string;
+  assignedStaff?: string[];
 }
 
 interface ProjectUpdate {
@@ -80,7 +82,9 @@ export default function Admin() {
   const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
   const [updates, setUpdates] = useState<ProjectUpdate[]>([]);
   const [users, setUsers] = useState<AppUser[]>([]);
-  const clients = users.filter(u => u.role === 'client');
+  const clients = React.useMemo(() => users.filter(u => u.role === 'client'), [users]);
+  const projectManagers = React.useMemo(() => users.filter(u => u.role === 'project_manager'), [users]);
+  const allStaff = React.useMemo(() => users.filter(u => ['project_manager', 'architect', 'surveyor'].includes(u.role)), [users]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [documents, setDocuments] = useState<VaultDocument[]>([]);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
@@ -115,14 +119,18 @@ export default function Admin() {
   const [uploadError, setUploadError] = useState('');
 
   useEffect(() => {
-    if (selectedChatClient) {
-      messages.forEach(msg => {
-        if (msg.senderId === selectedChatClient && !msg.read) {
+    if (selectedChatClient && messages.length > 0) {
+      const unreadFromClient = messages.filter(
+        msg => msg.senderId === selectedChatClient && !msg.read
+      );
+      
+      if (unreadFromClient.length > 0) {
+        unreadFromClient.forEach(msg => {
           updateDoc(doc(db, 'messages', msg.id), { read: true }).catch(console.error);
-        }
-      });
+        });
+      }
     }
-  }, [messages, selectedChatClient]);
+  }, [selectedChatClient]); // Only run when active chat changes to avoid loop with 'messages' dependency
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -364,6 +372,44 @@ export default function Admin() {
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, 'users');
       setError('Failed to update user role. You may not have admin permissions.');
+    }
+  };
+
+  const assignManagerToClient = async (clientId: string, pmId: string) => {
+    try {
+      setLoading(true);
+      await updateDoc(doc(db, 'users', clientId), { 
+        assignedPM: pmId || null 
+      });
+      setUsers(users.map(u => u.id === clientId ? { ...u, assignedPM: pmId || undefined } : u));
+      
+      // Also update the project document if it exists to link PM for dashboard access
+      const projectRef = doc(db, 'projects', clientId);
+      await updateDoc(projectRef, { 
+        pmId: pmId || null 
+      }).catch(() => {/* Project might not exist yet, ignore */});
+      
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, 'users');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleStaffAssignment = async (clientId: string, staffId: string, currentStaff: string[] = []) => {
+    try {
+      const isAssigned = currentStaff.includes(staffId);
+      const newStaffList = isAssigned 
+        ? currentStaff.filter(id => id !== staffId)
+        : [...currentStaff, staffId];
+
+      await updateDoc(doc(db, 'users', clientId), { 
+        assignedStaff: newStaffList 
+      });
+      
+      setUsers(users.map(u => u.id === clientId ? { ...u, assignedStaff: newStaffList } : u));
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, 'users');
     }
   };
 
@@ -1761,21 +1807,60 @@ export default function Admin() {
                             </span>
                           </td>
                           <td className="p-6 text-right">
-                            <div className="flex flex-col items-end gap-2">
-                              <select
-                                value={u.role}
-                                onChange={(e) => updateUserRole(u.id, e.target.value)}
-                                className="bg-transparent border border-steel/20 dark:border-steel/40 text-charcoal dark:text-concrete text-[10px] font-mono uppercase tracking-widest rounded px-3 py-2 focus:outline-none focus:border-accent dark:focus:border-accent transition-colors"
-                                disabled={u.id === user?.uid}
-                              >
-                                <option value="pending" className="bg-concrete dark:bg-charcoal">Pending Client</option>
-                                <option value="pending_staff" className="bg-concrete dark:bg-charcoal">Pending Staff</option>
-                                <option value="client" className="bg-concrete dark:bg-charcoal">Active Client</option>
-                                <option value="project_manager" className="bg-concrete dark:bg-charcoal">Project Manager</option>
-                                <option value="architect" className="bg-concrete dark:bg-charcoal">Architect / Engineer</option>
-                                <option value="surveyor" className="bg-concrete dark:bg-charcoal">Surveyor / Planner</option>
-                                <option value="admin" className="bg-concrete dark:bg-charcoal">System Admin</option>
-                              </select>
+                            <div className="flex flex-col items-end gap-4">
+                              <div className="flex items-center gap-4">
+                                {u.role === 'client' && (
+                                  <div className="flex flex-col items-end gap-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] font-mono text-steel uppercase tracking-widest">Lead PM:</span>
+                                      <select
+                                        value={u.assignedPM || ''}
+                                        onChange={(e) => assignManagerToClient(u.id, e.target.value)}
+                                        className="bg-transparent border border-steel/20 dark:border-steel/40 text-charcoal dark:text-concrete text-[10px] font-mono uppercase tracking-widest rounded px-3 py-2 focus:outline-none focus:border-accent dark:focus:border-accent transition-colors"
+                                      >
+                                        <option value="" className="bg-concrete dark:bg-charcoal">Unassigned</option>
+                                        {projectManagers.map(pm => (
+                                          <option key={pm.id} value={pm.id} className="bg-concrete dark:bg-charcoal">
+                                            {pm.officialName || pm.email.split('@')[0]}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    
+                                    <div className="flex flex-wrap justify-end gap-1 mt-1 max-w-[200px]">
+                                      <p className="text-[8px] font-mono text-steel uppercase tracking-widest w-full text-right mb-1">Additional Staff:</p>
+                                      {allStaff.map(staff => (
+                                        <button
+                                          key={staff.id}
+                                          onClick={() => toggleStaffAssignment(u.id, staff.id, u.assignedStaff || [])}
+                                          className={`px-2 py-1 rounded text-[8px] font-mono uppercase transition-all ${
+                                            (u.assignedStaff || []).includes(staff.id) 
+                                              ? 'bg-accent text-white border border-accent' 
+                                              : 'bg-transparent border border-steel/20 text-steel hover:border-accent'
+                                          }`}
+                                          title={staff.officialName || staff.email}
+                                        >
+                                          {staff.role.charAt(0).toUpperCase()}: {staff.officialName?.split(' ')[0] || staff.email.split('@')[0].substring(0, 5)}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                <select
+                                  value={u.role}
+                                  onChange={(e) => updateUserRole(u.id, e.target.value)}
+                                  className="bg-transparent border border-steel/20 dark:border-steel/40 text-charcoal dark:text-concrete text-[10px] font-mono uppercase tracking-widest rounded px-3 py-2 focus:outline-none focus:border-accent dark:focus:border-accent transition-colors"
+                                  disabled={u.id === user?.uid}
+                                >
+                                  <option value="pending" className="bg-concrete dark:bg-charcoal">Pending Client</option>
+                                  <option value="pending_staff" className="bg-concrete dark:bg-charcoal">Pending Staff</option>
+                                  <option value="client" className="bg-concrete dark:bg-charcoal">Active Client</option>
+                                  <option value="project_manager" className="bg-concrete dark:bg-charcoal">Project Manager</option>
+                                  <option value="architect" className="bg-concrete dark:bg-charcoal">Architect / Engineer</option>
+                                  <option value="surveyor" className="bg-concrete dark:bg-charcoal">Surveyor / Planner</option>
+                                  <option value="admin" className="bg-concrete dark:bg-charcoal">System Admin</option>
+                                </select>
+                              </div>
                               <p className="text-[9px] text-steel/60 font-mono tracking-tighter">UID: {u.id.substring(0, 12)}...</p>
                             </div>
                           </td>
