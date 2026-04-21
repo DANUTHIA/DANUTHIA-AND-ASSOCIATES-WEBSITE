@@ -45,7 +45,7 @@
         },
         "role": {
           "type": "string",
-          "enum": ["client", "admin", "project_manager", "architect", "surveyor", "pending_staff", "pending"]
+          "enum": ["client", "admin", "project_manager", "architect", "surveyor", "engineer", "planner", "financial_analyst", "pending_staff", "pending"]
         },
         "officialName": {
           "type": "string",
@@ -54,6 +54,10 @@
         "title": {
           "type": "string",
           "description": "The professional title of the user (e.g., Senior Planner)."
+        },
+        "photoUrl": {
+          "type": "string",
+          "description": "The base64 encoded profile picture of the user."
         }
       },
       "required": ["email", "role"]
@@ -330,9 +334,60 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["clientId", "clientName", "rating", "comment", "approved", "projectType", "createdAt"]
+    },
+    "Project": {
+      "title": "Project Configuration",
+      "description": "Core project parameters including technical and site specifications, and financial oversight.",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string" },
+        "pmId": { "type": "string" },
+        "assignedStaff": { "type": "array", "items": { "type": "string" } },
+        "siteParams": {
+          "type": "object",
+          "properties": {
+            "deadLoadMax": { "type": "string" },
+            "liveLoadEst": { "type": "string" },
+            "windShear": { "type": "string" },
+            "groundWater": { "type": "string" },
+            "soilBearing": { "type": "string" },
+            "seismicZone": { "type": "string" },
+            "siteBoundary": { "type": "string" },
+            "topography": { "type": "string" }
+          }
+        },
+        "financialParams": {
+          "type": "object",
+          "properties": {
+            "totalProjectBudget": { "type": "number" },
+            "contingencyFund": { "type": "number" },
+            "costEstimationSummary": { "type": "string" }
+          }
+        },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["clientId"]
+    },
+    "BudgetLedger": {
+      "title": "Budget Ledger Entry",
+      "description": "An entry in the project's financial ledger tracking forecast vs actual costs.",
+      "type": "object",
+      "properties": {
+        "projectId": { "type": "string" },
+        "costCenter": { "type": "string", "description": "The specific activity or category (e.g., Grading, Concrete, Permits)." },
+        "forecast": { "type": "number" },
+        "actual": { "type": "number" }
+      },
+      "required": ["projectId", "costCenter", "forecast", "actual"]
     }
   },
   "firestore": {
+    "/budgetLedgers/{ledgerId}": {
+      "schema": {
+        "$ref": "#/entities/BudgetLedger"
+      },
+      "description": "Stores budget ledger entries for projects."
+    },
     "/clientLeads/{leadId}": {
       "schema": {
         "$ref": "#/entities/ClientLead"
@@ -410,6 +465,12 @@
         "$ref": "#/entities/InternalLog"
       },
       "description": "Stores internal staff technical logs for PM review."
+    },
+    "/projects/{clientId}": {
+      "schema": {
+        "$ref": "#/entities/Project"
+      },
+      "description": "Stores project-specific configurations and site parameters."
     }
   }
 }

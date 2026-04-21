@@ -2,14 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db, handleFirestoreError, OperationType, uploadLargeFile, MAX_FILE_SIZE, CHUNK_SIZE } from '../firebase';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
-import { doc, getDoc, collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp, getDocs, updateDoc, limit, or, and } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp, getDocs, updateDoc, limit, or, and, setDoc } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   LineChart, Line, AreaChart, Area
 } from 'recharts';
-import { LogOut, Hammer, Eye, Map, MapPin, Layers, Globe, PieChart, ClipboardList, PenTool, Trees, HardHat, FileLineChart, ChevronDown, Building2, MessageSquare, Check, Send, Upload, Download, Edit, Users, Activity, Target, TrendingUp, X, FileCheck, FileText, Shield, CreditCard, Box } from 'lucide-react';
+import { LogOut, Hammer, Eye, Map, MapPin, Layers, Globe, PieChart, ClipboardList, PenTool, Trees, HardHat, FileLineChart, ChevronDown, Building2, MessageSquare, Check, Clock, Send, Upload, Download, Edit, Users, Activity, Target, TrendingUp, X, FileCheck, FileText, Shield, CreditCard, Box, ArrowUp, Wind, RefreshCw, Loader2, ChevronRight } from 'lucide-react';
 import Magnetic from '../components/Magnetic';
+import FinancialManager from '../components/FinancialManager';
 
 interface StaffUser {
   id: string;
@@ -71,11 +72,12 @@ const ProjectAnalytics = ({ logs }: { logs: InternalLog[] }) => {
     return Object.entries(counts).map(([date, count]) => ({ date, count })).slice(-7);
   }, [logs]);
 
+  // Initializing with zero progress and budget logic for new projects
   const mockPerformanceData = [
-    { name: 'Phase 1', progress: 100, budget: 95 },
-    { name: 'Phase 2', progress: 85, budget: 80 },
-    { name: 'Phase 3', progress: 40, budget: 60 },
-    { name: 'Phase 4', progress: 10, budget: 20 },
+    { name: 'Phase 1', progress: 0, budget: 0 },
+    { name: 'Phase 2', progress: 0, budget: 0 },
+    { name: 'Phase 3', progress: 0, budget: 0 },
+    { name: 'Phase 4', progress: 0, budget: 0 },
   ];
 
   return (
@@ -555,6 +557,8 @@ const ProjectManagementCenter = ({
   // Form states
   const [daysRemaining, setDaysRemaining] = useState('');
   const [budgetUtilized, setBudgetUtilized] = useState('');
+  const [totalBudget, setTotalBudget] = useState('');
+  const [costEstimation, setCostEstimation] = useState('');
   const [currentPhase, setCurrentPhase] = useState('');
   const [dailySummary, setDailySummary] = useState('');
   const [nextActivity, setNextActivity] = useState('');
@@ -578,6 +582,8 @@ const ProjectManagementCenter = ({
           setProjectData(data);
           setDaysRemaining(data.daysRemaining?.toString() || '');
           setBudgetUtilized(data.budgetUtilized?.toString() || '');
+          setTotalBudget(data.totalBudget?.toString() || '');
+          setCostEstimation(data.costEstimation || '');
           setCurrentPhase(data.currentPhase || '');
           setDailySummary(data.dailySummary || '');
           setNextActivity(data.nextActivity || '');
@@ -588,6 +594,8 @@ const ProjectManagementCenter = ({
           setProjectData(null);
           setDaysRemaining('');
           setBudgetUtilized('');
+          setTotalBudget('');
+          setCostEstimation('');
           setCurrentPhase('');
           setDailySummary('');
           setNextActivity('');
@@ -612,6 +620,8 @@ const ProjectManagementCenter = ({
       await updateDoc(docRef, {
         daysRemaining: parseInt(daysRemaining) || 0,
         budgetUtilized: parseInt(budgetUtilized) || 0,
+        totalBudget: parseInt(totalBudget) || 0,
+        costEstimation,
         currentPhase,
         dailySummary,
         nextActivity,
@@ -628,6 +638,8 @@ const ProjectManagementCenter = ({
             clientId: selectedClient,
             daysRemaining: parseInt(daysRemaining) || 0,
             budgetUtilized: parseInt(budgetUtilized) || 0,
+            totalBudget: parseInt(totalBudget) || 0,
+            costEstimation,
             currentPhase,
             dailySummary,
             nextActivity,
@@ -658,46 +670,52 @@ const ProjectManagementCenter = ({
     setUploading(type);
     
     try {
-      // In a real app, upload to Storage. For now, we simulate with a dummy URL.
-      const dummyUrl = URL.createObjectURL(file);
-      
-      if (type === 'report') {
-        await addDoc(collection(db, 'technicalReports'), {
-          clientId: selectedClient,
-          title: file.name.split('.')[0],
-          fileName: file.name,
-          fileUrl: dummyUrl,
-          authorId: auth.currentUser?.uid,
-          createdAt: serverTimestamp()
-        });
-      } else if (type === 'invoice') {
-        await addDoc(collection(db, 'invoices'), {
-          clientId: selectedClient,
-          description: `Project Invoice: ${file.name}`,
-          amount: 0, // Admin will set this
-          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          status: 'unpaid',
-          createdAt: serverTimestamp()
-        });
-      } else {
-        // Vault Document for receipts/images
-        await addDoc(collection(db, 'documents'), {
-          clientId: selectedClient,
-          title: file.name,
-          fileName: file.name,
-          fileUrl: dummyUrl,
-          fileType: file.type,
-          category: type === 'image' ? 'image' : 'document',
-          createdAt: serverTimestamp()
-        });
-      }
-      
-      alert(`${type.charAt(0).toUpperCase() + type.slice(1)} uploaded successfully`);
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64 = event.target?.result as string;
+        
+        if (type === 'report') {
+          await uploadLargeFile('technicalReports', {
+            clientId: selectedClient,
+            title: file.name.split('.')[0],
+            fileName: file.name,
+            authorId: auth.currentUser?.uid,
+            collectionName: 'technicalReports',
+            type: 'report'
+          }, base64);
+        } else if (type === 'invoice') {
+          await uploadLargeFile('invoices', {
+            clientId: selectedClient,
+            description: `Project Invoice: ${file.name}`,
+            amount: 0,
+            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            status: 'unpaid',
+            fileName: file.name,
+            collectionName: 'invoices',
+            type: 'invoice'
+          }, base64);
+        } else {
+          await uploadLargeFile('documents', {
+            clientId: selectedClient,
+            title: file.name,
+            fileName: file.name,
+            fileType: file.type,
+            category: type === 'image' ? 'image' : 'document',
+            collectionName: 'documents',
+          }, base64);
+        }
+        
+        alert(`${type.charAt(0).toUpperCase() + type.slice(1)} uploaded successfully`);
+        setUploading(null);
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
     } catch (error) {
       console.error("Upload error:", error);
       alert('Upload failed');
+      setUploading(null);
+      e.target.value = '';
     }
-    setUploading(null);
   };
 
   if (!selectedClient) {
@@ -757,6 +775,19 @@ const ProjectManagementCenter = ({
               />
             </div>
             <div className="space-y-2">
+              <label className="text-[10px] font-mono uppercase tracking-widest text-steel font-bold">Projected Total Budget ($)</label>
+              <input 
+                type="number" 
+                value={totalBudget}
+                onChange={(e) => setTotalBudget(e.target.value)}
+                className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/20 p-4 font-mono text-sm outline-none focus:border-accent"
+                placeholder="e.g. 2,500,000"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8">
+            <div className="space-y-2">
               <label className="text-[10px] font-mono uppercase tracking-widest text-steel font-bold">Budget Utilized (%)</label>
               <input 
                 type="number" 
@@ -768,6 +799,17 @@ const ProjectManagementCenter = ({
                 placeholder="e.g. 65"
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono uppercase tracking-widest text-steel font-bold">Cost Estimation & Budget Management Overview</label>
+            <textarea 
+              rows={4}
+              value={costEstimation}
+              onChange={(e) => setCostEstimation(e.target.value)}
+              className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/20 p-6 font-mono text-xs leading-relaxed outline-none focus:border-accent resize-none"
+              placeholder="Enter detailed cost estimation breakdown, financial adjustments, and management strategies..."
+            />
           </div>
 
           <div className="space-y-2">
@@ -945,7 +987,11 @@ const PMUpdateSubmitter = ({
   publishClientUpdate,
   isSubmitting,
   clients,
-  internalLogs
+  internalLogs,
+  siteParams,
+  setSiteParams,
+  updateSiteParams,
+  isSavingSiteParams
 }: {
   selectedClient: string;
   setSelectedClient: (val: string) => void;
@@ -958,6 +1004,10 @@ const PMUpdateSubmitter = ({
   isSubmitting: boolean;
   clients: ClientUser[];
   internalLogs: InternalLog[];
+  siteParams: any;
+  setSiteParams: (val: any) => void;
+  updateSiteParams: (params: any) => Promise<void>;
+  isSavingSiteParams: boolean;
 }) => {
   const copyToDraft = (log: InternalLog) => {
     const author = log.staffTitle ? `${log.staffName} (${log.staffTitle})` : `${log.staffName} (${log.role.toUpperCase()})`;
@@ -1094,11 +1144,43 @@ const PMUpdateSubmitter = ({
           </div>
         </div>
       </div>
+
+      {/* Technical Parameter Sync (PM Control) */}
+      <div className="mt-12 pt-8 border-t border-accent/20">
+        <div className="flex items-center gap-3 mb-8">
+          <Activity className="text-accent" size={20} />
+          <h3 className="font-mono text-[10px] uppercase tracking-widest text-charcoal dark:text-concrete font-bold">Strategic Technical Parameter Sync</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            { label: 'Structural Load Max', key: 'deadLoadMax' },
+            { label: 'Water Level Telemetry', key: 'groundWater' },
+            { label: 'Soil Integrity Rating', key: 'soilBearing' },
+            { label: 'Site Safety Boundary', key: 'siteBoundary' }
+          ].map(item => (
+            <div key={item.key} className="p-5 border border-steel/10 bg-white/40 dark:bg-charcoal/40">
+              <label className="block font-mono text-[8px] text-steel uppercase tracking-widest mb-2">{item.label}</label>
+              <input 
+                type="text"
+                value={siteParams[item.key] || ''}
+                onChange={(e) => setSiteParams({ ...siteParams, [item.key]: e.target.value })}
+                onBlur={() => updateSiteParams({ [item.key]: siteParams[item.key] })}
+                className="w-full bg-transparent border-b border-steel/20 focus:border-accent py-1 font-mono text-[11px] text-charcoal dark:text-concrete outline-none transition-all"
+                placeholder="Synchronizing..."
+              />
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 flex justify-between items-center bg-accent/5 p-4 border border-accent/10">
+           <p className="font-mono text-[9px] text-steel uppercase tracking-widest">Global project parameters are accessible across all role-based modules for total environmental consistency.</p>
+           {isSavingSiteParams && <Loader2 size={12} className="text-accent animate-spin" />}
+        </div>
+      </div>
     </div>
   );
 };
 
-const AUTHORIZED_STAFF_ROLES = ['project_manager', 'architect', 'surveyor', 'admin'];
+const AUTHORIZED_STAFF_ROLES = ['project_manager', 'architect', 'engineer', 'surveyor', 'planner', 'financial_analyst', 'admin'];
 
 export default function StaffPortal() {
   const navigate = useNavigate();
@@ -1111,6 +1193,11 @@ export default function StaffPortal() {
   
   // Project selection state
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  
+  // Site parameters state
+  const [siteParams, setSiteParams] = useState<any>({});
+  const [isSavingSiteParams, setIsSavingSiteParams] = useState(false);
 
   // Communications states
   const [internalMessage, setInternalMessage] = useState('');
@@ -1121,8 +1208,17 @@ export default function StaffPortal() {
   const [pmUpdateMessage, setPmUpdateMessage] = useState('');
   const [pmFile, setPmFile] = useState<{ url: string, name: string } | null>(null);
   const [clients, setClients] = useState<ClientUser[]>([]);
+  const [staffUser, setStaffUser] = useState<any>(null);
+  const [show2FAConfirmation, setShow2FAConfirmation] = useState(false);
   const [selectedClient, setSelectedClient] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEngineerSimulating, setIsEngineerSimulating] = useState(false);
+  const [engineerSimResult, setEngineerSimResult] = useState<string | null>(null);
+  const [isSurveyorSimulating, setIsSurveyorSimulating] = useState(false);
+  const [surveyorSimResult, setSurveyorSimResult] = useState<string | null>(null);
+  const [isPlannerSimulating, setIsPlannerSimulating] = useState(false);
+  const [plannerSimResult, setPlannerSimResult] = useState<string | null>(null);
+  const [milestones, setMilestones] = useState<any[]>([]);
 
   // PM Chat states
   const [selectedChatClient, setSelectedChatClient] = useState<string>('');
@@ -1158,11 +1254,10 @@ export default function StaffPortal() {
             let userRole = userData.role;
             setDisplayName(userData.officialName || '');
             setUserTitle(userData.title || '');
+            setProfilePhoto(userData.photoUrl || null);
             
             if (currentUser.email === 'machariag605@gmail.com' || 
-                currentUser.email === 'machariajoseph20222@gmail.com' ||
-                currentUser.email === 'danuthiaandassociates@gmail.com' || 
-                currentUser.email === 'urbanplanning2027@gmail.com') {
+                currentUser.email === 'danuthiaandassociates@gmail.com') {
               userRole = 'admin';
             }
             setRole(userRole);
@@ -1187,6 +1282,20 @@ export default function StaffPortal() {
     });
     return () => unsubscribe();
   }, [navigate]);
+
+  useEffect(() => {
+    if (!selectedProject || !user) return;
+    
+    const unsubscribe = onSnapshot(doc(db, 'projects', selectedProject), (docSnap) => {
+      if (docSnap.exists()) {
+        setSiteParams(docSnap.data().siteParams || {});
+      } else {
+        setSiteParams({});
+      }
+    });
+
+    return () => unsubscribe();
+  }, [selectedProject, user]);
 
   useEffect(() => {
     if (!selectedProject || !user || !role || role === 'unauthorized') return;
@@ -1214,7 +1323,7 @@ export default function StaffPortal() {
       // Fetch available clients for the staff to route messages to and work on
       const fetchClients = async () => {
         try {
-          const clientQ = (role === 'admin' || role === 'project_manager')
+          const clientQ = (role === 'admin')
             ? query(collection(db, 'users'), where('role', '==', 'client'))
             : query(collection(db, 'users'), and(
                 where('role', '==', 'client'), 
@@ -1239,10 +1348,12 @@ export default function StaffPortal() {
         } catch (e) {
           console.warn("Could not fetch clients. Using secondary query path.");
           // Fallback if index isn't ready
-          const fallbackQ = query(collection(db, 'users'), where('role', '==', 'client'));
+          const fallbackQ = (role === 'admin') 
+            ? query(collection(db, 'users'), where('role', '==', 'client'))
+            : query(collection(db, 'users'), where('role', '==', 'client'), where('assignedPM', '==', user.uid));
           const snapshot = await getDocs(fallbackQ);
           const allClients = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ClientUser[];
-          const filtered = (role === 'admin' || role === 'project_manager') ? allClients : allClients.filter(c => c.assignedPM === user.uid);
+          const filtered = (role === 'admin') ? allClients : allClients.filter(c => c.assignedPM === user.uid);
           setClients(filtered);
           if (filtered.length > 0 && !selectedChatClient) setSelectedChatClient(filtered[0].id);
         }
@@ -1256,7 +1367,7 @@ export default function StaffPortal() {
     if (role && role !== 'unauthorized') {
       const fetchStaff = async () => {
         try {
-          const staffQ = query(collection(db, 'users'), where('role', 'in', ['project_manager', 'architect', 'surveyor', 'admin', 'staff']));
+          const staffQ = query(collection(db, 'users'), where('role', 'in', ['project_manager', 'architect', 'engineer', 'surveyor', 'planner', 'financial_analyst', 'admin', 'staff']));
           const snapshot = await getDocs(staffQ);
           const staffList = snapshot.docs.map(doc => ({ 
             id: doc.id, 
@@ -1360,6 +1471,63 @@ export default function StaffPortal() {
     return () => unsubscribe();
   }, [selectedChatClient, user, role]);
 
+  useEffect(() => {
+    if (!selectedProject) return;
+    const q = query(collection(db, 'milestones'), where('clientId', '==', selectedProject));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const ms = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setMilestones(ms);
+    }, (error) => {
+      console.error("Error fetching milestones:", error);
+    });
+    return () => unsubscribe();
+  }, [selectedProject]);
+
+  useEffect(() => {
+    if (user) {
+      getDoc(doc(db, "users", user.uid)).then((docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setStaffUser(data);
+          
+          // Show 2FA confirmation if not yet confirmed and user is approved
+          if (data.hasConfirmed2FA === undefined && data.role !== 'unauthorized' && data.role !== 'pending_staff') {
+            setShow2FAConfirmation(true);
+          }
+        }
+      });
+    }
+  }, [user]);
+
+  const confirm2FA = async () => {
+    if (!user) return;
+    try {
+      await updateDoc(doc(db, "users", user.uid), {
+        hasConfirmed2FA: true
+      });
+      setStaffUser((prev: any) => ({ ...prev, hasConfirmed2FA: true }));
+      setShow2FAConfirmation(false);
+    } catch (err: any) {
+      handleFirestoreError(err, OperationType.UPDATE, "users");
+    }
+  };
+
+  const updateSiteParams = async (params: any) => {
+    if (!selectedProject) return;
+    setIsSavingSiteParams(true);
+    try {
+      await updateDoc(doc(db, 'projects', selectedProject), {
+        siteParams: { ...siteParams, ...params },
+        updatedAt: serverTimestamp()
+      });
+      setStatusMessage({ text: "Technical parameters synchronized successfully.", type: 'success' });
+    } catch (error: any) {
+      handleFirestoreError(error, OperationType.UPDATE, 'projects');
+    } finally {
+      setIsSavingSiteParams(false);
+    }
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'internal' | 'pm') => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -1367,6 +1535,7 @@ export default function StaffPortal() {
     // Hard limit of 5MB for selection, but we will compress images to fit Firestore (1MB)
     if (file.size > 5 * 1024 * 1024) {
       setStatusMessage({ text: "File size exceeds 5MB. Please upload a smaller file.", type: 'error' });
+      e.target.value = '';
       return;
     }
 
@@ -1432,6 +1601,7 @@ export default function StaffPortal() {
         };
         reader.readAsDataURL(f);
       }
+      e.target.value = '';
     };
 
     processFile(file);
@@ -1449,7 +1619,8 @@ export default function StaffPortal() {
         message: internalMessage,
         status: 'pending_review',
         fileName: internalFile?.name || null,
-        type: 'log'
+        type: 'log',
+        collectionName: 'internalLogs'
       }, internalFile?.url || '');
       
       setInternalMessage('');
@@ -1472,6 +1643,7 @@ export default function StaffPortal() {
         fileName: pmFile?.name || null,
         status: 'published',
         type: 'update',
+        collectionName: 'projectUpdates',
         // In the chunked upload, fileData will be empty, so we just set these flags
         // ClientPortal will need to resolve them
       }, pmFile?.url || '');
@@ -1565,18 +1737,60 @@ export default function StaffPortal() {
   const getRoleIcon = () => {
     switch (role) {
       case 'project_manager': return <ClipboardList className="text-accent mb-4" size={32} />;
-      case 'architect': return <Hammer className="text-accent mb-4" size={32} />;
-      case 'surveyor': return <Map className="text-accent mb-4" size={32} />;
+      case 'architect': return <PenTool className="text-accent mb-4" size={32} />;
+      case 'engineer': return <HardHat className="text-accent mb-4" size={32} />;
+      case 'surveyor': return <MapPin className="text-accent mb-4" size={32} />;
+      case 'planner': return <Layers className="text-accent mb-4" size={32} />;
+      case 'financial_analyst': return <PieChart className="text-accent mb-4" size={32} />;
       case 'admin': return <Eye className="text-accent mb-4" size={32} />;
       default: return null;
     }
   };
 
+  const runEngineerSimulation = () => {
+    if (!selectedProject) return;
+    setIsEngineerSimulating(true);
+    setEngineerSimResult(null);
+    
+    // Check if we have basic params
+    const hasParams = siteParams.deadLoadMax || siteParams.liveLoadEst || siteParams.windShear;
+    
+    setTimeout(() => {
+      setIsEngineerSimulating(false);
+      if (!hasParams) {
+        setEngineerSimResult("Simulation Aborted: Insufficient telemetry. Please define load parameters and site specifics to initialize structural mesh.");
+      } else {
+        setEngineerSimResult(`Dynamic Analysis Complete for ${currentProjectName}. Parameters Verified: Dead Load @ ${siteParams.deadLoadMax || 'Auto'}, Live Load @ ${siteParams.liveLoadEst || 'Auto'}. Wind Shear Guard: ${siteParams.windShear || 'Nominal'}. MEP integration conflicts identified in Zone B require immediate PM clearance.`);
+      }
+    }, 2500);
+  };
+
+  const runSurveyorSimulation = () => {
+    setIsSurveyorSimulating(true);
+    setSurveyorSimResult(null);
+    setTimeout(() => {
+      setIsSurveyorSimulating(false);
+      setSurveyorSimResult("Topographical Sync Complete: Vertical datum adjusted to MSL. Site elevations verified within 5mm variance. Spatial data streaming nominal.");
+    }, 2000);
+  };
+
+  const runPlannerSimulation = () => {
+    setIsPlannerSimulating(true);
+    setPlannerSimResult(null);
+    setTimeout(() => {
+      setIsPlannerSimulating(false);
+      setPlannerSimResult("Urban Matrix Simulation Complete: Green Space Ratio optimized to 48%. Solar irradiance parameters meet sustainability tier 1 requirements.");
+    }, 2000);
+  };
+
   const getRoleTitle = () => {
     switch (role) {
       case 'project_manager': return 'Project Manager Dashboard';
-      case 'architect': return 'Architecture & Engineering Dashboard';
-      case 'surveyor': return 'Surveyor & Planning Dashboard';
+      case 'architect': return 'Architecture Dashboard';
+      case 'engineer': return 'Engineering Dashboard';
+      case 'surveyor': return 'Surveyor Dashboard';
+      case 'planner': return 'Planning Dashboard';
+      case 'financial_analyst': return 'Financial Analyst Dashboard';
       case 'admin': return 'Super User Environment';
       default: return 'Staff Dashboard';
     }
@@ -1586,29 +1800,68 @@ export default function StaffPortal() {
     ? (clients.find(c => c.id === selectedProject)?.officialName || clients.find(c => c.id === selectedProject)?.email || 'Unknown Project')
     : 'System Overview';
 
+  const currentMilestones = milestones.filter(m => m.clientId === selectedProject);
+  const activeMilestonesCount = currentMilestones.filter(m => m.status !== 'completed').length;
+  const siteLogsCount = internalLogs.filter(l => l.projectId === selectedProject).length;
+
   const renderDashboardWidgets = () => {
+    if (!selectedProject && role !== 'admin') {
+      return (
+        <div className="min-h-[50vh] flex flex-col items-center justify-center border border-dashed border-steel/20 p-20 bg-charcoal/5 dark:bg-charcoal/40 backdrop-blur-sm">
+          <Target className="text-accent mb-8 animate-pulse" size={48} strokeWidth={1} />
+          <h2 className="font-display text-4xl font-bold uppercase tracking-tighter text-charcoal dark:text-concrete mb-4">Project Context Required</h2>
+          <p className="font-mono text-xs text-steel uppercase tracking-widest mb-10 text-center max-w-md">Please select a strategic project context from the selector in the command header to initialize secure dashboards and tools.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
+            {clients.map(client => (
+              <button 
+                key={client.id}
+                onClick={() => setSelectedProject(client.id)}
+                className="p-6 border border-steel/20 hover:border-accent hover:bg-accent/5 transition-all flex flex-col gap-2 group text-left bg-white/40 dark:bg-charcoal/40"
+              >
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-xs font-bold text-charcoal dark:text-concrete group-hover:text-accent">
+                    {client.officialName || (client.email ? client.email.split('@')[0] : 'Unnamed Client')}
+                  </span>
+                  <ChevronRight size={14} className="text-steel group-hover:text-accent group-hover:translate-x-1 transition-all" />
+                </div>
+                <span className="font-mono text-[9px] text-steel uppercase tracking-widest truncate">{client.email}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
     if (role === 'project_manager') {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md">
             <ClipboardList className="text-accent mb-4" size={24} />
             <h3 className="font-mono text-[10px] uppercase tracking-widest text-steel mb-4">Milestone Tracker</h3>
-            <p className="font-display text-4xl text-charcoal dark:text-concrete">12</p>
+            <p className="font-display text-4xl text-charcoal dark:text-concrete">{activeMilestonesCount}</p>
             <p className="font-mono text-[10px] text-steel mt-4">Active milestones requiring sign-off for <span className="text-accent font-bold">{currentProjectName}</span>.</p>
           </div>
           <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md">
             <HardHat className="text-accent mb-4" size={24} />
             <h3 className="font-mono text-[10px] uppercase tracking-widest text-steel mb-4">Site Operations</h3>
-            <p className="font-display text-4xl text-charcoal dark:text-concrete">3</p>
+            <p className="font-display text-4xl text-charcoal dark:text-concrete">{siteLogsCount}</p>
             <p className="font-mono text-[10px] text-steel mt-4">Active crews reporting daily logs on site.</p>
           </div>
-          <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md">
-            <FileLineChart className="text-accent mb-4" size={24} />
-            <h3 className="font-mono text-[10px] uppercase tracking-widest text-steel mb-4">Budget Health</h3>
-            <div className="w-full bg-steel/20 h-1 mt-4">
-              <div className="bg-accent h-full shadow-[0_0_10px_rgba(184,134,11,0.5)]" style={{ width: '85%' }}></div>
-            </div>
-            <p className="font-mono text-[10px] text-steel mt-4">85% under budget for this current phase.</p>
+
+          <div className="lg:col-span-3">
+            {selectedProject ? (
+              <div className="p-0 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md">
+                <div className="bg-charcoal p-4 text-white font-mono text-[10px] uppercase tracking-widest flex items-center gap-2">
+                  <FileLineChart size={14} className="text-accent" />
+                  Financial Projection & Ledger
+                </div>
+                <FinancialManager projectId={selectedProject} role={role} />
+              </div>
+            ) : (
+              <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md text-center">
+                 <p className="font-mono text-[10px] text-steel uppercase tracking-widest">Select a context project above to access financial ledgers.</p>
+              </div>
+            )}
           </div>
 
           {/* PM Review & Publish Widget */}
@@ -1624,6 +1877,10 @@ export default function StaffPortal() {
             isSubmitting={isSubmitting}
             clients={clients}
             internalLogs={internalLogs}
+            siteParams={siteParams}
+            setSiteParams={setSiteParams}
+            updateSiteParams={updateSiteParams}
+            isSavingSiteParams={isSavingSiteParams}
           />
 
           {/* PM Chat System */}
@@ -1688,22 +1945,14 @@ export default function StaffPortal() {
             <Layers className="text-accent mb-6" size={28} strokeWidth={1} />
             <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-6">Schematic & CAD Drafting Pipeline</h3>
             <div className="space-y-3">
-              <div className="flex justify-between items-center text-sm font-light border-b border-steel/10 py-3 px-2 hover:bg-steel/5 transition-colors">
-                <span className="font-mono text-xs tracking-tight text-charcoal dark:text-concrete">{currentProjectName.split(' ')[0]}_Elevations_Rev_C.dwg</span>
-                <span className="text-[9px] uppercase tracking-widest font-mono bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal px-2 py-0.5">Under PM Review</span>
-              </div>
-              <div className="flex justify-between items-center text-sm font-light border-b border-steel/10 py-3 px-2 hover:bg-steel/5 transition-colors">
-                <span className="font-mono text-xs tracking-tight text-charcoal dark:text-concrete">{currentProjectName.split(' ')[0]}_Floorplan_Base.pdf</span>
-                <span className="text-[9px] uppercase tracking-widest font-mono bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30 px-2 py-0.5">Approved - V1.2</span>
-              </div>
-              <div className="flex justify-between items-center text-sm font-light border-b border-steel/10 py-3 px-2">
-                <span className="font-mono text-xs text-charcoal/50 dark:text-concrete/50 line-through tracking-tight">{currentProjectName.split(' ')[0]}_Interior_Vol.pdf</span>
-                <span className="text-red-500 text-[9px] uppercase tracking-widest font-mono border border-red-500 px-2 py-0.5">Rejected by Eng.</span>
+              <div className="p-8 border border-dashed border-steel/20 text-center">
+                <p className="font-mono text-[10px] text-steel uppercase tracking-widest">No CAD files initialized for this project.</p>
               </div>
             </div>
-            <button className="mt-8 text-[10px] font-mono bg-accent/10 text-accent uppercase tracking-widest font-bold border border-accent/30 hover:bg-accent hover:text-white px-4 py-2 transition-all">
+            <label className="mt-8 text-[10px] font-mono bg-accent/10 text-accent uppercase tracking-widest font-bold border border-accent/30 hover:bg-accent hover:text-white px-4 py-2 transition-all cursor-pointer inline-block text-center">
               Initiate New CAD Upload
-            </button>
+              <input type="file" className="hidden" accept="image/*,application/pdf,.dwg,.cad" onChange={(e) => handleFileUpload(e, 'internal')} />
+            </label>
           </div>
 
           <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md shadow-sm flex flex-col justify-between">
@@ -1711,14 +1960,16 @@ export default function StaffPortal() {
               <Box className="text-accent mb-6" size={28} strokeWidth={1} />
               <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">BIM / 3D Visualization Sync</h3>
               <div className="w-full bg-steel/10 h-1.5 mb-2 overflow-hidden rounded-none">
-                <div className="bg-accent h-full w-[78%] animate-pulse"></div>
+                <div className="bg-accent h-full w-[0%] animate-pulse" style={{ width: internalLogs.length > 0 ? '78%' : '0%' }}></div>
               </div>
-              <p className="font-mono text-[9px] text-steel uppercase tracking-widest mb-6 flex justify-between"><span>Render Node Status</span><span className="text-accent font-bold">78%</span></p>
+              <p className="font-mono text-[9px] text-steel uppercase tracking-widest mb-6 flex justify-between"><span>Render Node Status</span><span className="text-accent font-bold">{internalLogs.length > 0 ? '78' : '0'}%</span></p>
             </div>
             <div className="border-t border-steel/10 pt-4">
               <p className="font-mono text-[10px] leading-relaxed text-charcoal dark:text-concrete/80 flex items-start gap-2">
-                <span className="animate-pulse h-2 w-2 mt-1 rounded-full bg-green-500 flex-shrink-0"></span>
-                Processing high-fidelity global illumination array on the main atrium view. Awaiting geometry cache lock.
+                <span className={`h-2 w-2 mt-1 rounded-full flex-shrink-0 ${internalLogs.length > 0 ? 'bg-green-500 animate-pulse' : 'bg-steel/30'}`}></span>
+                {internalLogs.length > 0 
+                  ? "Processing high-fidelity global illumination array on the main atrium view. Awaiting geometry cache lock." 
+                  : "Awaiting initial schematic uploads to initialize BIM synchronization pipeline."}
               </p>
             </div>
           </div>
@@ -1729,18 +1980,11 @@ export default function StaffPortal() {
               <p className="font-mono text-[10px] text-steel max-w-lg">Propose material specs, swatches, and fixture catalogues for final client approval via Project Manager routing.</p>
             </div>
             <div className="flex gap-4">
-              <div className="w-16 h-16 rounded-md border border-steel/20 bg-[#E6D5C3] shadow-[inset_0_2px_10px_rgba(0,0,0,0.1)] flex flex-col items-center justify-center relative group">
-                <span className="text-[10px] font-mono font-bold text-black/50">WC-01</span>
-                <span className="text-[8px] opacity-0 group-hover:opacity-100 absolute -bottom-6 tracking-widest font-mono whitespace-nowrap text-steel transition-opacity">Warm Concrete</span>
-              </div>
-              <div className="w-16 h-16 rounded-md border border-steel/20 bg-[#2B2B2B] shadow-[inset_0_2px_10px_rgba(0,0,0,0.1)] flex flex-col items-center justify-center relative group">
-                <span className="text-[10px] font-mono font-bold text-white/50">ST-04</span>
-                <span className="text-[8px] opacity-0 group-hover:opacity-100 absolute -bottom-6 tracking-widest font-mono whitespace-nowrap text-steel transition-opacity">Matte Steel</span>
-              </div>
-              <div className="w-16 h-16 rounded-md border border-dashed border-steel/50 flex flex-col items-center justify-center text-steel cursor-pointer hover:text-accent hover:border-accent hover:bg-accent/5 transition-all">
+              <label className="w-16 h-16 rounded-md border border-dashed border-steel/50 flex flex-col items-center justify-center text-steel cursor-pointer hover:text-accent hover:border-accent hover:bg-accent/5 transition-all">
                 <span className="text-2xl font-light mb-1">+</span>
                 <span className="text-[8px] font-mono uppercase tracking-widest">Add Spec</span>
-              </div>
+                <input type="file" className="hidden" accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e, 'internal')} />
+              </label>
             </div>
           </div>
 
@@ -1792,55 +2036,115 @@ export default function StaffPortal() {
             <div>
               <Activity className="text-red-500 mb-6" size={28} strokeWidth={1} />
               <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">Structural Load Models</h3>
-              <ul className="space-y-4 font-mono text-[10px] text-charcoal dark:text-concrete">
-                 <li className="flex justify-between border-b border-steel/10 pb-2"><span>Dead Load Max</span><span className="text-charcoal dark:text-concrete font-bold">450 kN/m²</span></li>
-                 <li className="flex justify-between border-b border-steel/10 pb-2"><span>Live Load Est.</span><span className="text-charcoal dark:text-concrete font-bold">120 kN/m²</span></li>
-                 <li className="flex justify-between border-b border-steel/10 pb-2"><span>Wind Shear Index</span><span className="text-red-500 font-bold">Cat 4 Guard</span></li>
-              </ul>
+              <div className="space-y-5">
+                 {[
+                   { label: 'Dead Load Max', key: 'deadLoadMax', icon: <Box size={14} /> },
+                   { label: 'Live Load Est.', key: 'liveLoadEst', icon: <ArrowUp size={14} /> },
+                   { label: 'Wind Shear Index', key: 'windShear', icon: <Wind size={14} /> }
+                 ].map(item => (
+                   <div key={item.key} className="group">
+                     <label className="flex items-center gap-2 font-mono text-[9px] text-steel uppercase tracking-widest mb-1 group-focus-within:text-red-500 transition-colors">
+                       {item.icon} {item.label}
+                     </label>
+                     <input 
+                       type="text"
+                       value={siteParams[item.key] || ''}
+                       onChange={(e) => setSiteParams({ ...siteParams, [item.key]: e.target.value })}
+                       onBlur={() => updateSiteParams({ [item.key]: siteParams[item.key] })}
+                       className="w-full bg-transparent border-b border-steel/20 focus:border-red-500 py-1 font-mono text-xs text-charcoal dark:text-concrete outline-none transition-all placeholder:text-steel/30"
+                       placeholder="Not specified..."
+                     />
+                   </div>
+                 ))}
+              </div>
             </div>
-            <div className="mt-6 pt-4 border-t border-steel/10">
-              <button className="w-full text-center text-[9px] font-mono text-red-500 uppercase tracking-widest font-bold border border-red-500/30 hover:bg-red-500 hover:text-white py-2 transition-colors">
-                Run Simulation Matrix
+            <div className="mt-8 pt-4 border-t border-steel/10">
+              <button 
+                onClick={runEngineerSimulation}
+                disabled={isEngineerSimulating}
+                className="w-full text-center text-[9px] font-mono text-red-500 uppercase tracking-widest font-bold border border-red-500/30 hover:bg-red-500 hover:text-white py-3 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isEngineerSimulating ? (
+                  <>
+                    <Loader2 size={12} className="animate-spin" /> Calibrating Mesh...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw size={12} /> Run Simulation Matrix
+                  </>
+                )}
               </button>
             </div>
+            {engineerSimResult && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="mt-4 p-4 bg-red-500/5 border border-red-500/20 text-[10px] font-mono text-red-500 leading-relaxed"
+              >
+                {engineerSimResult}
+              </motion.div>
+            )}
           </div>
 
           <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md lg:col-span-2 shadow-sm flex flex-col justify-between">
             <div>
               <Shield className="text-red-500 mb-6" size={28} strokeWidth={1} />
               <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">MEP Integration & Code Compliance</h3>
-              <div className="overflow-x-auto">
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+                {[
+                  { label: 'Ground Water Level', key: 'groundWater' },
+                  { label: 'Soil Bearing Capacity', key: 'soilBearing' },
+                  { label: 'Seismic Zone Class', key: 'seismicZone' },
+                  { label: 'Site Boundary Offset', key: 'siteBoundary' }
+                ].map(item => (
+                   <div key={item.key}>
+                     <label className="block font-mono text-[9px] text-steel uppercase tracking-widest mb-1">{item.label}</label>
+                     <input 
+                       type="text"
+                       value={siteParams[item.key] || ''}
+                       onChange={(e) => setSiteParams({ ...siteParams, [item.key]: e.target.value })}
+                       onBlur={() => updateSiteParams({ [item.key]: siteParams[item.key] })}
+                       className="w-full bg-transparent border-b border-steel/20 focus:border-red-500 py-1 font-mono text-xs text-charcoal dark:text-concrete outline-none transition-all"
+                       placeholder="Pending input"
+                     />
+                   </div>
+                ))}
+              </div>
+
+              <div className="mt-8 overflow-x-auto">
                 <table className="w-full text-left font-mono text-[10px]">
                   <thead>
                     <tr className="border-b border-steel/10 text-steel uppercase tracking-widest">
-                      <th className="pb-3">System ID</th>
-                      <th className="pb-3">Discipline</th>
-                      <th className="pb-3">Status</th>
-                      <th className="pb-3 text-right">Clearance</th>
+                      <th className="pb-3 text-[9px]">System ID</th>
+                      <th className="pb-3 text-[9px]">Discipline</th>
+                      <th className="pb-3 text-[9px]">Validation</th>
+                      <th className="pb-3 text-[9px] text-right">Clearance</th>
                     </tr>
                   </thead>
                   <tbody className="text-charcoal dark:text-concrete">
                     <tr className="border-b border-steel/5">
                       <td className="py-3 font-bold">MECH-HVAC-01</td>
                       <td className="py-3">Mechanical</td>
-                      <td className="py-3 text-green-500 uppercase">Routing Accepted</td>
-                      <td className="py-3 text-right text-steel">L2 Compliant</td>
+                      <td className="py-3">
+                        <span className="text-[8px] border border-green-500/30 text-green-500 px-2 py-0.5 uppercase">Accepted</span>
+                      </td>
+                      <td className="py-3 text-right text-steel">L2 Profile</td>
                     </tr>
                     <tr className="border-b border-steel/5">
                       <td className="py-3 font-bold">ELEC-MAIN-04</td>
                       <td className="py-3">Electrical</td>
-                      <td className="py-3 text-red-500 uppercase">Clash Detected</td>
-                      <td className="py-3 text-right text-red-500">Conflicts Arch. Wall</td>
-                    </tr>
-                    <tr>
-                      <td className="py-3 font-bold">PLUM-SANI-02</td>
-                      <td className="py-3">Plumbing</td>
-                      <td className="py-3 text-accent uppercase">Under Review</td>
-                      <td className="py-3 text-right text-steel">Pending Signoff</td>
+                      <td className="py-3">
+                        <span className="text-[8px] border border-accent/30 text-accent px-2 py-0.5 uppercase">Pending</span>
+                      </td>
+                      <td className="py-3 text-right text-steel">H1 Clearance</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
+            </div>
+            <div className="mt-6 flex justify-end">
+               <p className="font-mono text-[8px] text-steel uppercase tracking-widest italic">All technical parameters are synchronized with civil engineering databases.</p>
             </div>
           </div>
           
@@ -1877,6 +2181,13 @@ export default function StaffPortal() {
     }
     
     if (role === 'surveyor') {
+      const topSync = siteParams.topographicalSync || '0';
+      const zoneComp = siteParams.zoningCompliance || '0';
+      const droneStatus = siteParams.droneAlphaStatus || 'Inactive';
+      const groundStatus = siteParams.groundStationStatus || 'Calibrating';
+      const circum = 2 * Math.PI * 28;
+      const zoneCompPct = Math.min(100, Math.max(0, parseInt(zoneComp) || 0));
+
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-3 mb-6 p-10 relative overflow-hidden bg-[#1A2622] text-[#EAE6D7] border border-steel/20 shadow-2xl">
@@ -1890,33 +2201,83 @@ export default function StaffPortal() {
 
           <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md shadow-sm">
             <Map className="text-accent mb-6" size={28} strokeWidth={1} />
-            <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">Topographical Sync</h3>
-            <p className="font-display text-4xl text-charcoal dark:text-concrete">14<span className="text-lg text-steel">ms</span></p>
+            <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">Topographical Sync (ms)</h3>
+            <div className="flex items-center gap-2">
+              <input 
+                type="number"
+                value={topSync}
+                onChange={(e) => setSiteParams({ ...siteParams, topographicalSync: e.target.value })}
+                onBlur={() => updateSiteParams({ topographicalSync: siteParams.topographicalSync })}
+                className="font-display text-4xl text-charcoal dark:text-concrete bg-transparent border-b border-steel/20 focus:border-accent outline-none w-24"
+              />
+              <span className="text-lg text-steel">ms</span>
+            </div>
             <p className="font-mono text-[10px] text-steel mt-4 leading-relaxed">Latency to central GIS repository. Data streaming nominal.</p>
           </div>
 
           <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md shadow-sm">
             <Trees className="text-accent mb-6" size={28} strokeWidth={1} />
-            <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">Municipal Zoning</h3>
+            <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">Municipal Zoning (%)</h3>
             <div className="flex items-center gap-4 mt-6">
               <div className="relative w-16 h-16 rounded-full border-4 border-steel/10 flex items-center justify-center">
-                <span className="font-mono text-xs font-bold text-accent">75%</span>
+                <span className="font-mono text-xs font-bold text-accent">{zoneCompPct}%</span>
                 <svg className="absolute inset-0 w-full h-full -rotate-90">
-                  <circle cx="30" cy="30" r="28" fill="none" strokeWidth="4" className="stroke-accent" strokeDasharray="175" strokeDashoffset="44" />
+                  <circle cx="30" cy="30" r="28" fill="none" strokeWidth="4" className="stroke-accent transition-all duration-1000" strokeDasharray={circum} strokeDashoffset={circum - (zoneCompPct / 100) * circum} />
                 </svg>
               </div>
-              <p className="font-mono text-[9px] text-charcoal dark:text-concrete uppercase tracking-widest leading-relaxed">Compliance rating verified against local parameters.</p>
+              <div className="flex-1">
+                <input 
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={zoneComp}
+                  onChange={(e) => setSiteParams({ ...siteParams, zoningCompliance: e.target.value })}
+                  onBlur={() => updateSiteParams({ zoningCompliance: siteParams.zoningCompliance })}
+                  className="w-full bg-transparent border-b border-steel/20 focus:border-accent py-1 font-mono text-xs text-charcoal dark:text-concrete outline-none"
+                  placeholder="Compliance %..."
+                />
+              </div>
             </div>
+            <button 
+              onClick={runSurveyorSimulation}
+              disabled={isSurveyorSimulating}
+              className="mt-6 w-full text-center text-[9px] font-mono text-accent uppercase tracking-widest font-bold border border-accent/30 hover:bg-accent hover:text-white py-2 transition-colors disabled:opacity-50"
+            >
+              {isSurveyorSimulating ? 'Calibrating...' : 'Re-verify Zoning Map'}
+            </button>
+            {surveyorSimResult && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 p-3 bg-accent/5 border border-accent/20 text-[9px] font-mono text-accent">
+                {surveyorSimResult}
+              </motion.div>
+            )}
           </div>
 
           <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md lg:col-span-1 shadow-sm flex flex-col justify-between">
             <div>
               <Activity className="text-accent mb-6" size={28} strokeWidth={1} />
               <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">Sensor Uplink</h3>
-              <ul className="space-y-3 font-mono text-[10px] text-charcoal dark:text-concrete">
-                 <li className="flex justify-between border-b border-steel/10 pb-2"><span>Drone Unit Alpha</span><span className="text-green-500">Active</span></li>
-                 <li className="flex justify-between border-b border-steel/10 pb-2"><span>Ground Station C</span><span className="text-accent uppercase tracking-widest">Calibrating</span></li>
-              </ul>
+              <div className="space-y-4">
+                 <div>
+                   <label className="font-mono text-[9px] text-steel uppercase tracking-widest block mb-1">Drone Unit Alpha</label>
+                   <input 
+                     type="text"
+                     value={droneStatus}
+                     onChange={(e) => setSiteParams({ ...siteParams, droneAlphaStatus: e.target.value })}
+                     onBlur={() => updateSiteParams({ droneAlphaStatus: siteParams.droneAlphaStatus })}
+                     className="w-full bg-transparent border-b border-steel/20 focus:border-accent py-1 font-mono text-xs text-charcoal dark:text-concrete outline-none"
+                   />
+                 </div>
+                 <div>
+                   <label className="font-mono text-[9px] text-steel uppercase tracking-widest block mb-1">Ground Station C</label>
+                   <input 
+                     type="text"
+                     value={groundStatus}
+                     onChange={(e) => setSiteParams({ ...siteParams, groundStationStatus: e.target.value })}
+                     onBlur={() => updateSiteParams({ groundStationStatus: siteParams.groundStationStatus })}
+                     className="w-full bg-transparent border-b border-steel/20 focus:border-accent py-1 font-mono text-xs text-charcoal dark:text-concrete outline-none"
+                   />
+                 </div>
+              </div>
             </div>
           </div>
           
@@ -1955,6 +2316,10 @@ export default function StaffPortal() {
     }
 
     if (role === 'planner') {
+      const greenRatio = siteParams.greenSpaceRatio || '0';
+      const solarIrr = siteParams.solarIrradiance || 'None';
+      const permTarget = siteParams.permeabilityTarget || 'Pending';
+
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-3 mb-6 p-10 relative overflow-hidden bg-gradient-to-br from-green-900/90 to-charcoal text-concrete border border-green-500/20 shadow-2xl">
@@ -1985,12 +2350,59 @@ export default function StaffPortal() {
             <div>
               <Globe className="text-green-500 mb-6" size={28} strokeWidth={1} />
               <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">Environmental Impact</h3>
-              <ul className="space-y-4 font-mono text-[10px] text-charcoal dark:text-concrete">
-                 <li className="flex justify-between border-b border-steel/10 pb-2"><span>Green Space Ratio</span><span className="text-green-500">42%</span></li>
-                 <li className="flex justify-between border-b border-steel/10 pb-2"><span>Solar Irradiance</span><span className="text-accent uppercase tracking-widest">Optimized</span></li>
-                 <li className="flex justify-between border-b border-steel/10 pb-2"><span>Permeability Target</span><span className="text-steel">Pending</span></li>
-              </ul>
+              <div className="space-y-4">
+                 <div>
+                   <label className="font-mono text-[9px] text-steel uppercase tracking-widest block mb-1 flex justify-between">
+                     <span>Green Space Ratio (%)</span>
+                   </label>
+                   <input 
+                     type="number"
+                     min="0"
+                     max="100"
+                     value={greenRatio}
+                     onChange={(e) => setSiteParams({ ...siteParams, greenSpaceRatio: e.target.value })}
+                     onBlur={() => updateSiteParams({ greenSpaceRatio: siteParams.greenSpaceRatio })}
+                     className="w-full bg-transparent border-b border-steel/20 focus:border-green-500 py-1 font-mono text-xs text-charcoal dark:text-concrete outline-none text-green-500"
+                   />
+                 </div>
+                 <div>
+                   <label className="font-mono text-[9px] text-steel uppercase tracking-widest block mb-1 flex justify-between">
+                     <span>Solar Irradiance</span>
+                   </label>
+                   <input 
+                     type="text"
+                     value={solarIrr}
+                     onChange={(e) => setSiteParams({ ...siteParams, solarIrradiance: e.target.value })}
+                     onBlur={() => updateSiteParams({ solarIrradiance: siteParams.solarIrradiance })}
+                     className="w-full bg-transparent border-b border-steel/20 focus:border-green-500 py-1 font-mono text-xs text-charcoal dark:text-concrete outline-none"
+                   />
+                 </div>
+                 <div>
+                   <label className="font-mono text-[9px] text-steel uppercase tracking-widest block mb-1 flex justify-between">
+                     <span>Permeability Target</span>
+                   </label>
+                   <input 
+                     type="text"
+                     value={permTarget}
+                     onChange={(e) => setSiteParams({ ...siteParams, permeabilityTarget: e.target.value })}
+                     onBlur={() => updateSiteParams({ permeabilityTarget: siteParams.permeabilityTarget })}
+                     className="w-full bg-transparent border-b border-steel/20 focus:border-green-500 py-1 font-mono text-xs text-charcoal dark:text-concrete outline-none"
+                   />
+                 </div>
+              </div>
             </div>
+            <button 
+              onClick={runPlannerSimulation}
+              disabled={isPlannerSimulating}
+              className="mt-6 w-full text-center text-[9px] font-mono text-green-500 uppercase tracking-widest font-bold border border-green-500/30 hover:bg-green-500 hover:text-white py-2 transition-colors disabled:opacity-50"
+            >
+              {isPlannerSimulating ? 'Simulating...' : 'Run Environmental Analysis'}
+            </button>
+            {plannerSimResult && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 p-3 bg-green-500/5 border border-green-500/20 text-[9px] font-mono text-green-500">
+                {plannerSimResult}
+              </motion.div>
+            )}
           </div>
           
           <InternalLogSubmitter 
@@ -2034,70 +2446,14 @@ export default function StaffPortal() {
             <p className="relative font-mono text-[10px] text-blue-300 uppercase tracking-widest bg-blue-900/50 px-2 py-1 inline-block border border-blue-500/30">CLIENT VISIBILITY RESTRICTED</p>
           </div>
 
-          <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md lg:col-span-1 shadow-sm flex flex-col justify-between">
-            <div>
-              <CreditCard className="text-blue-500 mb-6" size={28} strokeWidth={1} />
-              <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">Cash Flow Projection</h3>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-[10px] font-mono text-steel uppercase mb-1">
-                    <span>Q3 Allocation</span>
-                    <span className="text-accent font-bold">78%</span>
-                  </div>
-                  <div className="w-full bg-steel/10 h-1 rounded-full overflow-hidden">
-                    <div className="bg-blue-500 h-full w-[78%]"></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-[10px] font-mono text-steel uppercase mb-1">
-                    <span>Variance Margin</span>
-                    <span className="text-green-500 font-bold">+2.4%</span>
-                  </div>
-                  <div className="w-full bg-steel/10 h-1 rounded-full overflow-hidden">
-                    <div className="bg-green-500 h-full w-[60%] opacity-80"></div>
-                  </div>
-                </div>
+          <div className="lg:col-span-3">
+            {selectedProject ? (
+               <FinancialManager projectId={selectedProject} role={role} />
+            ) : (
+              <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md shadow-sm text-center">
+                <p className="font-mono text-[10px] text-steel uppercase tracking-widest">Select a context project above to access financial ledgers.</p>
               </div>
-            </div>
-          </div>
-
-          <div className="p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md lg:col-span-2 shadow-sm flex flex-col justify-between">
-            <div>
-              <TrendingUp className="text-blue-500 mb-6" size={28} strokeWidth={1} />
-              <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">Budget Variance Ledger</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left font-mono text-[10px]">
-                  <thead>
-                    <tr className="border-b border-steel/10 text-steel uppercase tracking-widest">
-                      <th className="pb-3">Cost Center</th>
-                      <th className="pb-3">Forecast</th>
-                      <th className="pb-3">Actual</th>
-                      <th className="pb-3 text-right">Variance</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-charcoal dark:text-concrete">
-                    <tr className="border-b border-steel/5">
-                      <td className="py-3">Architectural Drafting</td>
-                      <td className="py-3">$14,500</td>
-                      <td className="py-3">$14,100</td>
-                      <td className="py-3 text-right text-green-500">-$400</td>
-                    </tr>
-                    <tr className="border-b border-steel/5">
-                      <td className="py-3">Site Surveying</td>
-                      <td className="py-3">$8,200</td>
-                      <td className="py-3">$8,900</td>
-                      <td className="py-3 text-right text-red-500">+$700</td>
-                    </tr>
-                    <tr>
-                      <td className="py-3">Material Procurement</td>
-                      <td className="py-3">$45,000</td>
-                      <td className="py-3 text-accent italic">Pending</td>
-                      <td className="py-3 text-right text-steel">-</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            )}
           </div>
           
           <InternalLogSubmitter 
@@ -2159,6 +2515,33 @@ export default function StaffPortal() {
       </div>
     );
   };
+
+  if (role === 'unauthorized' || role === 'pending_staff') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-concrete dark:bg-charcoal p-6 text-center transition-colors duration-500">
+        <div className="max-w-md w-full bg-charcoal dark:bg-charcoal text-concrete p-10 md:p-16 relative z-10 transition-colors duration-500">
+          <div className="flex justify-center mb-10">
+            <div className="w-16 h-16 rounded-none border border-concrete/30 flex items-center justify-center bg-charcoal shadow-[0_0_30px_rgba(255,255,255,0.1)] transition-colors duration-500">
+              <Clock size={20} className="text-concrete" strokeWidth={1.5} />
+            </div>
+          </div>
+          <h1 className="font-display text-3xl font-light tracking-tight mb-4 text-concrete">Credentials Pending</h1>
+          <p className="text-concrete/70 font-light leading-relaxed mb-8">
+            Access to the staff nexus is restricted to verified professionals. Your credentials are currently awaiting administrative validation. Access is granted only once an administrator approves your profile.
+          </p>
+          <Magnetic className="w-full">
+            <button 
+              onClick={() => signOut(auth).then(() => navigate('/staff-login'))}
+              className="w-full bg-transparent border border-concrete text-concrete py-4 font-bold uppercase tracking-widest hover:bg-concrete hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 text-xs"
+            >
+              <LogOut size={16} />
+              Return to Logistics
+            </button>
+          </Magnetic>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-concrete dark:bg-charcoal transition-colors duration-500 pt-24 pb-12 px-6 lg:px-12">
@@ -2268,6 +2651,41 @@ export default function StaffPortal() {
             </div>
 
             <div className="space-y-6">
+              <div className="flex flex-col items-center gap-4 mb-4">
+                <div className="relative w-32 h-32 bg-charcoal/10 dark:bg-concrete/10 rounded-full overflow-hidden border-2 border-accent group shadow-inner">
+                  {profilePhoto ? (
+                    <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-steel font-mono text-[10px] uppercase text-center p-4">Identity Not Uploaded</div>
+                  )}
+                  <label className="absolute inset-0 bg-charcoal/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-all duration-300 cursor-pointer">
+                    <Upload size={20} className="text-white mb-2" />
+                    <span className="text-white font-mono text-[8px] uppercase tracking-widest font-bold">Upload Matrix</span>
+                    <input 
+                      type="file" 
+                      className="hidden" 
+                      accept="image/*" 
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (file.size > 1 * 1024 * 1024) {
+                          setStatusMessage({ text: "Profile picture must be under 1MB.", type: 'error' });
+                          return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                          const result = ev.target?.result as string;
+                          setProfilePhoto(result);
+                        };
+                        reader.readAsDataURL(file);
+                        e.target.value = '';
+                      }} 
+                    />
+                  </label>
+                </div>
+                <p className="font-mono text-[8px] text-steel uppercase tracking-[0.3em] font-bold">Biometric Authentication Node</p>
+              </div>
+
               <div>
                 <label className="block font-mono text-[10px] uppercase tracking-widest text-steel mb-3">Official Full Name</label>
                 <input 
@@ -2296,7 +2714,8 @@ export default function StaffPortal() {
                   try {
                     await updateDoc(doc(db, 'users', user.uid), {
                       officialName: displayName.trim(),
-                      title: userTitle.trim()
+                      title: userTitle.trim(),
+                      photoUrl: profilePhoto
                     });
                     setIsProfileModalOpen(false);
                     // Update state to trigger re-renders of logs
@@ -2311,6 +2730,59 @@ export default function StaffPortal() {
                 <Check size={16} /> Save Professional Profile
               </button>
             </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* 2FA Confirmation Modal */}
+      {show2FAConfirmation && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-charcoal/90 backdrop-blur-md">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-concrete dark:bg-charcoal max-w-lg w-full p-10 shadow-2xl border border-accent/20 relative"
+          >
+            <div className="absolute top-0 left-0 w-full h-1 bg-accent"></div>
+            <div className="flex justify-center mb-8">
+              <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center text-accent">
+                <Shield size={32} strokeWidth={1.5} />
+              </div>
+            </div>
+            
+            <h2 className="font-display text-4xl font-bold uppercase tracking-tight text-charcoal dark:text-concrete text-center mb-6">
+              Security Protocol 02
+            </h2>
+            
+            <div className="space-y-6 mb-10">
+              <p className="font-mono text-xs text-charcoal/80 dark:text-concrete/70 leading-relaxed text-center uppercase tracking-widest">
+                Our security directive requires all staff members to enable Two-Factor Authentication (2FA) on their identity provider accounts.
+              </p>
+              
+              <div className="p-6 bg-accent/5 border border-accent/10 space-y-4">
+                <h3 className="font-mono text-[10px] uppercase font-bold text-accent tracking-widest">Verification Steps:</h3>
+                <ul className="space-y-2 font-mono text-[9px] text-steel uppercase tracking-widest leading-loose">
+                  <li className="flex items-start gap-3">
+                    <span className="text-accent">01.</span> Access your Google Account settings from your primary device.
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-accent">02.</span> Navigate to "Security" and ensure "2-Step Verification" is active.
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-accent">03.</span> Confirm the setting below to acknowledge compliance with this security policy.
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <button 
+              onClick={confirm2FA}
+              className="w-full py-5 bg-accent text-white font-mono text-xs uppercase font-bold tracking-[0.2em] hover:opacity-90 transition-all shadow-lg shadow-accent/20"
+            >
+              I have verified 2FA Activation
+            </button>
+            <p className="mt-6 font-mono text-[8px] text-center text-steel uppercase tracking-widest opacity-50">
+              Failure to maintain active 2FA may result in revocation of administrative privileges.
+            </p>
           </motion.div>
         </div>
       )}

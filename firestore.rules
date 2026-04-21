@@ -3,135 +3,10 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ===============================================================
-    // Assumed Data Model
-    // ===============================================================
-    //
-    // Collection: bookingRequests
-    // Document ID: Auto-generated
-    // Fields:
-    //   - userId: string (required, immutable) - The UID of the user
-    //   - fullName: string (required) - Client's full name (max 100 chars)
-    //   - projectScale: string (required) - 'residential', 'commercial', or 'regional'
-    //   - preferredDate: string (required) - YYYY-MM-DD format
-    //   - createdAt: timestamp (required, immutable) - Creation time
-    //   - status: string (required) - 'pending', 'reviewed', 'contacted'
-    //
-    // Collection: users
-    // Document ID: User UID
-    // Fields:
-    //   - email: string (required, immutable)
-    //   - role: string (required) - 'client' or 'admin'
-    //
-    // Collection: projectUpdates
-    // Document ID: Auto-generated
-    // Fields:
-    //   - clientId: string (required, immutable) - The UID of the client
-    //   - title: string (required) - Title of the update
-    //   - description: string (required) - Detailed description
-    //   - imageUrl: string (optional) - URL to an image
-    //   - createdAt: timestamp (required, immutable) - Creation time
-    //
-    // Collection: messages
-    // Document ID: Auto-generated
-    // Fields:
-    //   - senderId: string (required, immutable) - The UID of the sender
-    //   - receiverId: string (required, immutable) - The UID of the receiver
-    //   - text: string (required) - The message content
-    //   - createdAt: timestamp (required, immutable) - Creation time
-    //   - read: boolean (required) - Whether the message has been read
-    //
-    // Collection: milestones
-    // Document ID: Auto-generated
-    // Fields:
-    //   - clientId: string (required, immutable) - The UID of the client
-    //   - title: string (required) - Title of the milestone
-    //   - status: string (required) - 'completed', 'in-progress', or 'upcoming'
-    //   - date: string (optional) - YYYY-MM-DD format
-    //   - order: number (required) - Order of the milestone
-    //   - createdAt: timestamp (required, immutable) - Creation time
-    //
-    // Collection: invoices
-    // Document ID: Auto-generated
-    // Fields:
-    //   - clientId: string (required, immutable)
-    //   - amount: number (required)
-    //   - description: string (required)
-    //   - status: string (required) - 'unpaid', 'paid'
-    //   - dueDate: string (required) - YYYY-MM-DD format
-    //   - createdAt: timestamp (required, immutable)
-    //
-    // Collection: projectModels
-    // Document ID: Auto-generated
-    // Fields:
-    //   - clientId: string (required, immutable)
-    //   - title: string (required)
-    //   - modelUrl: string (required)
-    //   - createdAt: timestamp (required, immutable)
-    //
-    // Collection: notifications
-    // Document ID: Auto-generated
-    // Fields:
-    //   - userId: string (required, immutable)
-    //   - title: string (required)
-    //   - message: string (required)
-    //   - read: boolean (required)
-    //   - createdAt: timestamp (required, immutable)
-    //
-    // Collection: documents
-    // Document ID: Auto-generated
-    // Fields:
-    //   - clientId: string (required, immutable) - The UID of the client
-    //   - fileName: string (required) - The name of the file
-    //   - fileType: string (required) - The MIME type of the file
-    //   - fileData: string (required) - The base64 encoded content of the file
-    //   - uploadedBy: string (required, immutable) - The UID of the uploader
-    //   - createdAt: timestamp (required, immutable) - Creation time
-    //
-    // Collection: annotations
-    // Document ID: Auto-generated
-    // Fields:
-    //   - blueprintId: string (required, immutable) - ID of the blueprint
-    //   - authorId: string (required, immutable) - UID of the author
-    //   - x: number (required) - X coordinate
-    //   - y: number (required) - Y coordinate
-    //   - comment: string (required) - Annotation comment
-    //   - createdAt: timestamp (required, immutable) - Creation time
-    //
-    // Collection: testimonials
-    // Document ID: Auto-generated
-    // Fields:
-    //   - clientId: string (required, immutable)
-    //   - clientName: string (required)
-    //   - rating: number (required) - 1 to 5
-    //   - comment: string (required) - Max 1000 chars
-    //   - approved: boolean (required) - Admin controlled
-    //   - projectType: string (required)
-    //   - createdAt: timestamp (required, immutable)
-    //
-    // ===============================================================
-
-    // Collection: projects
-    // Document ID: clientId
-    // Fields:
-    //   - clientId: string (required, immutable)
-    //   - daysRemaining: number
-    //   - dailySummary: string
-    //   - budgetUtilized: number
-    //   - currentPhase: string
-    //   - nextActivity: string
-    //   - pmId: string
-    //   - updatedAt: timestamp
-    //
-    // Collection: technicalReports
-    // Document ID: Auto-generated
-    // Fields:
-    //   - clientId: string (required, immutable)
-    //   - title: string (required)
-    //   - fileUrl: string (required)
-    //   - fileName: string (required)
-    //   - authorId: string (required, immutable)
-    //   - createdAt: timestamp (required, immutable)
+    // 0. Global Safety Net - Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
 
     // ===============================================================
     // Helper Functions
@@ -142,490 +17,332 @@ service cloud.firestore {
     }
 
     function isVerifiedUser() {
-      return isAuthenticated();
+      return isAuthenticated() && request.auth.token.get('email_verified', false) == true;
     }
     
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    function isVerifiedOwner(userId) {
-      return isVerifiedUser() && request.auth.uid == userId;
+    function isHardcodedAdmin() {
+      return isAuthenticated() && request.auth.token.email in [
+        "machariag605@gmail.com",
+        "danuthiaandassociates@gmail.com"
+      ];
     }
-    
-    function isDocOwner() {
-      return isVerifiedUser() && request.auth.uid == resource.data.userId;
-    }
-    
+
     function isAdmin() {
-      return isVerifiedUser() && 
-        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
-        (request.auth.token.email in ["machariag605@gmail.com", "machariajoseph20222@gmail.com", "danuthiaandassociates@gmail.com", "urbanplanning2027@gmail.com"]));
+      return isHardcodedAdmin() || (
+        isVerifiedUser() && (
+          exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+        )
+      );
     }
 
     function isStaff() {
-      return isVerifiedUser() && (isAdmin() || 
+      return isVerifiedUser() && (
+        isAdmin() || 
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['project_manager', 'architect', 'surveyor', 'planner', 'financial_analyst', 'engineer']));
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['project_manager', 'architect', 'surveyor', 'planner', 'financial_analyst', 'engineer', 'staff'])
+      );
     }
 
     function isPM() {
-      return isVerifiedUser() && 
+      return isVerifiedUser() && (
+        isAdmin() ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'project_manager');
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'project_manager')
+      );
+    }
+
+    function isApproved() {
+      return isVerifiedUser() && (
+        isAdmin() || 
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         !(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['pending', 'pending_staff']))
+      );
     }
 
     function isAssignedStaff(clientId) {
       return isStaff() && (
         isAdmin() || 
-        (exists(/databases/$(database)/documents/users/$(clientId)) && 
-         (('assignedPM' in get(/databases/$(database)/documents/users/$(clientId)).data && get(/databases/$(database)/documents/users/$(clientId)).data.assignedPM == request.auth.uid) || 
-          ('assignedStaff' in get(/databases/$(database)/documents/users/$(clientId)).data && 
-           get(/databases/$(database)/documents/users/$(clientId)).data.assignedStaff is list && 
-           request.auth.uid in get(/databases/$(database)/documents/users/$(clientId)).data.assignedStaff)))
+        (exists(/databases/$(database)/documents/users/$(clientId)) && (
+          (get(/databases/$(database)/documents/users/$(clientId)).data.get('assignedPM', '') == request.auth.uid) || 
+          (request.auth.uid in get(/databases/$(database)/documents/users/$(clientId)).data.get('assignedStaff', []))
+        ))
       );
     }
 
-    function hasOnlyAllowedFields(allowedFields) {
-      return request.resource.data.keys().removeAll(allowedFields).size() == 0;
-    }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
 
-    function hasRequiredFields(requiredFields) {
-      return request.resource.data.keys().hasAll(requiredFields);
+    function isValidId(id) {
+       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
     function isValidDateString(dateStr) {
       return dateStr is string && dateStr.matches("^\\d{4}-\\d{2}-\\d{2}$");
     }
 
-    function isValidId(id) {
-       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-    }
-
     // ===============================================================
-    // Domain Validators
+    // Domain Validators (The "Anti-Update-Gap")
     // ===============================================================
 
-    function isValidProject() {
-      let data = request.resource.data;
-      return hasOnlyAllowedFields(['clientId', 'daysRemaining', 'dailySummary', 'budgetUtilized', 'currentPhase', 'nextActivity', 'pmId', 'updatedAt']) &&
-             hasRequiredFields(['clientId', 'updatedAt']) &&
-             data.clientId is string &&
-             (!('daysRemaining' in data) || data.daysRemaining is number) &&
-             (!('dailySummary' in data) || data.dailySummary is string) &&
-             (!('budgetUtilized' in data) || data.budgetUtilized is number) &&
-             (!('currentPhase' in data) || data.currentPhase is string) &&
-             (!('nextActivity' in data) || data.nextActivity is string) &&
-             (!('pmId' in data) || data.pmId is string) &&
-             data.updatedAt is timestamp;
-    }
-
-    function isValidTechnicalReport() {
-      let data = request.resource.data;
-      return hasOnlyAllowedFields(['clientId', 'title', 'fileUrl', 'fileName', 'authorId', 'createdAt']) &&
-             hasRequiredFields(['clientId', 'title', 'fileUrl', 'fileName', 'authorId', 'createdAt']) &&
-             data.clientId is string &&
-             data.title is string && data.title.size() > 0 &&
-             data.fileUrl is string &&
-             data.fileName is string &&
-             data.authorId is string &&
-             data.createdAt is timestamp;
-    }
-
-    function isValidBookingRequest() {
-      let data = request.resource.data;
-      return hasOnlyAllowedFields(['userId', 'fullName', 'email', 'phone', 'location', 'projectType', 'preferredDate', 'description', 'createdAt', 'status']) &&
-             hasRequiredFields(['userId', 'fullName', 'email', 'phone', 'location', 'projectType', 'preferredDate', 'description', 'createdAt', 'status']) &&
-             data.userId is string && data.userId == 'anonymous' &&
-             data.fullName is string && data.fullName.size() > 0 && data.fullName.size() <= 100 &&
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'role']) &&
              data.email is string && data.email.size() > 0 && data.email.size() <= 150 &&
-             data.phone is string && data.phone.size() > 0 && data.phone.size() <= 50 &&
-             data.location is string && data.location.size() > 0 && data.location.size() <= 200 &&
-             data.projectType is string && data.projectType.size() > 0 && data.projectType.size() <= 100 &&
-             isValidDateString(data.preferredDate) &&
-             data.description is string && data.description.size() > 0 && data.description.size() <= 2000 &&
-             data.createdAt is timestamp &&
-             data.status in ['pending', 'reviewed', 'contacted'];
-    }
-
-
-
-    function isValidUser() {
-      let data = request.resource.data;
-      return hasOnlyAllowedFields(['email', 'role', 'officialName', 'title', 'needsOnboarding', 'goals', 'phone', 'location', 'createdAt', 'updatedAt', 'assignedPM', 'assignedStaff']) &&
-             hasRequiredFields(['email', 'role']) &&
-             data.email is string && data.email.size() > 0 && data.email.size() <= 150 &&
-             data.role in ['pending', 'pending_staff', 'client', 'admin', 'project_manager', 'architect', 'surveyor', 'planner', 'financial_analyst', 'engineer'] &&
+             data.role in ['pending', 'pending_staff', 'client', 'admin', 'project_manager', 'architect', 'surveyor', 'planner', 'financial_analyst', 'engineer', 'staff'] &&
              (!('officialName' in data) || (data.officialName is string && data.officialName.size() <= 100)) &&
              (!('title' in data) || (data.title is string && data.title.size() <= 100)) &&
              (!('phone' in data) || (data.phone is string && data.phone.size() <= 50)) &&
              (!('location' in data) || (data.location is string && data.location.size() <= 200)) &&
+             (!('photoUrl' in data) || (data.photoUrl is string && data.photoUrl.size() <= 1500000)) && 
              (!('needsOnboarding' in data) || (data.needsOnboarding is bool)) &&
-             (!('goals' in data) || (data.goals is list)) &&
+             (!('hasConfirmed2FA' in data) || (data.hasConfirmed2FA is bool)) &&
              (!('assignedPM' in data) || (data.assignedPM is string)) &&
-             (!('assignedStaff' in data) || (data.assignedStaff is list)) &&
-             (!('createdAt' in data) || (data.createdAt is timestamp)) &&
-             (!('updatedAt' in data) || (data.updatedAt is timestamp));
-    }
-    function isValidNewsletter() {
-      let data = request.resource.data;
-      return hasOnlyAllowedFields(['email', 'createdAt']) &&
-             hasRequiredFields(['email', 'createdAt']) &&
-             data.email is string && data.email.size() > 0 && data.email.size() <= 150 &&
-             data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") &&
-             data.createdAt is timestamp;
+             (!('assignedStaff' in data) || (data.assignedStaff is list));
     }
 
-    function isValidProjectUpdate() {
-      let data = request.resource.data;
-      return hasOnlyAllowedFields(['clientId', 'title', 'description', 'imageUrl', 'createdAt', 'fileUrl', 'fileName', 'date', 'status']) &&
-             hasRequiredFields(['clientId', 'title', 'description', 'createdAt']) &&
-             data.clientId is string && data.clientId.size() > 0 &&
-             data.title is string && data.title.size() > 0 && data.title.size() <= 150 &&
-             data.description is string && data.description.size() > 0 && data.description.size() <= 10000 &&
-             (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1000)) &&
-             (!('fileUrl' in data) || (data.fileUrl is string && data.fileUrl.size() <= 2000000)) &&
-             (!('fileName' in data) || (data.fileName is string && data.fileName.size() <= 255)) &&
-             data.createdAt is timestamp;
+    function isValidProject(data) {
+      return data.keys().hasAll(['clientId', 'updatedAt']) &&
+             data.clientId is string && isValidId(data.clientId) &&
+             data.updatedAt == request.time &&
+             (!('siteParams' in data) || data.siteParams is map) &&
+             (!('financialParams' in data) || data.financialParams is map);
     }
 
-    function isValidMessage() {
-      let data = request.resource.data;
-      return hasOnlyAllowedFields(['senderId', 'receiverId', 'text', 'createdAt', 'read']) &&
-             hasRequiredFields(['senderId', 'receiverId', 'text', 'createdAt', 'read']) &&
-             data.senderId is string && data.senderId.size() > 0 &&
-             data.receiverId is string && data.receiverId.size() > 0 &&
-             data.text is string && data.text.size() > 0 && data.text.size() <= 2000 &&
-             data.createdAt is timestamp &&
+    function isValidInternalLog(data) {
+      return data.keys().hasAll(['projectId', 'staffName', 'role', 'message', 'status', 'createdAt']) &&
+             isValidId(data.projectId) &&
+             data.staffName == request.auth.token.email &&
+             data.message is string && data.message.size() <= 10000 &&
+             data.status in ['pending_review', 'reviewed'] &&
+             data.createdAt == request.time;
+    }
+
+    function isValidProjectUpdate(data) {
+      return data.keys().hasAll(['clientId', 'title', 'description', 'createdAt']) &&
+             isValidId(data.clientId) &&
+             data.title is string && data.title.size() <= 150 &&
+             data.description is string && data.description.size() <= 10000 &&
+             data.createdAt == request.time;
+    }
+
+    function isValidMessage(data) {
+      return data.keys().hasAll(['senderId', 'receiverId', 'text', 'createdAt', 'read']) &&
+             data.senderId == request.auth.uid &&
+             data.text is string && data.text.size() <= 2000 &&
+             data.createdAt == request.time &&
              data.read is bool;
     }
 
-    function isValidDocument() {
-      let data = request.resource.data;
-      return hasOnlyAllowedFields(['clientId', 'fileName', 'fileType', 'fileData', 'uploadedBy', 'createdAt']) &&
-             hasRequiredFields(['clientId', 'fileName', 'fileType', 'fileData', 'uploadedBy', 'createdAt']) &&
-             data.clientId is string && data.clientId.size() > 0 &&
-             data.fileName is string && data.fileName.size() > 0 && data.fileName.size() <= 255 &&
-             data.fileType is string && data.fileType.size() > 0 && data.fileType.size() <= 100 &&
-             data.fileData is string && data.fileData.size() > 0 && data.fileData.size() <= 1048576 &&
-             data.uploadedBy is string && data.uploadedBy.size() > 0 &&
-             data.createdAt is timestamp;
-    }
-
-    function isValidClientLead() {
-      let data = request.resource.data;
-      return hasOnlyAllowedFields(['client', 'project', 'createdAt', 'status']) &&
-             hasRequiredFields(['client', 'project', 'createdAt', 'status']) &&
-             data.client is map && data.client.keys().hasAll(['full_name']) &&
-             data.client.full_name is string && data.client.full_name.size() > 0 && data.client.full_name.size() <= 100 &&
-             (!('contact_preference' in data.client) || (data.client.contact_preference in ['email', 'phone', 'unspecified'])) &&
-             data.project is map && data.project.keys().hasAll(['scope', 'location', 'urgency_flag']) &&
-             data.project.scope is string && data.project.scope.size() > 0 && data.project.scope.size() <= 1000 &&
-             data.project.location is string && data.project.location.size() > 0 && data.project.location.size() <= 200 &&
-             (!('budget_tier' in data.project) || (data.project.budget_tier in ['low', 'medium', 'high', 'enterprise', 'undecided'])) &&
-             data.project.urgency_flag is bool &&
-             data.createdAt is timestamp &&
-             data.status in ['new', 'contacted', 'archived'];
-    }
-
-    function isValidMilestone() {
-      let data = request.resource.data;
-      return hasOnlyAllowedFields(['clientId', 'title', 'status', 'date', 'order', 'createdAt']) &&
-             hasRequiredFields(['clientId', 'title', 'status', 'order', 'createdAt']) &&
-             data.clientId is string && data.clientId.size() > 0 &&
-             data.title is string && data.title.size() > 0 && data.title.size() <= 150 &&
-             data.status in ['completed', 'in-progress', 'upcoming'] &&
-             (!('date' in data) || isValidDateString(data.date)) &&
-             data.order is number &&
-             data.createdAt is timestamp;
-    }
-
-    function isValidInvoice() {
-      let data = request.resource.data;
-      return hasOnlyAllowedFields(['clientId', 'amount', 'description', 'status', 'dueDate', 'createdAt']) &&
-             hasRequiredFields(['clientId', 'amount', 'description', 'status', 'dueDate', 'createdAt']) &&
-             data.clientId is string && data.clientId.size() > 0 &&
+    function isValidInvoice(data) {
+      return data.keys().hasAll(['clientId', 'amount', 'description', 'status', 'dueDate', 'createdAt']) &&
              data.amount is number && data.amount >= 0 &&
-             data.description is string && data.description.size() > 0 && data.description.size() <= 500 &&
+             data.description is string && data.description.size() <= 500 &&
              data.status in ['unpaid', 'paid'] &&
              isValidDateString(data.dueDate) &&
-             data.createdAt is timestamp;
+             data.createdAt == request.time;
     }
 
-    function isValidProjectModel() {
-      let data = request.resource.data;
-      return hasOnlyAllowedFields(['clientId', 'title', 'modelUrl', 'createdAt']) &&
-             hasRequiredFields(['clientId', 'title', 'modelUrl', 'createdAt']) &&
-             data.clientId is string && data.clientId.size() > 0 &&
-             data.title is string && data.title.size() > 0 && data.title.size() <= 150 &&
-             data.modelUrl is string && data.modelUrl.size() > 0 && data.modelUrl.size() <= 1000 &&
-             data.createdAt is timestamp;
+    function isValidNewsletter(data) {
+      return data.keys().hasAll(['email', 'createdAt']) &&
+             data.email is string && data.email.size() > 0 && data.email.size() <= 150 &&
+             data.createdAt == request.time;
     }
 
-    function isValidNotification() {
-      let data = request.resource.data;
-      return hasOnlyAllowedFields(['userId', 'title', 'message', 'read', 'createdAt']) &&
-             hasRequiredFields(['userId', 'title', 'message', 'read', 'createdAt']) &&
-             data.userId is string && data.userId.size() > 0 &&
-             data.title is string && data.title.size() > 0 && data.title.size() <= 150 &&
-             data.message is string && data.message.size() > 0 && data.message.size() <= 1000 &&
+    function isValidBookingRequest(data) {
+      return data.keys().hasAll(['userId', 'fullName', 'email', 'phone', 'location', 'projectType', 'preferredDate', 'description', 'status', 'createdAt']) &&
+             data.userId is string &&
+             data.fullName is string && data.fullName.size() <= 100 &&
+             data.email is string && data.email.size() <= 150 &&
+             data.phone is string && data.phone.size() <= 50 &&
+             data.location is string && data.location.size() <= 200 &&
+             data.projectType is string &&
+             data.preferredDate is string &&
+             data.description is string && data.description.size() <= 5000 &&
+             data.status in ['pending', 'confirmed', 'completed', 'cancelled'] &&
+             data.createdAt == request.time;
+    }
+
+    function isValidNotification(data) {
+      return data.keys().hasAll(['userId', 'title', 'message', 'read', 'createdAt']) &&
+             isValidId(data.userId) &&
+             data.title is string && data.title.size() <= 200 &&
+             data.message is string && data.message.size() <= 2000 &&
              data.read is bool &&
-             data.createdAt is timestamp;
+             data.createdAt == request.time;
     }
 
-    function isValidAnnotation() {
-      let data = request.resource.data;
-      return hasOnlyAllowedFields(['blueprintId', 'authorId', 'x', 'y', 'comment', 'createdAt']) &&
-             hasRequiredFields(['blueprintId', 'authorId', 'x', 'y', 'comment', 'createdAt']) &&
-             data.blueprintId is string && data.blueprintId.size() > 0 &&
-             data.authorId is string && data.authorId.size() > 0 &&
-             data.x is number &&
-             data.y is number &&
-             data.comment is string && data.comment.size() > 0 && data.comment.size() <= 2000 &&
-             data.createdAt is timestamp;
+    function isValidProjectModel(data) {
+      return data.keys().hasAll(['clientId', 'title', 'modelUrl', 'createdAt']) &&
+             isValidId(data.clientId) &&
+             data.title is string && data.title.size() <= 150 &&
+             data.modelUrl is string && data.modelUrl.size() <= 5000 &&
+             data.createdAt == request.time;
     }
 
-    function isValidTestimonial() {
-      let data = request.resource.data;
-      return hasOnlyAllowedFields(['clientId', 'clientName', 'rating', 'comment', 'approved', 'projectType', 'createdAt']) &&
-             hasRequiredFields(['clientId', 'clientName', 'rating', 'comment', 'approved', 'projectType', 'createdAt']) &&
-             data.clientId is string && data.clientId.size() > 0 &&
-             data.clientName is string && data.clientName.size() > 0 && data.clientName.size() <= 100 &&
-             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
-             data.comment is string && data.comment.size() > 0 && data.comment.size() <= 1000 &&
-             data.approved is bool &&
-             data.projectType is string && data.projectType.size() > 0 &&
-             data.createdAt is timestamp;
+    function isValidAnnotation(data) {
+      return data.keys().hasAll(['blueprintId', 'authorId', 'x', 'y', 'comment', 'createdAt']) &&
+             isValidId(data.blueprintId) &&
+             isValidId(data.authorId) &&
+             data.x is number && data.y is number &&
+             data.comment is string && data.comment.size() <= 1000 &&
+             data.createdAt == request.time;
     }
 
-    function isValidInternalChat() {
-      let data = request.resource.data;
-      return hasOnlyAllowedFields(['senderId', 'receiverId', 'text', 'createdAt', 'read', 'projectId']) &&
-             hasRequiredFields(['senderId', 'receiverId', 'text', 'createdAt', 'read', 'projectId']) &&
-             data.senderId is string && data.senderId == request.auth.uid &&
-             data.receiverId is string &&
-             data.projectId is string &&
-             data.text is string && data.text.size() > 0 && data.text.size() <= 2000 &&
-             data.createdAt is timestamp &&
+    function isValidClientLead(data) {
+      return data.keys().hasAll(['client', 'project', 'createdAt', 'status']) &&
+             data.client is map && data.project is map &&
+             data.status in ['new', 'contacted', 'archived'] &&
+             data.createdAt == request.time;
+    }
+
+    function isValidInternalMessage(data) {
+      return data.keys().hasAll(['senderId', 'receiverId', 'projectId', 'text', 'createdAt', 'read']) &&
+             data.senderId == request.auth.uid &&
+             isValidId(data.projectId) &&
+             data.text is string && data.text.size() <= 2000 &&
+             data.createdAt == request.time &&
              data.read is bool;
-    }
-
-    function isValidInternalLog() {
-      let data = request.resource.data;
-      return hasOnlyAllowedFields(['projectId', 'staffName', 'role', 'message', 'status', 'createdAt', 'fileUrl', 'fileName']) &&
-             hasRequiredFields(['projectId', 'staffName', 'role', 'message', 'status', 'createdAt']) &&
-             data.projectId is string && data.projectId.size() > 0 &&
-             data.staffName is string && data.staffName == request.auth.token.email &&
-             data.role is string &&
-             data.message is string && data.message.size() > 0 && data.message.size() <= 10000 &&
-             data.status in ['pending_review', 'reviewed'] &&
-             (!('fileUrl' in data) || (data.fileUrl is string && data.fileUrl.size() <= 2000000)) &&
-             (!('fileName' in data) || (data.fileName is string && data.fileName.size() <= 255)) &&
-             data.createdAt is timestamp;
     }
 
     // ===============================================================
-    // Rules
+    // Rules Matching
     // ===============================================================
 
     match /users/{userId} {
-      allow read: if (isValidId(userId) && isOwner(userId)) || isStaff();
-      // Only allow users to create their own profile with 'pending' or 'pending_staff' role, or admin can create any
-      allow create: if isValidId(userId) && isAuthenticated() && isValidUser() && 
-                    ((isOwner(userId) && (request.resource.data.role == 'pending' || request.resource.data.role == 'pending_staff')) || isAdmin());
-      // Only admin can update roles
-      allow update: if isValidId(userId) && isAuthenticated() && isValidUser() && 
-                    ((isOwner(userId) && request.resource.data.role == resource.data.role && request.resource.data.email == resource.data.email) || isAdmin());
-      allow delete: if isValidId(userId) && isAdmin();
-    }
-
-    match /newsletter/{docId} {
-      allow read, delete: if isAdmin();
-      allow create: if isValidNewsletter() && request.resource.data.createdAt == request.time;
-      allow update: if false;
-    }
-
-    match /bookingRequests/{requestId} {
-      // Users can read their own requests, admins can read all
-      allow read: if isDocOwner() || isAdmin();
+      // PII Access restriction: Only owner, assigned staff, or admin
+      allow get: if isOwner(userId) || isAdmin() || isAssignedStaff(userId);
+      allow list: if isAdmin() || (
+        isStaff() && (
+          // Allow staff to list clients assigned to them
+          (resource.data.role == 'client' && (resource.data.get('assignedPM', '') == request.auth.uid || request.auth.uid in resource.data.get('assignedStaff', []))) ||
+          // Allow staff to list other staff members for chat
+          (resource.data.role in ['project_manager', 'architect', 'engineer', 'surveyor', 'planner', 'financial_analyst', 'admin', 'staff'])
+        )
+      );
       
-      // Anyone can create a booking request
-      allow create: if isValidBookingRequest() && 
-                    request.resource.data.userId == 'anonymous' &&
-                    request.resource.data.status == 'pending' &&
-                    request.resource.data.createdAt == request.time;
+      allow create: if isValidId(userId) && isOwner(userId) && isValidUser(incoming()) && 
+                    incoming().role in ['pending', 'pending_staff'] &&
+                    !('assignedPM' in incoming()) && !('assignedStaff' in incoming());
                     
-      // Users cannot update their requests once submitted, only admins can update status
-      allow update: if isAdmin() && 
-                    isValidBookingRequest() && 
-                    request.resource.data.userId == resource.data.userId &&
-                    request.resource.data.createdAt == resource.data.createdAt &&
-                    request.resource.data.fullName == resource.data.fullName &&
-                    request.resource.data.email == resource.data.email &&
-                    request.resource.data.phone == resource.data.phone &&
-                    request.resource.data.location == resource.data.location &&
-                    request.resource.data.projectType == resource.data.projectType &&
-                    request.resource.data.preferredDate == resource.data.preferredDate &&
-                    request.resource.data.description == resource.data.description;
-                    
-      allow delete: if isAdmin();
-    }
-
-    match /projectUpdates/{updateId} {
-      // Clients can read their own updates, admins can read all
-      allow read: if (isVerifiedUser() && resource.data.clientId == request.auth.uid) || isAdmin();
+      allow update: if (isOwner(userId) && isValidUser(incoming()) && 
+                        incoming().role == existing().role && 
+                        incoming().email == existing().email &&
+                        !incoming().diff(existing()).affectedKeys().hasAny(['assignedPM', 'assignedStaff'])) || isAdmin();
       
-      // Only admins can create, update, or delete project updates
-      allow create: if isAdmin() && isValidProjectUpdate() && request.resource.data.createdAt == request.time;
-      allow update: if isAdmin() && isValidProjectUpdate() && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.clientId == resource.data.clientId;
       allow delete: if isAdmin();
     }
 
-    match /milestones/{milestoneId} {
-      allow read: if isVerifiedUser() && (resource.data.clientId == request.auth.uid || isAdmin());
-      allow create: if isAdmin() && isValidMilestone() && request.resource.data.createdAt == request.time;
-      allow update: if isAdmin() && isValidMilestone() && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.clientId == resource.data.clientId;
-      allow delete: if isAdmin();
-    }
-
-    match /annotations/{annotationId} {
-      allow read: if isVerifiedUser() && (resource.data.authorId == request.auth.uid || isAdmin());
-      allow create: if isVerifiedUser() && isValidAnnotation() && 
-                    request.resource.data.createdAt == request.time &&
-                    request.resource.data.authorId == request.auth.uid;
-      allow update: if false;
-      allow delete: if isVerifiedUser() && (resource.data.authorId == request.auth.uid || isAdmin());
-    }
-
-    match /messages/{messageId} {
-      // Users can read messages where they are the sender or receiver, admins/PMs can read all
-      allow read: if isVerifiedUser() && (isAdmin() || isPM() || resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid);
-      
-      // Users can create messages if they are the sender. Clients can only send to 'admin' (global) or a PM.
-      allow create: if isVerifiedUser() && isValidMessage() && 
-                    request.resource.data.senderId == request.auth.uid &&
-                    request.resource.data.createdAt == request.time &&
-                    (request.resource.data.receiverId == 'admin' || isAdmin() || isPM() || 
-                     (exists(/databases/$(database)/documents/users/$(request.resource.data.receiverId)) && 
-                      get(/databases/$(database)/documents/users/$(request.resource.data.receiverId)).data.role == 'project_manager'));
-                    
-      // Users can only update the 'read' status of messages they received
-      allow update: if isVerifiedUser() && isValidMessage() &&
-                    request.resource.data.senderId == resource.data.senderId &&
-                    request.resource.data.receiverId == resource.data.receiverId &&
-                    request.resource.data.text == resource.data.text &&
-                    request.resource.data.createdAt == resource.data.createdAt &&
-                    (
-                      (resource.data.receiverId == request.auth.uid && request.resource.data.read == true) ||
-                      isAdmin() || isPM()
-                    );
-                    
-      allow delete: if isAdmin();
-    }
-
-    match /documents/{documentId} {
-      allow read: if isVerifiedUser() && (resource.data.clientId == request.auth.uid || isAdmin());
-      allow create: if isVerifiedUser() && isValidDocument() && 
-                    request.resource.data.createdAt == request.time &&
-                    request.resource.data.uploadedBy == request.auth.uid &&
-                    (request.resource.data.clientId == request.auth.uid || isAdmin());
-      allow update: if false;
-      allow delete: if isVerifiedUser() && (resource.data.uploadedBy == request.auth.uid || isAdmin());
-    }
-
-    match /clientLeads/{leadId} {
-      allow read: if isAdmin();
-      allow create: if isValidClientLead() && request.resource.data.createdAt == request.time;
-      allow update: if isAdmin() && isValidClientLead() && request.resource.data.createdAt == resource.data.createdAt;
-      allow delete: if isAdmin();
-    }
-
-    match /invoices/{invoiceId} {
-      allow read: if isVerifiedUser() && (resource.data.clientId == request.auth.uid || isAdmin());
-      allow create: if isAdmin() && isValidInvoice() && request.resource.data.createdAt == request.time;
-      allow update: if isAdmin() && isValidInvoice() && request.resource.data.createdAt == resource.data.createdAt;
-      allow delete: if isAdmin();
-    }
-
-    match /projectModels/{modelId} {
-      allow read: if isVerifiedUser() && (resource.data.clientId == request.auth.uid || isAdmin());
-      allow create: if isAdmin() && isValidProjectModel() && request.resource.data.createdAt == request.time;
-      allow update: if isAdmin() && isValidProjectModel() && request.resource.data.createdAt == resource.data.createdAt;
-      allow delete: if isAdmin();
-    }
-
-    match /notifications/{notificationId} {
-      allow read: if isVerifiedUser() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow create: if isAdmin() && isValidNotification() && request.resource.data.createdAt == request.time;
-      allow update: if isVerifiedUser() && (resource.data.userId == request.auth.uid || isAdmin()) &&
-                    isValidNotification() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
-      allow delete: if isVerifiedUser() && (resource.data.userId == request.auth.uid || isAdmin());
-    }
-
-    match /testimonials/{testimonialId} {
-      // Anyone can read approved testimonials, admins can read all
-      allow read: if (resource.data.approved == true) || isAdmin();
-      
-      // Authenticated users can create their own testimonials (initially unapproved)
-      allow create: if isVerifiedUser() && isValidTestimonial() && 
-                    request.resource.data.clientId == request.auth.uid &&
-                    request.resource.data.approved == false &&
-                    request.resource.data.createdAt == request.time;
-      
-      // Only admins can update (approve) or delete testimonials
-      allow update: if isAdmin() && isValidTestimonial() && 
-                    request.resource.data.createdAt == resource.data.createdAt &&
-                    request.resource.data.clientId == resource.data.clientId;
-      allow delete: if isAdmin();
-    }
-
-    match /internalLogs/{logId} {
-      // PMs and Admins can read all logs. Staff can read all logs for projects they are assigned to
-      allow read: if isAdmin() || (isStaff() && isAssignedStaff(resource.data.projectId));
-      
-      // Any authorized staff can create a log
-      allow create: if isStaff() && isValidInternalLog() && 
-                    isAssignedStaff(request.resource.data.projectId) &&
-                    request.resource.data.status == 'pending_review' &&
-                    request.resource.data.createdAt == request.time;
-                    
-      // PMs and Admins can update status to 'reviewed'
-      allow update: if isStaff() && isValidInternalLog() &&
-                    isAssignedStaff(resource.data.projectId) &&
-                    (isAdmin() || (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'project_manager' && request.resource.data.status == 'reviewed')) &&
-                    request.resource.data.projectId == resource.data.projectId &&
-                    request.resource.data.staffName == resource.data.staffName &&
-                    request.resource.data.role == resource.data.role &&
-                    request.resource.data.message == resource.data.message &&
-                    request.resource.data.createdAt == resource.data.createdAt;
-                    
-      allow delete: if isAdmin();
-    }
-
-    match /internalMessages/{messageId} {
-      allow read: if isAdmin() || (isStaff() && isAssignedStaff(resource.data.projectId) && (resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid));
-      allow create: if isStaff() && isValidInternalChat() && 
-                    isAssignedStaff(request.resource.data.projectId) &&
-                    request.resource.data.createdAt == request.time;
-      allow update: if isStaff() && (resource.data.receiverId == request.auth.uid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
-      allow delete: if isAdmin();
+    match /admins/{adminId} {
+      allow read: if isHardcodedAdmin() || isVerifiedUser();
+      allow write: if isAdmin();
     }
 
     match /projects/{clientId} {
       allow read: if isAdmin() || isOwner(clientId) || isAssignedStaff(clientId);
-      allow create, update: if isAdmin() || (isStaff() && isAssignedStaff(clientId) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'project_manager');
+      allow create: if isAdmin() || (isStaff() && isAssignedStaff(clientId) && 
+                            isValidProject(incoming()) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['project_manager', 'financial_analyst']);
+      allow update: if isAdmin() || (isStaff() && isAssignedStaff(clientId) && isValidProject(incoming()));
+    }
+
+    match /projectUpdates/{updateId} {
+      allow read: if isAdmin() || (isApproved() && (isOwner(resource.data.clientId) || isAssignedStaff(resource.data.clientId)));
+      allow create: if (isPM() || isAdmin()) && isValidProjectUpdate(incoming());
+      allow update: if (isPM() || isAdmin()) && isValidProjectUpdate(incoming()) && incoming().clientId == existing().clientId;
       allow delete: if isAdmin();
     }
 
+    match /messages/{messageId} {
+      allow read: if isVerifiedUser() && (isAdmin() || resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid);
+      allow create: if isApproved() && isValidMessage(incoming());
+      allow update: if isVerifiedUser() && incoming().diff(existing()).affectedKeys().hasOnly(['read']) && existing().receiverId == request.auth.uid;
+    }
+
+    match /internalLogs/{logId} {
+      allow read: if isAdmin() || (isStaff() && isAssignedStaff(resource.data.projectId));
+      allow create: if isStaff() && isValidInternalLog(incoming()) && isAssignedStaff(incoming().projectId);
+      allow update: if (isAdmin() || (isPM() && isAssignedStaff(existing().projectId))) && 
+                    incoming().diff(existing()).affectedKeys().hasOnly(['status']) &&
+                    incoming().status == 'reviewed';
+    }
+
+    match /invoices/{invoiceId} {
+      allow read: if isAdmin() || (isApproved() && (isOwner(resource.data.clientId) || isAssignedStaff(resource.data.clientId)));
+      allow create: if (isAdmin() || isPM()) && isValidInvoice(incoming());
+      allow update: if (isAdmin() || isPM()) && isValidInvoice(incoming()) && incoming().clientId == existing().clientId;
+    }
+
     match /technicalReports/{reportId} {
-      allow read: if isAdmin() || (isVerifiedUser() && resource.data.clientId == request.auth.uid) || isAssignedStaff(resource.data.clientId);
-      allow create: if isStaff() && isValidTechnicalReport() && 
-                    isAssignedStaff(request.resource.data.clientId) &&
-                    request.resource.data.createdAt == request.time && 
-                    request.resource.data.authorId == request.auth.uid;
-      allow update: if false;
-      allow delete: if isAdmin() || (isStaff() && resource.data.authorId == request.auth.uid);
+      allow read: if isAdmin() || (isApproved() && (isOwner(resource.data.clientId) || isAssignedStaff(resource.data.clientId)));
+      allow create: if isStaff() && isAssignedStaff(incoming().clientId) && incoming().createdAt == request.time;
+    }
+
+    match /documents/{documentId} {
+      allow read: if isAdmin() || (isApproved() && (isOwner(resource.data.clientId) || isAssignedStaff(resource.data.clientId)));
+      allow create: if isApproved() && (isOwner(incoming().clientId) || isStaff()) && incoming().createdAt == request.time;
+      allow delete: if isAdmin() || isOwner(resource.data.uploadedBy);
+    }
+    
+    // Supporting collections...
+    match /milestones/{id} { 
+      allow read: if isAdmin() || isStaff() || (isApproved() && isOwner(resource.data.clientId)); 
+      allow write: if isStaff() || isAdmin(); 
+    }
+    match /testimonials/{id} { 
+      allow read: if resource.data.approved == true || isAdmin();
+      allow create: if isVerifiedUser() && incoming().approved == false;
+      allow update, delete: if isAdmin();
+    }
+
+    match /newsletter/{id} {
+      allow read, delete: if isAdmin();
+      allow create: if isValidNewsletter(incoming());
+    }
+
+    match /bookingRequests/{id} {
+      allow read, delete: if isAdmin();
+      allow create: if isValidBookingRequest(incoming());
+      allow update: if isAdmin();
+    }
+
+    match /notifications/{id} {
+      allow read: if isOwner(resource.data.userId) || isHardcodedAdmin() || isAdmin();
+      allow create: if isValidNotification(incoming()) && (isAdmin() || isPM());
+      allow update: if (isOwner(existing().userId) || isAdmin()) && 
+                    incoming().diff(existing()).affectedKeys().hasOnly(['read']) &&
+                    incoming().read is bool;
+      allow delete: if isAdmin();
+    }
+
+    match /projectModels/{id} {
+      allow read: if isApproved() && (isOwner(resource.data.clientId) || isAssignedStaff(resource.data.clientId) || isAdmin());
+      allow create, update: if isAdmin() || isPM();
+      allow delete: if isAdmin();
+    }
+
+    match /annotations/{id} {
+      allow read: if isApproved() && (isOwner(get(/databases/$(database)/documents/documents/$(resource.data.blueprintId)).data.clientId) || isAdmin() || isStaff());
+      allow create: if isApproved() && isValidAnnotation(incoming());
+      allow delete: if isAdmin() || isOwner(resource.data.authorId);
+    }
+
+    match /clientLeads/{id} {
+      allow read, write: if isAdmin() || isPM();
+    }
+
+    match /budgetLedgers/{id} {
+      allow read, write: if isAdmin() || (isStaff() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'financial_analyst');
+    }
+
+    match /internalMessages/{id} {
+      allow read: if isStaff() && (isAdmin() || resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid);
+      allow create: if isStaff() && isValidInternalMessage(incoming());
+      allow update: if isStaff() && incoming().diff(existing()).affectedKeys().hasOnly(['read']) && existing().receiverId == request.auth.uid;
     }
   }
 }

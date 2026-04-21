@@ -71,9 +71,13 @@ export default function OnboardingWizard({ userId, onComplete }: OnboardingWizar
         nextActivity: 'Initial Consultation',
         dailySummary: 'Onboarding completed. Initial scope defined.',
         budgetUtilized: 0,
+        totalBudget: 0,
+        costEstimation: '',
         daysRemaining: 0,
         updatedAt: serverTimestamp(),
-        scope: projectScope
+        scope: projectScope,
+        selectedMaterial: 'no material', // Default material state
+        progress: 0 // Explicit zero progress
       });
 
       // 3. Upload Documents with Chunking

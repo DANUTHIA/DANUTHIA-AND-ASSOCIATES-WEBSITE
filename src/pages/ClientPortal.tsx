@@ -8,7 +8,7 @@ import {
   LogOut, FileText, Calendar, Clock, Download, MessageSquare, 
   Send, Upload, CheckCircle2, Loader2, Circle, Box, CreditCard, 
   Bell, ChevronRight, Check, AlertCircle, X, Maximize2, Shield,
-  FileCheck, Activity
+  FileCheck, Activity, Edit
 } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stage, Gltf, Environment } from '@react-three/drei';
@@ -227,6 +227,9 @@ export default function ClientPortal() {
   const [testimonial, setTestimonial] = useState({ rating: 5, comment: '', projectType: 'Residential' });
   const [submittingTestimonial, setSubmittingTestimonial] = useState(false);
   const [testimonialSuccess, setTestimonialSuccess] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [displayName, setDisplayName] = useState('');
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
@@ -241,9 +244,7 @@ export default function ClientPortal() {
         let role = userData.role;
         const adminEmails = [
           'machariag605@gmail.com',
-          'machariajoseph20222@gmail.com',
-          'danuthiaandassociates@gmail.com',
-          'urbanplanning2027@gmail.com'
+          'danuthiaandassociates@gmail.com'
         ];
         
         if (adminEmails.includes(currentUser.email)) {
@@ -258,8 +259,11 @@ export default function ClientPortal() {
           role: role, 
           needsOnboarding: userData.needsOnboarding, 
           officialName: userData.officialName,
-          assignedPM: userData.assignedPM
+          assignedPM: userData.assignedPM,
+          photoUrl: userData.photoUrl
         });
+        setDisplayName(userData.officialName || '');
+        setPhotoUrl(userData.photoUrl || null);
         setShowOnboarding(userData.needsOnboarding || !userData.officialName || false);
 
         if (userData.assignedPM) {
@@ -276,9 +280,7 @@ export default function ClientPortal() {
       } else {
         const adminEmails = [
           'machariag605@gmail.com',
-          'machariajoseph20222@gmail.com',
-          'danuthiaandassociates@gmail.com',
-          'urbanplanning2027@gmail.com'
+          'danuthiaandassociates@gmail.com'
         ];
         let role = adminEmails.includes(currentUser.email) ? 'admin' : 'pending';
         setUser({ ...currentUser, role: role });
@@ -577,6 +579,7 @@ export default function ClientPortal() {
 
     if (file.size > MAX_FILE_SIZE) {
       setUploadError('File size must be less than 10MB.');
+      e.target.value = '';
       return;
     }
 
@@ -602,6 +605,7 @@ export default function ClientPortal() {
         setUploadingDoc(false);
       };
       reader.readAsDataURL(file);
+      e.target.value = '';
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'documents');
       setUploadError('Failed to upload document.');
@@ -676,6 +680,35 @@ export default function ClientPortal() {
             >
               <LogOut size={16} />
               Sign Out
+            </button>
+          </Magnetic>
+        </div>
+      </div>
+    );
+  }
+
+  // Deny access to Staff Roles in the Client Portal
+  const STAFF_ROLES = ['project_manager', 'architect', 'surveyor', 'planner', 'financial_analyst', 'engineer', 'pending_staff'];
+  if (user && STAFF_ROLES.includes(user.role)) {
+    return (
+      <div className="min-h-[calc(100vh-6rem)] flex flex-col items-center justify-center bg-concrete dark:bg-charcoal p-6 text-center transition-colors duration-500">
+        <div className="max-w-md w-full bg-charcoal dark:bg-charcoal text-concrete p-10 md:p-16 relative z-10 transition-colors duration-500">
+          <div className="flex justify-center mb-10">
+            <div className="w-16 h-16 rounded-none border border-red-500/30 flex items-center justify-center bg-charcoal dark:bg-charcoal shadow-[0_0_30px_rgba(239,68,68,0.1)] transition-colors duration-500">
+              <AlertCircle size={20} className="text-red-500" strokeWidth={1.5} />
+            </div>
+          </div>
+          <h1 className="font-display text-3xl font-light tracking-tight mb-4 text-concrete uppercase tracking-widest">Access Denied</h1>
+          <p className="text-concrete/70 font-mono text-[10px] uppercase tracking-widest leading-relaxed mb-8">
+            Account classification detected: PROFESSIONAL/STAFF. Access to the Client Portal is restricted to Active Clients and Administrators exclusively. 
+          </p>
+          <Magnetic className="w-full">
+            <button 
+              onClick={handleSignOut}
+              className="w-full bg-transparent border border-concrete text-concrete py-4 font-bold uppercase tracking-widest hover:bg-concrete hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 text-xs"
+            >
+              <LogOut size={16} />
+              Secure Sign Out
             </button>
           </Magnetic>
         </div>
@@ -762,6 +795,27 @@ export default function ClientPortal() {
           </div>
           
           <div className="flex items-center gap-6 mt-8 md:mt-0">
+            {/* Profile Matrix */}
+            <div 
+              onClick={() => setIsProfileModalOpen(true)}
+              className="group cursor-pointer flex items-center gap-4 px-4 py-2 border border-steel/10 hover:border-accent transition-all bg-charcoal/5 dark:bg-concrete/5"
+            >
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-accent/20 group-hover:border-accent transition-all shadow-sm">
+                {photoUrl ? (
+                  <img src={photoUrl} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-accent/10 text-accent font-mono text-[10px] font-bold">CP</div>
+                )}
+              </div>
+              <div className="hidden sm:block">
+                <p className="font-mono text-[8px] text-steel uppercase tracking-[0.2em] mb-0.5">Tactical Profile</p>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-widest truncate max-w-[100px]">Edit Details</span>
+                  <Edit size={10} className="text-accent" />
+                </div>
+              </div>
+            </div>
+
             {/* Notifications */}
             <div className="relative">
               <button 
@@ -1600,6 +1654,102 @@ export default function ClientPortal() {
                     imageUrl={selectedBlueprint.fileData}
                     userId={user.uid}
                   />
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        {/* Profile Modal */}
+        <AnimatePresence>
+          {isProfileModalOpen && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[10000] bg-charcoal/40 backdrop-blur-md flex items-center justify-center p-6"
+            >
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="bg-concrete dark:bg-charcoal p-10 max-w-lg w-full border border-steel/20 shadow-2xl relative transition-colors duration-500"
+              >
+                <div className="flex items-center gap-4 mb-8">
+                  <Edit className="text-accent" size={32} />
+                  <div>
+                    <h2 className="font-display text-2xl font-light uppercase tracking-tight text-charcoal dark:text-concrete">Client Identity</h2>
+                    <p className="font-mono text-[10px] text-steel uppercase tracking-widest">Update your tactical profile and biometric data</p>
+                  </div>
+                  <button onClick={() => setIsProfileModalOpen(false)} className="ml-auto text-steel hover:text-accent">
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="flex flex-col items-center gap-4 mb-4">
+                    <div className="relative w-32 h-32 bg-charcoal/10 dark:bg-concrete/10 rounded-full overflow-hidden border-2 border-accent group shadow-inner">
+                      {photoUrl ? (
+                        <img src={photoUrl} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-steel font-mono text-[10px] uppercase text-center p-4">Identity Not Uploaded</div>
+                      )}
+                      <label className="absolute inset-0 bg-charcoal/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-all duration-300 cursor-pointer text-white">
+                        <Upload size={20} className="mb-1" />
+                        <span className="font-mono text-[8px] uppercase tracking-widest font-bold">Update Photo</span>
+                        <input 
+                          type="file" 
+                          className="hidden" 
+                          accept="image/*" 
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            if (file.size > 1 * 1024 * 1024) {
+                              alert("Profile picture must be under 1MB.");
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              const result = ev.target?.result as string;
+                              setPhotoUrl(result);
+                            };
+                            reader.readAsDataURL(file);
+                            e.target.value = '';
+                          }} 
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-mono text-[10px] uppercase tracking-widest text-steel mb-3">Official Name</label>
+                    <input 
+                      type="text" 
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      placeholder="Enter your full name"
+                      className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/20 p-4 font-mono text-xs text-charcoal dark:text-concrete outline-none focus:border-accent transition-colors"
+                    />
+                  </div>
+
+                  <button 
+                    onClick={async () => {
+                      if (!displayName.trim() || !user) return;
+                      try {
+                        await updateDoc(doc(db, 'users', user.uid), {
+                          officialName: displayName.trim(),
+                          photoUrl: photoUrl
+                        });
+                        setIsProfileModalOpen(false);
+                        // Refresh data
+                        await fetchUserData(auth.currentUser);
+                      } catch (error) {
+                        handleFirestoreError(error, OperationType.UPDATE, 'users');
+                      }
+                    }}
+                    className="w-full py-4 bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal font-mono text-xs uppercase font-bold tracking-[0.2em] hover:bg-accent hover:text-white transition-all shadow-lg"
+                  >
+                    Sync Identity Matrix
+                  </button>
                 </div>
               </motion.div>
             </motion.div>

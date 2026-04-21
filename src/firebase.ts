@@ -7,6 +7,10 @@ import firebaseConfig from '../firebase-applet-config.json';
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
+import { setPersistence, browserLocalPersistence } from 'firebase/auth';
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+    console.error("Failed to set auth persistence", error);
+});
 export const provider = new GoogleAuthProvider();
 
 // Constants
@@ -58,21 +62,17 @@ export async function downloadLargeFile(document: any): Promise<string> {
     return document.fileData;
   }
 
-  const chunksRef = collection(db, 'documents', document.id, 'chunks');
-  // Handle different collection names if needed, but 'documents' is primary
-  // More robust: use document reference to get subcollection
-  const q = query(collection(db, 'documents', document.id, 'chunks'), orderBy('index', 'asc'));
-  
-  // If we don't know the exact path structure, we might need a more generic way
-  // but for this app, 'documents' and potentially 'projectUpdates' are the ones
-  // we'll try to handle specifically or use a path from the document if available.
-  
-  // Let's assume passed document has its full path info or we try common ones
-  let path = `documents/${document.id}/chunks`;
-  if (document.type === 'update') path = `projectUpdates/${document.id}/chunks`;
-  if (document.type === 'log') path = `internalLogs/${document.id}/chunks`;
+  // Determine path based on collectionName metadata or fallback logic
+  let collectionName = document.collectionName || 'documents';
+  if (!document.collectionName) {
+    if (document.type === 'update') collectionName = 'projectUpdates';
+    else if (document.type === 'log') collectionName = 'internalLogs';
+    else if (document.type === 'report') collectionName = 'technicalReports';
+  }
 
-  const snapshot = await getDocs(query(collection(db, path), orderBy('index', 'asc')));
+  const path = `${collectionName}/${document.id}/chunks`;
+  const q = query(collection(db, path), orderBy('index', 'asc'));
+  const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => doc.data().data).join('');
 }
 
