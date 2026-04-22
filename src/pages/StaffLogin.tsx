@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, provider, db, handleFirestoreError, OperationType } from '../firebase';
+import { auth, provider, db, handleFirestoreError, OperationType, signInWithEmailAndPassword, createUserWithEmailAndPassword } from '../firebase';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { motion } from 'motion/react';
@@ -10,22 +10,59 @@ import Magnetic from '../components/Magnetic';
 export default function StaffLogin() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    if (!email || !password) {
+      setError('Please enter both email and password.');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      let result;
+      if (isSignUp) {
+        result = await createUserWithEmailAndPassword(auth, email, password);
+        const user = result.user;
+        const userDocRef = doc(db, 'users', user.uid);
+        await setDoc(userDocRef, {
+          email: user.email,
+          role: 'pending_staff'
+        });
+      } else {
+        result = await signInWithEmailAndPassword(auth, email, password);
+        const user = result.user;
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists()) {
+          await setDoc(userDocRef, {
+            email: user.email,
+            role: 'pending_staff'
+          });
+        }
+      }
+      navigate('/staff-portal');
+    } catch (err: any) {
+      setError(err.message || 'Authentication failed. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
     setIsLoading(true);
     setError('');
 
     // Basic email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email) {
-      setError('Please enter your staff email address.');
-      setIsLoading(false);
-      return;
-    }
-    if (!emailRegex.test(email)) {
+    if (email && !emailRegex.test(email)) {
       setError('Please enter a valid email format (e.g., name@company.com).');
       setIsLoading(false);
       return;
@@ -33,7 +70,9 @@ export default function StaffLogin() {
 
     try {
       const customProvider = new GoogleAuthProvider();
-      customProvider.setCustomParameters({ login_hint: email });
+      if (email) {
+        customProvider.setCustomParameters({ login_hint: email });
+      }
       
       const result = await signInWithPopup(auth, customProvider);
       const user = result.user;
@@ -93,7 +132,7 @@ export default function StaffLogin() {
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleEmailAuth} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-concrete/70 text-[10px] font-mono uppercase tracking-widest mb-2">
               Staff Email Address
@@ -104,7 +143,21 @@ export default function StaffLogin() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="e.g. employee@danuthiaandassociates.com"
+              className="w-full bg-transparent border border-concrete/30 focus:border-concrete text-concrete px-4 py-3 text-sm font-mono outline-none transition-colors placeholder:text-concrete/30 mb-4"
+              required
+            />
+            
+            <label htmlFor="password" className="block text-concrete/70 text-[10px] font-mono uppercase tracking-widest mb-2">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
               className="w-full bg-transparent border border-concrete/30 focus:border-concrete text-concrete px-4 py-3 text-sm font-mono outline-none transition-colors placeholder:text-concrete/30"
+              required
             />
           </div>
           
@@ -112,13 +165,40 @@ export default function StaffLogin() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-transparent border border-concrete text-concrete py-4 font-bold uppercase tracking-widest hover:bg-concrete hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+              className="w-full bg-accent border border-accent text-white py-4 font-bold uppercase tracking-widest hover:bg-accent/80 transition-all duration-500 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
             >
-              <span>{isLoading ? 'Authenticating...' : 'Continue to Sign In'}</span>
-              {!isLoading && <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform duration-500" strokeWidth={1.5} />}
+              <span>{isLoading ? 'Processing...' : (isSignUp ? 'Create Staff Account' : 'Sign In with Email')}</span>
             </button>
           </Magnetic>
         </form>
+
+        <div className="mt-6 text-center">
+          <button
+            type="button"
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="text-concrete/70 hover:text-concrete text-xs font-mono tracking-widest uppercase transition-colors"
+          >
+            {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-4 my-6">
+          <div className="h-px bg-concrete/20 flex-1"></div>
+          <span className="text-concrete/50 font-mono text-[10px] uppercase tracking-widest">Or authenticate securely</span>
+          <div className="h-px bg-concrete/20 flex-1"></div>
+        </div>
+
+        <Magnetic className="w-full">
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={isLoading}
+            className="w-full bg-transparent border border-concrete text-concrete py-4 font-bold uppercase tracking-widest hover:bg-concrete hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+          >
+            <span>{isLoading ? 'Authenticating...' : 'Sign in with Google'}</span>
+            {!isLoading && <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform duration-500" strokeWidth={1.5} />}
+          </button>
+        </Magnetic>
 
         <div className="mt-12 pt-8 border-t border-concrete/20 transition-colors duration-500 flex flex-col items-center gap-4">
           <p className="text-center text-concrete/70 text-xs font-light leading-relaxed">

@@ -1,5 +1,13 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { 
+  getAuth, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail
+} from 'firebase/auth';
 import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy, doc, getDoc } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
@@ -12,6 +20,8 @@ setPersistence(auth, browserLocalPersistence).catch((error) => {
     console.error("Failed to set auth persistence", error);
 });
 export const provider = new GoogleAuthProvider();
+
+export { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail };
 
 // Constants
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB

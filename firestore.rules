@@ -98,7 +98,7 @@ service cloud.firestore {
              (!('title' in data) || (data.title is string && data.title.size() <= 100)) &&
              (!('phone' in data) || (data.phone is string && data.phone.size() <= 50)) &&
              (!('location' in data) || (data.location is string && data.location.size() <= 200)) &&
-             (!('photoUrl' in data) || (data.photoUrl is string && data.photoUrl.size() <= 1500000)) && 
+             (!('photoUrl' in data) || data.photoUrl == null || (data.photoUrl is string && data.photoUrl.size() <= 1500000)) && 
              (!('needsOnboarding' in data) || (data.needsOnboarding is bool)) &&
              (!('hasConfirmed2FA' in data) || (data.hasConfirmed2FA is bool)) &&
              (!('assignedPM' in data) || (data.assignedPM is string)) &&
@@ -215,7 +215,9 @@ service cloud.firestore {
 
     match /users/{userId} {
       // PII Access restriction: Only owner, assigned staff, or admin
-      allow get: if isOwner(userId) || isAdmin() || isAssignedStaff(userId);
+      // Clients need to be able to fetch their PM/Staff's basic info
+      allow get: if isOwner(userId) || isAdmin() || isAssignedStaff(userId) || 
+                 (isVerifiedUser() && resource.data.role in ['project_manager', 'architect', 'engineer', 'surveyor', 'planner', 'financial_analyst', 'admin', 'staff']);
       allow list: if isAdmin() || (
         isStaff() && (
           // Allow staff to list clients assigned to them
@@ -258,9 +260,13 @@ service cloud.firestore {
     }
 
     match /messages/{messageId} {
-      allow read: if isVerifiedUser() && (isAdmin() || resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid);
+      allow read: if isAdmin() || (isVerifiedUser() && (
+        resource.data.senderId == request.auth.uid || 
+        resource.data.receiverId == request.auth.uid ||
+        (isStaff() && (isAssignedStaff(resource.data.senderId) || isAssignedStaff(resource.data.receiverId)))
+      ));
       allow create: if isApproved() && isValidMessage(incoming());
-      allow update: if isVerifiedUser() && incoming().diff(existing()).affectedKeys().hasOnly(['read']) && existing().receiverId == request.auth.uid;
+      allow update: if isVerifiedUser() && incoming().diff(existing()).affectedKeys().hasOnly(['read']) && (isAdmin() || existing().receiverId == request.auth.uid);
     }
 
     match /internalLogs/{logId} {

@@ -63,8 +63,8 @@ const projects = [
     year: "2024",
     area: "1,200 sqm",
     location: "Karen, Nairobi",
-    status: "Completed",
-    lifecyclePhase: 5,
+    status: "Concept",
+    lifecyclePhase: 1,
     siteData: { wind: "E 10km/h", solar: "Moderate", rainfall: "1050mm/yr" },
     collaborators: "Studio Studio, L&D Landscapes"
   },
@@ -90,8 +90,8 @@ const projects = [
     year: "2023",
     area: "800 sqm",
     location: "Westlands, Nairobi",
-    status: "Completed",
-    lifecyclePhase: 5,
+    status: "In Design",
+    lifecyclePhase: 1,
     siteData: { wind: "N/A (Interior)", solar: "Optimized West", rainfall: "N/A" },
     collaborators: "Herman Miller, Philips Lighting"
   },
@@ -117,8 +117,8 @@ const projects = [
     year: "2024",
     area: "12,000 sqm",
     location: "Mombasa, Kenya",
-    status: "Completed",
-    lifecyclePhase: 5,
+    status: "Concept",
+    lifecyclePhase: 1,
     siteData: { wind: "SE 22km/h", solar: "Extreme", rainfall: "1200mm/yr" },
     collaborators: "Mott MacDonald, KURA"
   },
@@ -203,8 +203,8 @@ const projects = [
     year: "2024",
     area: "400m span",
     location: "Tana River County",
-    status: "Completed",
-    lifecyclePhase: 5,
+    status: "In Design",
+    lifecyclePhase: 1,
     siteData: { wind: "E 18km/h", solar: "High Exposure", rainfall: "400mm/yr" },
     collaborators: "COWI, KeNHA"
   }

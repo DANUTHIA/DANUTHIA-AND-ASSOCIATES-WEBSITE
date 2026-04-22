@@ -1703,14 +1703,38 @@ export default function ClientPortal() {
                           onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (!file) return;
-                            if (file.size > 1 * 1024 * 1024) {
-                              alert("Profile picture must be under 1MB.");
+                            if (file.size > 5 * 1024 * 1024) {
+                              alert("Profile picture must be under 5MB.");
                               return;
                             }
                             const reader = new FileReader();
                             reader.onload = (ev) => {
                               const result = ev.target?.result as string;
-                              setPhotoUrl(result);
+                              const img = new Image();
+                              img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                const MAX_WIDTH = 800;
+                                const MAX_HEIGHT = 800;
+                                let width = img.width;
+                                let height = img.height;
+
+                                if (width > height && width > MAX_WIDTH) {
+                                  height *= MAX_WIDTH / width;
+                                  width = MAX_WIDTH;
+                                } else if (height > MAX_HEIGHT) {
+                                  width *= MAX_HEIGHT / height;
+                                  height = MAX_HEIGHT;
+                                }
+
+                                canvas.width = width;
+                                canvas.height = height;
+                                const ctx = canvas.getContext('2d');
+                                ctx?.drawImage(img, 0, 0, width, height);
+                                
+                                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+                                setPhotoUrl(compressedBase64);
+                              };
+                              img.src = result;
                             };
                             reader.readAsDataURL(file);
                             e.target.value = '';

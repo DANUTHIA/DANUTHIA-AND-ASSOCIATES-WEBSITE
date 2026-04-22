@@ -1929,6 +1929,9 @@ export default function StaffPortal() {
     }
     
     if (role === 'architect') {
+      const bimStatus = siteParams.bimRenderStatus || '0';
+      const parsedStatus = parseInt(bimStatus, 10) || 0;
+
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-3 mb-6 p-10 relative overflow-hidden bg-charcoal dark:bg-charcoal text-concrete border border-steel/20 shadow-2xl">
@@ -1960,14 +1963,25 @@ export default function StaffPortal() {
               <Box className="text-accent mb-6" size={28} strokeWidth={1} />
               <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold mb-4">BIM / 3D Visualization Sync</h3>
               <div className="w-full bg-steel/10 h-1.5 mb-2 overflow-hidden rounded-none">
-                <div className="bg-accent h-full w-[0%] animate-pulse" style={{ width: internalLogs.length > 0 ? '78%' : '0%' }}></div>
+                <div className="bg-accent h-full transition-all duration-1000" style={{ width: `${parsedStatus}%` }}></div>
               </div>
-              <p className="font-mono text-[9px] text-steel uppercase tracking-widest mb-6 flex justify-between"><span>Render Node Status</span><span className="text-accent font-bold">{internalLogs.length > 0 ? '78' : '0'}%</span></p>
+              <div className="flex justify-between items-center mb-6">
+                 <span className="font-mono text-[9px] text-steel uppercase tracking-widest">Render Node Status (%)</span>
+                 <input 
+                   type="number"
+                   min="0"
+                   max="100"
+                   value={bimStatus}
+                   onChange={(e) => setSiteParams({ ...siteParams, bimRenderStatus: e.target.value })}
+                   onBlur={() => updateSiteParams({ bimRenderStatus: siteParams.bimRenderStatus })}
+                   className="w-16 bg-transparent border-b border-steel/20 focus:border-accent py-1 font-mono text-xs text-accent font-bold text-right outline-none"
+                 />
+              </div>
             </div>
             <div className="border-t border-steel/10 pt-4">
               <p className="font-mono text-[10px] leading-relaxed text-charcoal dark:text-concrete/80 flex items-start gap-2">
-                <span className={`h-2 w-2 mt-1 rounded-full flex-shrink-0 ${internalLogs.length > 0 ? 'bg-green-500 animate-pulse' : 'bg-steel/30'}`}></span>
-                {internalLogs.length > 0 
+                <span className={`h-2 w-2 mt-1 rounded-full flex-shrink-0 ${parsedStatus > 0 ? 'bg-green-500 animate-pulse' : 'bg-steel/30'}`}></span>
+                {parsedStatus > 0 
                   ? "Processing high-fidelity global illumination array on the main atrium view. Awaiting geometry cache lock." 
                   : "Awaiting initial schematic uploads to initialize BIM synchronization pipeline."}
               </p>
@@ -2668,14 +2682,38 @@ export default function StaffPortal() {
                       onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (!file) return;
-                        if (file.size > 1 * 1024 * 1024) {
-                          setStatusMessage({ text: "Profile picture must be under 1MB.", type: 'error' });
+                        if (file.size > 5 * 1024 * 1024) {
+                          setStatusMessage({ text: "Profile picture must be under 5MB.", type: 'error' });
                           return;
                         }
                         const reader = new FileReader();
                         reader.onload = (ev) => {
                           const result = ev.target?.result as string;
-                          setProfilePhoto(result);
+                          const img = new Image();
+                          img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const MAX_WIDTH = 800;
+                            const MAX_HEIGHT = 800;
+                            let width = img.width;
+                            let height = img.height;
+
+                            if (width > height && width > MAX_WIDTH) {
+                              height *= MAX_WIDTH / width;
+                              width = MAX_WIDTH;
+                            } else if (height > MAX_HEIGHT) {
+                              width *= MAX_HEIGHT / height;
+                              height = MAX_HEIGHT;
+                            }
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx?.drawImage(img, 0, 0, width, height);
+                            
+                            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+                            setProfilePhoto(compressedBase64);
+                          };
+                          img.src = result;
                         };
                         reader.readAsDataURL(file);
                         e.target.value = '';

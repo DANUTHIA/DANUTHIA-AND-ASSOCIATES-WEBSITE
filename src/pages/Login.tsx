@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, provider, db, handleFirestoreError, OperationType } from '../firebase';
+import { auth, provider, db, handleFirestoreError, OperationType, signInWithEmailAndPassword, createUserWithEmailAndPassword } from '../firebase';
 import { signInWithPopup } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { motion } from 'motion/react';
@@ -9,10 +9,58 @@ import Magnetic from '../components/Magnetic';
 
 export default function Login() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    if (!email || !password) {
+      setError('Please enter both email and password.');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      let result;
+      if (isSignUp) {
+        result = await createUserWithEmailAndPassword(auth, email, password);
+        const user = result.user;
+        const userDocRef = doc(db, 'users', user.uid);
+        await setDoc(userDocRef, {
+          email: user.email,
+          role: 'pending',
+          needsOnboarding: true,
+          createdAt: serverTimestamp()
+        });
+      } else {
+        result = await signInWithEmailAndPassword(auth, email, password);
+        const user = result.user;
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists()) {
+          await setDoc(userDocRef, {
+            email: user.email,
+            role: 'pending',
+            needsOnboarding: true,
+            createdAt: serverTimestamp()
+          });
+        }
+      }
+      navigate('/portal');
+    } catch (err: any) {
+      setError(err.message || 'Authentication failed. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
     setIsLoading(true);
     setError('');
     try {
@@ -81,26 +129,67 @@ export default function Login() {
 
         <Magnetic className="w-full">
           <button
-            onClick={handleLogin}
+            onClick={handleGoogleLogin}
             disabled={isLoading}
-            className="w-full bg-transparent border border-concrete text-concrete py-4 font-bold uppercase tracking-widest hover:bg-concrete hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+            className="w-full bg-transparent border border-concrete text-concrete py-4 font-bold uppercase tracking-widest hover:bg-concrete hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed text-xs mb-6"
           >
             <span>{isLoading ? 'Authenticating...' : 'Sign in with Google'}</span>
             {!isLoading && <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform duration-500" strokeWidth={1.5} />}
           </button>
         </Magnetic>
 
+        <div className="flex items-center gap-4 mb-6">
+          <div className="h-px bg-concrete/20 flex-1"></div>
+          <span className="text-concrete/50 font-mono text-[10px] uppercase tracking-widest">Or with email</span>
+          <div className="h-px bg-concrete/20 flex-1"></div>
+        </div>
+
+        <form onSubmit={handleEmailAuth} className="space-y-4">
+          <div>
+            <input 
+              type="email" 
+              placeholder="Email Address" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-concrete/5 border border-concrete/20 px-4 py-3 text-sm text-concrete placeholder-concrete/50 focus:outline-none focus:border-concrete transition-colors"
+              required
+            />
+          </div>
+          <div>
+            <input 
+              type="password" 
+              placeholder="Password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-concrete/5 border border-concrete/20 px-4 py-3 text-sm text-concrete placeholder-concrete/50 focus:outline-none focus:border-concrete transition-colors"
+              required
+            />
+          </div>
+          <Magnetic className="w-full">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-accent border border-accent text-white py-4 font-bold uppercase tracking-widest hover:bg-accent/80 transition-all duration-500 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+            >
+              <span>{isLoading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}</span>
+            </button>
+          </Magnetic>
+        </form>
+
+        <div className="mt-8 text-center">
+          <button
+            type="button"
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="text-concrete/70 hover:text-concrete text-xs font-mono tracking-widest uppercase transition-colors"
+          >
+            {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
+          </button>
+        </div>
+
         <div className="mt-12 pt-8 border-t border-concrete/20 transition-colors duration-500 flex flex-col items-center gap-4">
           <p className="text-center text-concrete/70 text-xs font-light leading-relaxed">
             Access is restricted to active clients of Danuthia & Associates.
           </p>
-          <button
-            onClick={handleLogin}
-            disabled={isLoading}
-            className="text-concrete text-[10px] font-bold uppercase tracking-widest hover:text-white transition-colors duration-300 border-b border-concrete/30 hover:border-concrete pb-1 disabled:opacity-50"
-          >
-            Not a client yet? Register with us today.
-          </button>
         </div>
       </motion.div>
     </div>
