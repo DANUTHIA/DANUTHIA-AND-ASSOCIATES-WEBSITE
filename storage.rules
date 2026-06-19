@@ -1,0 +1,65 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'machariag605@gmail.com' ||
+        request.auth.token.email == 'danuthiaandassociates@gmail.com'
+      );
+    }
+
+    // CMS Assets - Publicly readable, Admin write
+    match /cms/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Portfolio images - Publicly readable, Admin write
+    match /projects/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Client Vault - Admin and specific Client access
+    match /vault/{clientId}/{allPaths=**} {
+      allow read, write: if isAdmin() || (isSignedIn() && request.auth.uid == clientId);
+    }
+    
+    // Project Updates - Publicly readable (usually embedded), Admin write
+    match /updates/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Staff internal uploads
+    match /staff_uploads/{allPaths=**} {
+      allow read, write: if isSignedIn();
+    }
+    
+    // Client Documents - Admin and specific Client access
+    match /documents/{clientId}/{allPaths=**} {
+      allow read, write: if isAdmin() || (isSignedIn() && request.auth.uid == clientId);
+    }
+    
+    // Technical Reports
+    match /reports/{clientId}/{allPaths=**} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == clientId);
+      allow write: if isAdmin();
+    }
+    
+    // Invoices
+    match /invoices/{clientId}/{allPaths=**} {
+      allow read, write: if isAdmin() || (isSignedIn() && request.auth.uid == clientId);
+    }
+    
+    // Default deny
+    match /{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

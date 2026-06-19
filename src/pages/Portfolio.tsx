@@ -1,214 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Maximize2, ArrowRight, ChevronLeft, ChevronRight, Leaf, Wind, Droplets, Sun, Zap, Recycle, Trees, Check, Grid, Map as MapIcon, Clock, Layers } from 'lucide-react';
 import Magnetic from '../components/Magnetic';
 import TechnicalOverlay from '../components/TechnicalOverlay';
 import MaterialityGrid from '../components/MaterialityGrid';
+import ProjectMap from '../components/ProjectMap';
 
-const projects = [
-  { 
-    id: 1,
-    title: "Nairobi Tech Hub", 
-    category: "Commercial", 
-    img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop",
-    diagram: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1497366811353-68a6daefba28?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1554469384-e58fac16e23a?q=80&w=1600&auto=format&fit=crop"
-    ],
-    description: "A 15-story sustainable commercial center designed to foster innovation in Nairobi's growing tech sector. The design utilizes a high-performance post-tensioned concrete frame to maximize open floor plans while integrating advanced passive cooling systems and a signature brutalist facade.",
-    sustainablePrinciples: [
-      "Passive cooling & natural ventilation",
-      "Rainwater harvesting systems",
-      "Indigenous vertical gardens",
-      "Low-carbon concrete"
-    ],
-    materials: [
-      { name: "Raw Concrete", description: "Exposed structural finish", textureUrl: "https://images.unsplash.com/photo-1590069261209-48e3b9737d12?q=80&w=1600&auto=format&fit=crop" },
-      { name: "Structural Steel", description: "High-tensile framework", textureUrl: "https://images.unsplash.com/photo-1504917595217-d4f5ebe612b0?q=80&w=1600&auto=format&fit=crop" }
-    ],
-    processGallery: [
-      { type: "concept", url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop", caption: "Initial Massing Sketches" },
-      { type: "plan", url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop", caption: "Ground Floor Public Integration" }
-    ],
-    client: "TechVentures Africa",
-    year: "2025",
-    area: "45,000 sqm",
-    location: "Nairobi, Kenya",
-    status: "Under Construction",
-    lifecyclePhase: 5,
-    siteData: { wind: "NE 14km/h", solar: "High Exposure", rainfall: "850mm/yr" },
-    collaborators: "Arup, Buro Happold"
-  },
-  { 
-    id: 2,
-    title: "Karen Luxury Villa", 
-    category: "Residential", 
-    img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1600&auto=format&fit=crop",
-    diagram: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1613545325278-f24b0c68c463?q=80&w=1600&auto=format&fit=crop"
-    ],
-    description: "This residential masterpiece redefines luxury through architectural precision and site-specific design. The villa features a complex cantilevered roof structure and seamless glass-to-glass corners, blending modern minimalism with the natural topography of the Karen suburbs.",
-    sustainablePrinciples: [
-      "Solar power integration",
-      "Natural stone cladding",
-      "Smart home automation",
-      "Drought-resistant landscaping"
-    ],
-    client: "Private Client",
-    year: "2024",
-    area: "1,200 sqm",
-    location: "Karen, Nairobi",
-    status: "Concept",
-    lifecyclePhase: 1,
-    siteData: { wind: "E 10km/h", solar: "Moderate", rainfall: "1050mm/yr" },
-    collaborators: "Studio Studio, L&D Landscapes"
-  },
-  { 
-    id: 3,
-    title: "The Loft Office", 
-    category: "Interior Design", 
-    img: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1600&auto=format&fit=crop",
-    diagram: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1497366811353-68a6daefba28?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1497215410103-6cb4a4130090?q=80&w=1600&auto=format&fit=crop"
-    ],
-    description: "An interior transformation that optimizes workflow through spatial engineering and biophilic design. The project features exposed structural elements, custom acoustic baffles, and a flexible modular layout designed for the modern creative workforce.",
-    sustainablePrinciples: [
-      "Recycled timber furniture",
-      "Energy-efficient lighting",
-      "Low-VOC paints",
-      "Biophilic design elements"
-    ],
-    client: "Creative Pulse",
-    year: "2023",
-    area: "800 sqm",
-    location: "Westlands, Nairobi",
-    status: "In Design",
-    lifecyclePhase: 1,
-    siteData: { wind: "N/A (Interior)", solar: "Optimized West", rainfall: "N/A" },
-    collaborators: "Herman Miller, Philips Lighting"
-  },
-  { 
-    id: 4,
-    title: "Mombasa Transit Terminal", 
-    category: "Aviation & Transportation", 
-    img: "https://images.unsplash.com/photo-1413844053676-e137b7ca57fa?q=80&w=1600&auto=format&fit=crop",
-    diagram: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1413844053676-e137b7ca57fa?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1545622780-6bc53716a495?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1506765515384-028b60a970df?q=80&w=1600&auto=format&fit=crop"
-    ],
-    description: "A large-scale infrastructure project designed for extreme coastal conditions and high commuter volume. The center features a revolutionary aerodynamic roof structure that facilitates massive natural airflow, reducing the need for active cooling in Mombasa's humid climate.",
-    sustainablePrinciples: [
-      "Sweeping roof for natural shading",
-      "Cross-ventilation optimization",
-      "High-albedo roofing materials",
-      "Energy-efficient LED lighting"
-    ],
-    client: "Ministry of Transport",
-    year: "2024",
-    area: "12,000 sqm",
-    location: "Mombasa, Kenya",
-    status: "Concept",
-    lifecyclePhase: 1,
-    siteData: { wind: "SE 22km/h", solar: "Extreme", rainfall: "1200mm/yr" },
-    collaborators: "Mott MacDonald, KURA"
-  },
-  { 
-    id: 5,
-    title: "Kisumu Medical Center", 
-    category: "Healthcare", 
-    img: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=1600&auto=format&fit=crop",
-    diagram: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1536882240095-0379873feb4e?q=80&w=1600&auto=format&fit=crop"
-    ],
-    description: "A state-of-the-art regional hospital focused on patient-centered care and operational efficiency. The design integrates healing gardens and maximizes natural light to improve patient outcomes and staff well-being.",
-    sustainablePrinciples: [
-      "Healing gardens & biophilia",
-      "High-efficiency HVAC systems",
-      "Medical waste management",
-      "Solar thermal water heating"
-    ],
-    client: "County Government of Kisumu",
-    year: "2025",
-    area: "25,000 sqm",
-    location: "Kisumu, Kenya",
-    status: "Under Construction",
-    lifecyclePhase: 4,
-    siteData: { wind: "W 12km/h", solar: "High", rainfall: "1100mm/yr" },
-    collaborators: "GE Healthcare, Perkins&Will"
-  },
-  { 
-    id: 6,
-    title: "Nairobi Science & Tech Park", 
-    category: "Science & Technology", 
-    img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=1600&auto=format&fit=crop",
-    diagram: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1507413245164-6160d8298b31?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=1600&auto=format&fit=crop"
-    ],
-    description: "A collaborative research environment designed to accelerate innovation in biotechnology and renewable energy. The facility features flexible lab spaces, advanced filtration systems, and a high-performance envelope.",
-    sustainablePrinciples: [
-      "Advanced air filtration",
-      "Flexible modular labs",
-      "Smart energy monitoring",
-      "Water reclamation"
-    ],
-    client: "Konza Technopolis",
-    year: "2026",
-    area: "35,000 sqm",
-    location: "Machakos, Kenya",
-    status: "Design Phase",
-    lifecyclePhase: 2,
-    siteData: { wind: "NE 15km/h", solar: "High", rainfall: "800mm/yr" },
-    collaborators: "Arup, HDR"
-  },
-  { 
-    id: 7,
-    title: "Tana River Bridge", 
-    category: "Infrastructure", 
-    img: "https://images.unsplash.com/photo-1513828583688-c52646db42da?q=80&w=1600&auto=format&fit=crop",
-    diagram: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1513828583688-c52646db42da?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?q=80&w=1600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1522333323-32663f1010a6?q=80&w=1600&auto=format&fit=crop"
-    ],
-    processGallery: [
-      { type: "concept", url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop", caption: "Initial Suspension Sketch" },
-      { type: "elevation", url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop", caption: "Longitudinal Elevation" },
-      { type: "render", url: "https://images.unsplash.com/photo-1513828583688-c52646db42da?q=80&w=1600&auto=format&fit=crop", caption: "Final Structural Rendering" },
-    ],
-    description: "A pinnacle of structural engineering spanning the Tana River. This cable-stayed bridge spans 400 meters, utilizing high-tensile steel and high-performance concrete with integrated structural health monitoring sensors.",
-    sustainablePrinciples: [
-      "High-performance materials",
-      "Advanced seismic design",
-      "Minimal environmental footprint",
-      "Solar-powered lighting"
-    ],
-    client: "National Highways Authority",
-    year: "2024",
-    area: "400m span",
-    location: "Tana River County",
-    status: "In Design",
-    lifecyclePhase: 1,
-    siteData: { wind: "E 18km/h", solar: "High Exposure", rainfall: "400mm/yr" },
-    collaborators: "COWI, KeNHA"
-  }
-];
+import FilterSidebar, { FilterState } from '../components/FilterSidebar';
+import { useProjects } from '../hooks/useProjects';
+import { Project } from '../types';
+
+import { useCMS } from '../lib/cms';
 
 const HERO_IMAGES = [
   "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop",
@@ -230,14 +33,33 @@ const staggerContainer: any = {
 };
 
 export default function Portfolio() {
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const { resources } = useCMS();
+  const { projects, loading } = useProjects();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [heroImageIndex, setHeroImageIndex] = useState(0);
   const [viewMode, setViewMode] = useState<'photo' | 'diagram' | 'process'>('photo');
   const [showTechnicalSpecs, setShowTechnicalSpecs] = useState(false);
   const [hoveredIndexImage, setHoveredIndexImage] = useState<string | null>(null);
   const [displayMode, setDisplayMode] = useState<'grid' | 'index' | 'timeline' | 'map'>('grid');
-  const [filter, setFilter] = useState('All');
+
+  const [filterState, setFilterState] = useState<FilterState>({
+    categories: searchParams.getAll('category'),
+    years: searchParams.getAll('year'),
+    searchQuery: searchParams.get('q') || ''
+  });
+
+  // Sync state upward to URL
+  useEffect(() => {
+    const params = new URLSearchParams();
+    filterState.categories.forEach(c => params.append('category', c));
+    filterState.years.forEach(y => params.append('year', y));
+    if (filterState.searchQuery) params.set('q', filterState.searchQuery);
+    
+    setSearchParams(params, { replace: true });
+  }, [filterState, setSearchParams]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -246,11 +68,20 @@ export default function Portfolio() {
     return () => clearInterval(interval);
   }, []);
 
-  const categories = ['All', ...Array.from(new Set(projects.map(p => p.category)))];
+  const availableCategories = useMemo(() => Array.from(new Set(projects.map(p => p.category))), [projects]);
+  const availableYears = useMemo(() => Array.from(new Set(projects.map(p => p.year))), [projects]);
 
-  const filteredProjects = filter === 'All' 
-    ? projects 
-    : projects.filter(p => p.category === filter);
+  const filteredProjects = useMemo(() => {
+    return projects.filter(p => {
+      const matchCategory = filterState.categories.length === 0 || filterState.categories.includes(p.category);
+      const matchYear = filterState.years.length === 0 || filterState.years.includes(p.year);
+      const matchQuery = !filterState.searchQuery || 
+        (p.title?.toLowerCase() || '').includes(filterState.searchQuery.toLowerCase()) || 
+        (p.client?.toLowerCase() || '').includes(filterState.searchQuery.toLowerCase());
+
+      return matchCategory && matchYear && matchQuery;
+    });
+  }, [projects, filterState]);
 
   const selectedProject = projects.find(p => p.id === selectedId);
 
@@ -291,73 +122,78 @@ export default function Portfolio() {
             variants={staggerContainer}
             className="max-w-5xl"
           >
-            <motion.h1 variants={fadeInUp} className="font-display text-6xl md:text-8xl font-bold leading-[0.85] tracking-tighter mb-8 text-concrete uppercase">
-              Selected <br/> Works
+            <motion.h1 data-cms-key="portfolio_title" variants={fadeInUp} className="font-display text-6xl md:text-8xl font-bold leading-[0.85] tracking-tighter mb-8 text-concrete uppercase whitespace-pre-wrap">
+              {resources.portfolio_title || 'Selected\nWorks'}
             </motion.h1>
             <motion.div variants={fadeInUp} className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-t border-concrete/20 pt-8">
-              <p className="text-lg md:text-2xl text-concrete/80 font-light leading-relaxed max-w-xl">
-                A curated selection of our architectural and urban planning projects across East Africa.
+              <p data-cms-key="portfolio_subtitle" className="text-lg md:text-2xl text-concrete/80 font-light leading-relaxed max-w-xl">
+                {resources.portfolio_subtitle || 'A curated selection of our architectural and urban planning projects across East Africa.'}
               </p>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* Grid Section */}
-      <section className="p-8 md:p-16 max-w-7xl mx-auto py-24">
-        {/* Controls */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="flex flex-col md:flex-row justify-between items-center gap-8 mb-16"
-        >
-          {/* Filter Buttons */}
-          <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-            {categories.map((cat) => (
-              <Magnetic key={cat}>
-                <button
-                  onClick={() => setFilter(cat)}
-                  className={`px-6 py-2 rounded-none text-[10px] font-mono uppercase tracking-widest transition-all duration-300 ${
-                    filter === cat 
-                      ? 'bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal' 
-                      : 'bg-transparent border border-charcoal/20 dark:border-concrete/20 text-charcoal dark:text-concrete hover:border-charcoal dark:hover:border-concrete'
-                  }`}
-                >
-                  {cat}
-                </button>
-              </Magnetic>
-            ))}
-          </div>
+      {/* Grid and Sidebar Section */}
+      <section className="p-8 md:p-16 max-w-7xl mx-auto py-24 flex flex-col md:flex-row gap-8">
+        
+        {/* Sidebar Filter */}
+        <FilterSidebar 
+          filterState={filterState}
+          setFilterState={setFilterState}
+          availableCategories={availableCategories}
+          availableYears={availableYears}
+        />
 
-          {/* View Toggle */}
-          <div className="flex border border-charcoal/20 dark:border-concrete/20 p-1">
+        {/* Main Content Area */}
+        <div className="flex-1 min-w-0">
+          {/* Controls */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex flex-col md:flex-row justify-between items-center gap-8 mb-16"
+          >
+            <div className="text-sm font-mono text-charcoal/50 dark:text-concrete/50">
+              Showing {filteredProjects.length} projects
+            </div>
+
+            {/* View Toggle */}
+            <div className="flex border border-charcoal/20 dark:border-concrete/20 p-1">
             <button
               onClick={() => setDisplayMode('grid')}
-              className={`p-2 transition-colors ${displayMode === 'grid' ? 'bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal' : 'text-charcoal/50 dark:text-concrete/50 hover:text-charcoal dark:hover:text-concrete'}`}
+              className={`px-3 p-2 flex items-center justify-center gap-2 transition-colors ${displayMode === 'grid' ? 'bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal' : 'text-charcoal/50 dark:text-concrete/50 hover:text-accent'}`}
             >
               <Grid size={16} />
+              <span className="text-[10px] uppercase font-bold tracking-widest">Projects</span>
             </button>
             <button
               onClick={() => setDisplayMode('map')}
-              className={`p-2 transition-colors ${displayMode === 'map' ? 'bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal' : 'text-charcoal/50 dark:text-concrete/50 hover:text-charcoal dark:hover:text-concrete'}`}
+              className={`px-3 p-2 flex items-center justify-center gap-2 transition-colors ${displayMode === 'map' ? 'bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal' : 'text-charcoal/50 dark:text-concrete/50 hover:text-accent'}`}
             >
               <MapIcon size={16} />
+              <span className="text-[10px] uppercase font-bold tracking-widest">Map</span>
             </button>
             <button
               onClick={() => setDisplayMode('timeline')}
-              className={`p-2 transition-colors ${displayMode === 'timeline' ? 'bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal' : 'text-charcoal/50 dark:text-concrete/50 hover:text-charcoal dark:hover:text-concrete'}`}
+              className={`px-3 p-2 flex items-center justify-center gap-2 transition-colors ${displayMode === 'timeline' ? 'bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal' : 'text-charcoal/50 dark:text-concrete/50 hover:text-accent'}`}
             >
               <Clock size={16} />
+              <span className="text-[10px] uppercase font-bold tracking-widest">Timeline</span>
             </button>
           </div>
         </motion.div>
 
-        {displayMode === 'grid' && (
-          <motion.div 
-            layout
-            className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8"
-          >
+        <AnimatePresence mode="wait">
+          {displayMode === 'grid' && (
+            <motion.div 
+              key="grid"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+              className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8"
+            >
             <AnimatePresence mode="popLayout">
               {filteredProjects.map((project, index) => (
                 <motion.div 
@@ -369,6 +205,7 @@ export default function Portfolio() {
                   key={project.id} 
                   className="group relative cursor-pointer break-inside-avoid"
                   onClick={() => { setSelectedId(project.id); setCurrentImageIndex(0); }}
+                  data-cursor-text="VIEW"
                 >
                   <div className="overflow-hidden bg-charcoal/5">
                     <img 
@@ -396,8 +233,11 @@ export default function Portfolio() {
 
         {displayMode === 'index' && (
           <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
+            key="index"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4 }}
             className="flex flex-col md:flex-row gap-8 border-t border-charcoal/20 dark:border-concrete/20 pt-8"
           >
             <div className="w-full md:w-2/3 flex flex-col">
@@ -415,6 +255,7 @@ export default function Portfolio() {
                   onClick={() => { setSelectedId(project.id); setCurrentImageIndex(0); }}
                   onMouseEnter={() => setHoveredIndexImage(project.img)}
                   onMouseLeave={() => setHoveredIndexImage(null)}
+                  data-cursor-text="PREVIEW"
                 >
                   <div className="col-span-1 font-mono text-xs text-charcoal/50 dark:text-concrete/50">{(idx + 1).toString().padStart(2, '0')}</div>
                   <div className="col-span-4 font-display font-bold uppercase group-hover:text-accent transition-colors">{project.title}</div>
@@ -454,70 +295,33 @@ export default function Portfolio() {
 
         {displayMode === 'map' && (
           <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="w-full h-[60vh] bg-charcoal relative border border-accent/30 overflow-hidden flex items-center justify-center mt-8"
+            key="map"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.4 }}
+            className="w-full h-[60vh] flex items-center justify-center mt-8 z-0 relative shadow-sm"
           >
-            {/* GIS Grid Background */}
-            <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ 
-              backgroundImage: `
-                linear-gradient(to right, #b8860b 1px, transparent 1px),
-                linear-gradient(to bottom, #b8860b 1px, transparent 1px)
-              `, 
-              backgroundSize: '40px 40px' 
-            }}></div>
-            
-            {/* Crosshairs */}
-            <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-30">
-              <div className="w-full h-[1px] bg-accent absolute top-1/2 -translate-y-1/2"></div>
-              <div className="h-full w-[1px] bg-accent absolute left-1/2 -translate-x-1/2"></div>
-              <div className="w-32 h-32 border border-accent rounded-full absolute"></div>
-              <div className="w-64 h-64 border border-accent rounded-full absolute opacity-50"></div>
-              <div className="w-96 h-96 border border-accent rounded-full absolute opacity-20"></div>
-            </div>
-
-            {/* Simulated Project Coordinates */}
-            {filteredProjects.map((project, idx) => {
-              // Generate pseudo-random but consistent coordinates based on ID
-              const idNum = typeof project.id === 'string' ? parseInt(project.id, 10) : project.id;
-              const x = 50 + Math.sin(idNum * 123) * 35;
-              const y = 50 + Math.cos(idNum * 321) * 35;
-              
-              return (
-                <div 
-                  key={project.id}
-                  className="absolute group cursor-pointer"
-                  style={{ left: `${x}%`, top: `${y}%` }}
-                  onClick={() => { setSelectedId(project.id); setCurrentImageIndex(0); }}
-                >
-                  <div className="w-3 h-3 bg-accent relative z-10 shadow-[0_0_10px_rgba(184,134,11,0.8)] animate-pulse"></div>
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 border border-accent rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping"></div>
-                  
-                  {/* Tooltip */}
-                  <div className="absolute top-4 left-4 bg-charcoal/90 backdrop-blur-sm border border-accent/50 p-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none w-48 z-20">
-                    <p className="text-[9px] font-mono text-accent uppercase tracking-widest mb-1">LOC: {x.toFixed(2)}°N, {y.toFixed(2)}°E</p>
-                    <h4 className="font-display text-sm font-bold text-concrete uppercase truncate">{project.title}</h4>
-                    <p className="text-[10px] font-mono text-concrete/60 uppercase">{project.location}</p>
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* Overlay Info */}
-            <div className="absolute bottom-4 left-4 text-[10px] font-mono text-accent uppercase tracking-widest bg-charcoal/80 p-2 border border-accent/30">
-              SYS.GIS_PLOTTER // ACTIVE
-            </div>
+            <ProjectMap projects={filteredProjects} onProjectSelect={(id: string) => { setSelectedId(id); setCurrentImageIndex(0); }} />
           </motion.div>
         )}
 
         {displayMode === 'timeline' && (
           <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            key="timeline"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4 }}
             className="flex flex-col gap-0 border-l border-charcoal/20 dark:border-concrete/20 ml-4 md:ml-8"
           >
             {filteredProjects.sort((a, b) => parseInt(b.year) - parseInt(a.year)).map((project, index) => (
-              <div key={project.id} className="relative pl-8 md:pl-16 py-12 border-b border-charcoal/10 dark:border-concrete/10 group cursor-pointer" onClick={() => { setSelectedId(project.id); setCurrentImageIndex(0); }}>
+              <div 
+                key={project.id} 
+                className="relative pl-8 md:pl-16 py-12 border-b border-charcoal/10 dark:border-concrete/10 group cursor-pointer" 
+                onClick={() => { setSelectedId(project.id); setCurrentImageIndex(0); }}
+                data-cursor-text="ARCHIVE"
+              >
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-charcoal dark:bg-concrete group-hover:bg-accent transition-colors duration-300"></div>
                 <div className="flex flex-col md:flex-row gap-8 md:gap-16 items-center">
                   <div className="w-full md:w-1/3">
@@ -531,7 +335,7 @@ export default function Portfolio() {
                     <div className="flex gap-4 text-[10px] font-mono uppercase tracking-widest text-charcoal/60 dark:text-concrete/60">
                       <span>{project.category}</span>
                       <span>•</span>
-                      <span>{project.location}</span>
+                      <span>{project.year}</span>
                     </div>
                   </div>
                 </div>
@@ -539,6 +343,8 @@ export default function Portfolio() {
             ))}
           </motion.div>
         )}
+        </AnimatePresence>
+        </div>
       </section>
 
       {/* Modal */}
@@ -638,12 +444,34 @@ export default function Portfolio() {
                 )}
               </div>
               <div className="w-full md:w-2/5 p-8 md:p-16 flex flex-col bg-concrete dark:bg-charcoal transition-colors duration-500">
-                <button 
-                  onClick={() => { setSelectedId(null); setShowTechnicalSpecs(false); }}
-                  className="self-end text-steel dark:text-concrete/50 hover:text-accent dark:hover:text-accent transition-colors mb-8 bg-steel/10 dark:bg-concrete/10 p-2 rounded-none"
-                >
-                  <X size={24} />
-                </button>
+                <div className="flex justify-between items-start mb-8 gap-8">
+                  {selectedProject.lifecyclePhase ? (
+                    <div className="w-full max-w-[200px]">
+                      <div className="flex justify-between items-end mb-2">
+                        <span className="font-bold text-xs text-charcoal dark:text-concrete uppercase">{selectedProject.status}</span>
+                        <span className="text-[10px] font-mono text-accent uppercase tracking-widest">Phase {selectedProject.lifecyclePhase}/5</span>
+                      </div>
+                      <div className="flex gap-1 h-2">
+                        {[1, 2, 3, 4, 5].map((phase) => (
+                          <div 
+                            key={phase} 
+                            className={`flex-1 ${phase <= selectedProject.lifecyclePhase! ? 'bg-accent' : 'bg-steel/20 dark:bg-concrete/20'}`}
+                          ></div>
+                        ))}
+                      </div>
+                      <div className="flex justify-between mt-2 text-[8px] font-mono text-steel dark:text-concrete/50 uppercase tracking-widest">
+                        <span>Concept</span>
+                        <span>Built</span>
+                      </div>
+                    </div>
+                  ) : <div />}
+                  <button 
+                    onClick={() => { setSelectedId(null); setShowTechnicalSpecs(false); }}
+                    className="flex-shrink-0 text-steel dark:text-concrete/50 hover:text-accent dark:hover:text-accent transition-colors bg-steel/10 dark:bg-concrete/10 p-2 rounded-none"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
                 
                 <p className="text-sm font-mono text-accent uppercase tracking-widest mb-4">{selectedProject.category}</p>
                 <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tighter mb-8 leading-none text-charcoal dark:text-concrete transition-colors duration-500">{selectedProject.title}</h2>
@@ -755,34 +583,6 @@ export default function Portfolio() {
                     </div>
                   </div>
                 )}
-
-                {selectedProject.lifecyclePhase && (
-                  <div className="mb-12">
-                    <p className="text-[10px] font-mono text-steel dark:text-concrete/50 uppercase tracking-[0.2em] flex items-center gap-2 transition-colors duration-500 mb-6">
-                      <span className="w-8 h-px bg-accent/50"></span>
-                      Architectural Lifecycle
-                    </p>
-                    <div className="flex justify-between items-end mb-2">
-                      <span className="font-bold text-xs text-charcoal dark:text-concrete uppercase">{selectedProject.status}</span>
-                      <span className="text-[10px] font-mono text-accent uppercase tracking-widest">Phase {selectedProject.lifecyclePhase}/5</span>
-                    </div>
-                    <div className="flex gap-1 h-2">
-                      {[1, 2, 3, 4, 5].map((phase) => (
-                        <div 
-                          key={phase} 
-                          className={`flex-1 ${phase <= selectedProject.lifecyclePhase! ? 'bg-accent' : 'bg-steel/20 dark:bg-concrete/20'}`}
-                        ></div>
-                      ))}
-                    </div>
-                    <div className="flex justify-between mt-2 text-[8px] font-mono text-steel dark:text-concrete/50 uppercase tracking-widest">
-                      <span>Concept</span>
-                      <span>SD</span>
-                      <span>DD</span>
-                      <span>CD</span>
-                      <span>Built</span>
-                    </div>
-                  </div>
-                )}
                 
                 <div className="grid grid-cols-2 gap-x-8 gap-y-6 border-t border-steel/30 dark:border-concrete/20 pt-8 mt-auto transition-colors duration-500">
                   <div className="flex flex-col border-b border-steel/10 pb-4">
@@ -794,20 +594,20 @@ export default function Portfolio() {
                     <p className="font-bold uppercase text-sm text-charcoal dark:text-concrete transition-colors duration-500">{selectedProject.location}</p>
                   </div>
                   <div className="flex flex-col border-b border-steel/10 pb-4">
-                    <p className="text-[10px] font-mono text-steel dark:text-concrete/50 uppercase tracking-widest mb-1 transition-colors duration-500">Area</p>
-                    <p className="font-bold uppercase text-sm text-charcoal dark:text-concrete transition-colors duration-500">{selectedProject.area}</p>
-                  </div>
-                  <div className="flex flex-col border-b border-steel/10 pb-4">
                     <p className="text-[10px] font-mono text-steel dark:text-concrete/50 uppercase tracking-widest mb-1 transition-colors duration-500">Typology</p>
                     <p className="font-bold uppercase text-sm text-charcoal dark:text-concrete transition-colors duration-500">{selectedProject.category}</p>
                   </div>
                   <div className="flex flex-col border-b border-steel/10 pb-4">
-                    <p className="text-[10px] font-mono text-steel dark:text-concrete/50 uppercase tracking-widest mb-1 transition-colors duration-500">Collaborators</p>
-                    <p className="font-bold uppercase text-sm text-charcoal dark:text-concrete transition-colors duration-500">{selectedProject.collaborators}</p>
+                    <p className="text-[10px] font-mono text-steel dark:text-concrete/50 uppercase tracking-widest mb-1 transition-colors duration-500">Area</p>
+                    <p className="font-bold uppercase text-sm text-charcoal dark:text-concrete transition-colors duration-500">{selectedProject.area}</p>
                   </div>
                   <div className="flex flex-col border-b border-steel/10 pb-4">
                     <p className="text-[10px] font-mono text-steel dark:text-concrete/50 uppercase tracking-widest mb-1 transition-colors duration-500">Year</p>
                     <p className="font-bold uppercase text-sm text-charcoal dark:text-concrete transition-colors duration-500">{selectedProject.year}</p>
+                  </div>
+                  <div className="flex flex-col border-b border-steel/10 pb-4">
+                    <p className="text-[10px] font-mono text-steel dark:text-concrete/50 uppercase tracking-widest mb-1 transition-colors duration-500">Collaborators</p>
+                    <p className="font-bold uppercase text-sm text-charcoal dark:text-concrete transition-colors duration-500">{selectedProject.collaborators}</p>
                   </div>
                 </div>
               </div>

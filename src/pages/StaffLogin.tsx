@@ -1,11 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, provider, db, handleFirestoreError, OperationType, signInWithEmailAndPassword, createUserWithEmailAndPassword } from '../firebase';
-import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { auth, provider, db, handleFirestoreError, OperationType, signInWithEmailAndPassword, createUserWithEmailAndPassword } from '../lib/firebase';
+import { signInWithPopup, GoogleAuthProvider, fetchSignInMethodsForEmail } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { motion } from 'motion/react';
-import { Shield, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Shield, ArrowRight, Server, Lock } from 'lucide-react';
 import Magnetic from '../components/Magnetic';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1,
+    transition: { 
+      staggerChildren: 0.1,
+      delayChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }
+  }
+};
 
 export default function StaffLogin() {
   const navigate = useNavigate();
@@ -14,6 +34,15 @@ export default function StaffLogin() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,6 +51,12 @@ export default function StaffLogin() {
 
     if (!email || !password) {
       setError('Please enter both email and password.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (isSignUp && password.length < 6) {
+      setError('Password should be at least 6 characters.');
       setIsLoading(false);
       return;
     }
@@ -50,7 +85,21 @@ export default function StaffLogin() {
       }
       navigate('/staff-portal');
     } catch (err: any) {
-      setError(err.message || 'Authentication failed. Please check your credentials.');
+      console.error(err);
+      const errorCode = err?.code || '';
+      const errorMessage = err?.message || '';
+      
+      if (errorCode === 'auth/wrong-password' || errorMessage.includes('auth/wrong-password')) {
+        setError('Wrong password.');
+      } else if (errorCode === 'auth/email-already-in-use' || errorMessage.includes('auth/email-already-in-use')) {
+        setError('Email already in use. Try logging in.');
+      } else if (errorCode === 'auth/user-not-found' || errorMessage.includes('auth/user-not-found')) {
+        setError('Invalid, check email and try again.');
+      } else if (errorCode === 'auth/invalid-credential' || errorMessage.includes('auth/invalid-credential')) {
+        setError('Invalid email or password.');
+      } else {
+        setError(errorMessage || 'Authentication failed. Please check your credentials.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -68,6 +117,7 @@ export default function StaffLogin() {
       return;
     }
 
+    let user;
     try {
       const customProvider = new GoogleAuthProvider();
       if (email) {
@@ -75,8 +125,23 @@ export default function StaffLogin() {
       }
       
       const result = await signInWithPopup(auth, customProvider);
-      const user = result.user;
-      
+      user = result.user;
+    } catch (err: any) {
+      if (
+        err?.code === 'auth/popup-closed-by-user' || 
+        err?.code === 'auth/cancelled-popup-request' ||
+        (err instanceof Error && (err.message.includes('popup-closed-by-user') || err.message.includes('cancelled-popup-request')))
+      ) {
+        console.log('Authentication popup was closed by the user.');
+      } else {
+        console.error('Auth error:', err);
+        setError(err.message || 'Authentication failed. Please try again or open this app in a new tab.');
+      }
+      setIsLoading(false);
+      return;
+    }
+
+    try {
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
       
@@ -89,122 +154,168 @@ export default function StaffLogin() {
 
       navigate('/staff-portal');
     } catch (err: any) {
-      if (err?.code === 'auth/popup-closed-by-user' || (err instanceof Error && err.message.includes('popup-closed-by-user'))) {
-        console.log('Authentication popup was closed by the user.');
-      } else {
-        handleFirestoreError(err, OperationType.GET, 'users');
-        setError('Failed to sign in. Please try again.');
-      }
+      handleFirestoreError(err, OperationType.GET, 'users');
+      setError('Database connection error. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-[calc(100vh-6rem)] flex items-center justify-center bg-concrete dark:bg-charcoal p-6 relative overflow-hidden transition-colors duration-500">
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[60%] border-[1px] border-steel/10 dark:border-concrete/10 rounded-full blur-3xl opacity-50 transition-colors duration-500"></div>
-        <div className="absolute bottom-[-10%] left-[-5%] w-[50%] h-[50%] border-[1px] border-accent/10 rounded-full blur-3xl opacity-30"></div>
+    <div className="min-h-[calc(100vh-6rem)] flex items-center justify-center bg-charcoal dark:bg-charcoal p-6 relative overflow-hidden transition-colors duration-500">
+      {/* Decorative Interactive Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden mix-blend-screen">
+        <motion.div 
+          animate={{ 
+            x: -mousePosition.x * 0.05, 
+            y: mousePosition.y * 0.05,
+            scale: [1, 1.1, 1]
+          }}
+          transition={{ scale: { duration: 15, repeat: Infinity, ease: "easeInOut" }, x: { type: "spring", stiffness: 30 }, y: { type: "spring", stiffness: 30 } }}
+          className="absolute top-[-10%] right-[-5%] w-[60%] h-[60%] border-[2px] border-accent/20 rounded-full blur-[80px] opacity-40 transition-colors duration-500"
+        />
+        <motion.div 
+          animate={{ 
+            x: mousePosition.x * 0.04, 
+            y: -mousePosition.y * 0.04 
+          }}
+          transition={{ type: "spring", stiffness: 40 }}
+          className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[70%] bg-charcoal/20 border-t border-r border-steel/10 blur-3xl opacity-60"
+        />
+        
+        {/* Abstract Technical Data pattern */}
+        <div className="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-black/50 to-transparent flex items-end">
+          <div className="w-full flex justify-around opacity-10 pb-4 font-mono text-[8px] text-white">
+            <motion.span animate={{ y: [0, -10, 0] }} transition={{ duration: 3, repeat: Infinity }}>SYS01_OK</motion.span>
+            <motion.span animate={{ y: [0, -15, 0] }} transition={{ duration: 4, repeat: Infinity, delay: 1 }}>NET_LINKED</motion.span>
+            <motion.span animate={{ y: [0, -5, 0] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}>AUTH_STANDBY</motion.span>
+            <motion.span animate={{ y: [0, -12, 0] }} transition={{ duration: 3.5, repeat: Infinity, delay: 0.2 }}>NODE_SECURE</motion.span>
+          </div>
+        </div>
       </div>
 
       <motion.div 
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="max-w-md w-full bg-charcoal dark:bg-charcoal text-concrete p-10 md:p-16 relative z-10 transition-colors duration-500"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="max-w-md w-full bg-charcoal dark:bg-charcoal text-concrete p-10 md:p-16 relative z-10 transition-colors duration-500 shadow-2xl border border-steel/20"
       >
-        <div className="flex justify-center mb-10">
-          <div className="w-16 h-16 rounded-none border border-concrete/30 flex items-center justify-center bg-charcoal dark:bg-charcoal shadow-[0_0_30px_rgba(255,255,255,0.1)] transition-colors duration-500">
-            <Shield size={20} className="text-concrete" strokeWidth={1.5} />
-          </div>
-        </div>
+        <motion.div variants={itemVariants} className="flex justify-center mb-10 relative">
+          <motion.div 
+            whileHover={{ scale: 1.1, rotate: 90 }}
+            transition={{ type: "spring", stiffness: 200, damping: 10 }}
+            className="w-16 h-16 rounded-sm border border-accent/50 flex flex-col items-center justify-center bg-charcoal dark:bg-charcoal shadow-[0_0_20px_rgba(184,134,11,0.2)] transition-colors duration-500 relative overflow-hidden group cursor-pointer z-10"
+          >
+            <Shield size={20} className="text-accent group-hover:-translate-y-10 transition-transform duration-300 absolute" strokeWidth={1.5} />
+            <Server size={20} className="text-white translate-y-10 group-hover:translate-y-0 transition-transform duration-300 absolute" strokeWidth={1.5} />
+            {/* Scanning line effect */}
+            <motion.div 
+              animate={{ y: ['-100%', '100%'] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+              className="absolute left-0 right-0 h-0.5 bg-accent/50 shadow-[0_0_5px_rgba(184,134,11,1)]"
+            />
+          </motion.div>
+        </motion.div>
         
-        <h1 className="font-display text-4xl font-light tracking-tight text-center mb-4 text-concrete">
+        <motion.h1 variants={itemVariants} className="font-display text-4xl font-light tracking-tight text-center mb-4 text-white">
           Staff Portal
-        </h1>
-        <p className="text-concrete/70 font-mono text-[10px] uppercase tracking-[0.15em] text-center mb-12 leading-relaxed">
-          Authorized internal staff login.
-        </p>
+        </motion.h1>
+        <motion.p variants={itemVariants} className="text-concrete/60 font-mono text-[9px] uppercase tracking-[0.2em] text-center mb-10 leading-relaxed flex items-center justify-center gap-2">
+           <Lock size={10} className="text-accent" /> Intranet Authentication Gateway
+        </motion.p>
 
-        {error && (
-          <div className="bg-red-900/20 border border-red-500/30 text-red-200 p-4 text-xs font-mono mb-8 text-center uppercase tracking-widest">
-            {error}
-          </div>
-        )}
+        <AnimatePresence>
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0, scale: 0.9 }}
+              animate={{ opacity: 1, height: 'auto', scale: 1 }}
+              exit={{ opacity: 0, height: 0, scale: 0.9 }}
+              className="bg-red-900/20 border border-red-500/50 text-red-300 p-4 text-[10px] font-mono mb-8 text-center uppercase tracking-widest shadow-[0_0_15px_rgba(239,68,68,0.2)]"
+            >
+              {error}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <form onSubmit={handleEmailAuth} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-concrete/70 text-[10px] font-mono uppercase tracking-widest mb-2">
-              Staff Email Address
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. employee@danuthiaandassociates.com"
-              className="w-full bg-transparent border border-concrete/30 focus:border-concrete text-concrete px-4 py-3 text-sm font-mono outline-none transition-colors placeholder:text-concrete/30 mb-4"
-              required
-            />
+        <motion.form variants={itemVariants} onSubmit={handleEmailAuth} className="space-y-6">
+          <div className="space-y-4">
+            <div className="relative">
+              <label htmlFor="email" className="block text-concrete/70 text-[9px] font-mono uppercase tracking-[0.2em] mb-2 font-bold flex items-center justify-between">
+                <span>Staff Identifier</span>
+                <span className="text-accent opacity-50">.usr</span>
+              </label>
+              <div className="relative group">
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="e.g. operative@danuthiaandassociates.com"
+                  className="w-full bg-white/5 border border-steel/20 focus:border-accent text-white px-4 py-3 text-xs font-mono outline-none transition-colors placeholder:text-concrete/30 relative z-10"
+                  required
+                />
+                <div className="absolute inset-0 bg-accent/5 scale-x-0 group-focus-within:scale-x-100 transition-transform duration-300 origin-left"></div>
+              </div>
+            </div>
             
-            <label htmlFor="password" className="block text-concrete/70 text-[10px] font-mono uppercase tracking-widest mb-2">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              className="w-full bg-transparent border border-concrete/30 focus:border-concrete text-concrete px-4 py-3 text-sm font-mono outline-none transition-colors placeholder:text-concrete/30"
-              required
-            />
+            <div className="relative">
+              <label htmlFor="password" className="block text-concrete/70 text-[9px] font-mono uppercase tracking-[0.2em] mb-2 font-bold flex items-center justify-between">
+                <span>Security Key</span>
+                <span className="text-accent opacity-50">.key</span>
+              </label>
+              <div className="relative group">
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  className="w-full bg-white/5 border border-steel/20 focus:border-accent text-white px-4 py-3 text-xs font-mono outline-none transition-colors placeholder:text-concrete/30 tracking-[0.3em] relative z-10"
+                  required
+                />
+                <div className="absolute inset-0 bg-accent/5 scale-x-0 group-focus-within:scale-x-100 transition-transform duration-300 origin-left"></div>
+              </div>
+            </div>
           </div>
           
-          <Magnetic className="w-full pt-4">
+          <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-accent border border-accent text-white py-4 font-bold uppercase tracking-widest hover:bg-accent/80 transition-all duration-500 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+              className="w-full bg-charcoal border border-steel/30 text-white font-mono py-4 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-accent hover:border-accent transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden flex items-center justify-center gap-3"
             >
-              <span>{isLoading ? 'Processing...' : (isSignUp ? 'Create Staff Account' : 'Sign In with Email')}</span>
+              <span className="relative z-10">{isLoading ? 'Verifying Protocol...' : (isSignUp ? 'Generate Credentials' : 'Commence Login')}</span>
+              {!isLoading && <ArrowRight size={14} className="relative z-10 translate-x-0 group-hover:translate-x-2 transition-transform duration-500" strokeWidth={2} />}
+              <div className="absolute inset-0 bg-accent transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
             </button>
-          </Magnetic>
-        </form>
+          </motion.div>
+        </motion.form>
 
-        <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="text-concrete/70 hover:text-concrete text-xs font-mono tracking-widest uppercase transition-colors"
-          >
-            {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
-          </button>
-        </div>
 
-        <div className="flex items-center gap-4 my-6">
-          <div className="h-px bg-concrete/20 flex-1"></div>
-          <span className="text-concrete/50 font-mono text-[10px] uppercase tracking-widest">Or authenticate securely</span>
-          <div className="h-px bg-concrete/20 flex-1"></div>
-        </div>
 
-        <Magnetic className="w-full">
+        <motion.div variants={itemVariants} className="flex items-center gap-4 my-6 opacity-60">
+          <div className="h-px bg-steel/30 flex-1"></div>
+          <span className="text-steel font-mono text-[8px] uppercase tracking-[0.2em]">Or Sign In With</span>
+          <div className="h-px bg-steel/30 flex-1"></div>
+        </motion.div>
+
+        <motion.div variants={itemVariants} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
           <button
             type="button"
             onClick={handleGoogleLogin}
             disabled={isLoading}
-            className="w-full bg-transparent border border-concrete text-concrete py-4 font-bold uppercase tracking-widest hover:bg-concrete hover:text-charcoal transition-all duration-500 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+            className="w-full bg-transparent border border-steel/30 text-steel py-3 font-mono font-bold uppercase tracking-[0.1em] hover:border-concrete hover:text-concrete transition-all duration-500 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed text-[10px] relative overflow-hidden"
           >
-            <span>{isLoading ? 'Authenticating...' : 'Sign in with Google'}</span>
-            {!isLoading && <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform duration-500" strokeWidth={1.5} />}
+            <span className="relative z-10 line-clamp-1 truncate max-w-[80%]">{email ? `Connect via ${email}` : 'Sign in with Google Account'}</span>
+            <div className="absolute inset-0 bg-white/5 transform scale-y-0 group-hover:scale-y-100 transition-transform origin-bottom duration-300"></div>
           </button>
-        </Magnetic>
+        </motion.div>
 
-        <div className="mt-12 pt-8 border-t border-concrete/20 transition-colors duration-500 flex flex-col items-center gap-4">
-          <p className="text-center text-concrete/70 text-xs font-light leading-relaxed">
-            Access is strictly restricted to employees of Danuthia & Associates.
+        <motion.div variants={itemVariants} className="mt-12 border-t border-steel/20 pt-6 flex flex-col items-center gap-2">
+          <p className="text-center text-steel/60 text-[8px] font-mono tracking-[0.2em] uppercase leading-relaxed">
+            Unauthorized access prohibited.<br/>All protocols strictly monitored by Danuthia Associates Construction LLc.
           </p>
-        </div>
+        </motion.div>
       </motion.div>
     </div>
   );

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db, handleFirestoreError, OperationType, uploadLargeFile, MAX_FILE_SIZE, CHUNK_SIZE } from '../firebase';
+import { auth, db, storage, handleFirestoreError, OperationType, uploadLargeFile, MAX_FILE_SIZE, CHUNK_SIZE } from '../lib/firebase';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { doc, getDoc, collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp, getDocs, updateDoc, limit, or, and, setDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -11,6 +12,8 @@ import {
 import { LogOut, Hammer, Eye, Map, MapPin, Layers, Globe, PieChart, ClipboardList, PenTool, Trees, HardHat, FileLineChart, ChevronDown, Building2, MessageSquare, Check, Clock, Send, Upload, Download, Edit, Users, Activity, Target, TrendingUp, X, FileCheck, FileText, Shield, CreditCard, Box, ArrowUp, Wind, RefreshCw, Loader2, ChevronRight } from 'lucide-react';
 import Magnetic from '../components/Magnetic';
 import FinancialManager from '../components/FinancialManager';
+import ProjectMilestonesManager from '../components/ProjectMilestonesManager';
+import AdminTeamManagement from '../components/AdminTeamManagement';
 
 interface StaffUser {
   id: string;
@@ -130,6 +133,125 @@ const ProjectAnalytics = ({ logs }: { logs: InternalLog[] }) => {
           </ResponsiveContainer>
         </div>
         <p className="font-mono text-[9px] text-steel uppercase mt-4 text-center tracking-widest">Progress vs Budget Allocation Ratio</p>
+      </div>
+    </div>
+  );
+};
+
+// Component for Kanban Board
+const InternalKanbanBoard = ({ projectId }: { projectId: string }) => {
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [addingTaskTo, setAddingTaskTo] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!projectId) return;
+    const q = query(collection(db, 'projects', projectId, 'tasks'), orderBy('createdAt', 'asc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setTasks(data);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, `projects/${projectId}/tasks`);
+    });
+    return () => unsubscribe();
+  }, [projectId]);
+
+  const onDragStart = (e: React.DragEvent, taskId: string) => {
+    e.dataTransfer.setData('taskId', taskId);
+  };
+
+  const onDrop = async (e: React.DragEvent, status: string) => {
+    const taskId = e.dataTransfer.getData('taskId');
+    if (!taskId) return;
+    try {
+      await updateDoc(doc(db, 'projects', projectId, 'tasks', taskId), { status });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleAddTask = async (status: string) => {
+    if (!newTaskTitle.trim()) return;
+    try {
+      await addDoc(collection(db, 'projects', projectId, 'tasks'), {
+        title: newTaskTitle.trim(),
+        status,
+        createdAt: serverTimestamp()
+      });
+      setNewTaskTitle('');
+      setAddingTaskTo(null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const columns = [
+    { id: 'todo', title: 'To Do' },
+    { id: 'in_progress', title: 'In Progress' },
+    { id: 'client_review', title: 'Client Review' },
+    { id: 'completed', title: 'Completed' }
+  ];
+
+  return (
+    <div className="lg:col-span-3 mt-8 p-8 border border-steel/20 dark:border-concrete/10 bg-white/50 dark:bg-charcoal/50 backdrop-blur-md">
+      <div className="flex items-center gap-3 mb-8">
+        <ClipboardList className="text-accent" size={24} />
+        <h3 className="font-mono text-[12px] uppercase tracking-widest text-steel font-bold">Internal Kanban Board</h3>
+      </div>
+      <div className="flex gap-6 overflow-x-auto pb-4">
+        {columns.map(col => (
+          <div 
+            key={col.id} 
+            className="min-w-[280px] flex-1 flex flex-col bg-charcoal/5 dark:bg-concrete/5 border border-steel/10 dark:border-concrete/10 p-4"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => onDrop(e, col.id)}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-bold text-xs uppercase text-charcoal dark:text-concrete tracking-widest">{col.title}</h4>
+              <span className="text-[10px] font-mono text-steel bg-steel/10 px-2 py-0.5 rounded-full">
+                {tasks.filter(t => t.status === col.id).length}
+              </span>
+            </div>
+            
+            <div className="flex-1 space-y-3 min-h-[150px]">
+              {tasks.filter(t => t.status === col.id).map(task => (
+                <div 
+                  key={task.id} 
+                  draggable 
+                  onDragStart={(e) => onDragStart(e, task.id)}
+                  className="bg-white dark:bg-charcoal p-4 border border-steel/20 cursor-move shadow-sm hover:border-accent transition-colors"
+                >
+                  <p className="text-xs text-charcoal dark:text-concrete leading-relaxed">{task.title}</p>
+                </div>
+              ))}
+              
+              {addingTaskTo === col.id ? (
+                <div className="bg-white dark:bg-charcoal p-3 border border-accent">
+                  <input 
+                    type="text" 
+                    value={newTaskTitle}
+                    onChange={(e) => setNewTaskTitle(e.target.value)}
+                    placeholder="Task details..."
+                    className="w-full bg-transparent text-xs outline-none text-charcoal dark:text-concrete mb-2"
+                    autoFocus
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddTask(col.id)}
+                  />
+                  <div className="flex justify-end gap-2">
+                    <button onClick={() => setAddingTaskTo(null)} className="text-[10px] uppercase text-steel hover:text-charcoal dark:hover:text-concrete">Cancel</button>
+                    <button onClick={() => handleAddTask(col.id)} className="text-[10px] uppercase text-accent font-bold">Add</button>
+                  </div>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => setAddingTaskTo(col.id)}
+                  className="w-full py-3 text-[10px] font-mono uppercase tracking-widest text-steel hover:text-accent border border-dashed border-steel/20 hover:border-accent transition-colors flex items-center justify-center gap-2"
+                >
+                  + Add Task
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -437,7 +559,7 @@ const PMChatSystem = ({
         <div className="flex items-center gap-3">
           <MessageSquare className="text-accent" size={24} />
           <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-charcoal dark:text-concrete font-bold italic">
-            Direct Client Intelligence Channel
+            Client Meetings & Direct Liaison Channel
           </h3>
         </div>
         <div className="flex items-center gap-2">
@@ -563,8 +685,16 @@ const ProjectManagementCenter = ({
   const [dailySummary, setDailySummary] = useState('');
   const [nextActivity, setNextActivity] = useState('');
   
+  // Scope States
+  const [scopeScale, setScopeScale] = useState('');
+  const [scopeType, setScopeType] = useState('');
+  const [scopeTimeline, setScopeTimeline] = useState('');
+  const [scopeBudget, setScopeBudget] = useState('');
+  const [scopeDesc, setScopeDesc] = useState('');
+
   // Site Analysis States
   const [topoSurvey, setTopoSurvey] = useState('');
+
   const [solarExposure, setSolarExposure] = useState('');
   const [windPattern, setWindPattern] = useState('');
 
@@ -587,6 +717,13 @@ const ProjectManagementCenter = ({
           setCurrentPhase(data.currentPhase || '');
           setDailySummary(data.dailySummary || '');
           setNextActivity(data.nextActivity || '');
+          
+          setScopeScale(data.scope?.scale || '');
+          setScopeType(data.scope?.type || '');
+          setScopeTimeline(data.scope?.timeline || '');
+          setScopeBudget(data.scope?.budget || '');
+          setScopeDesc(data.scope?.description || '');
+
           setTopoSurvey(data.siteAnalysis?.topographical || '');
           setSolarExposure(data.siteAnalysis?.solarExposure || '');
           setWindPattern(data.siteAnalysis?.windPattern || '');
@@ -599,6 +736,11 @@ const ProjectManagementCenter = ({
           setCurrentPhase('');
           setDailySummary('');
           setNextActivity('');
+          setScopeScale('');
+          setScopeType('');
+          setScopeTimeline('');
+          setScopeBudget('');
+          setScopeDesc('');
           setTopoSurvey('');
           setSolarExposure('');
           setWindPattern('');
@@ -625,6 +767,13 @@ const ProjectManagementCenter = ({
         currentPhase,
         dailySummary,
         nextActivity,
+        scope: {
+          scale: scopeScale,
+          type: scopeType,
+          timeline: scopeTimeline,
+          budget: scopeBudget,
+          description: scopeDesc
+        },
         siteAnalysis: {
           topographical: topoSurvey,
           solarExposure: solarExposure,
@@ -643,6 +792,13 @@ const ProjectManagementCenter = ({
             currentPhase,
             dailySummary,
             nextActivity,
+            scope: {
+              scale: scopeScale,
+              type: scopeType,
+              timeline: scopeTimeline,
+              budget: scopeBudget,
+              description: scopeDesc
+            },
             siteAnalysis: {
               topographical: topoSurvey,
               solarExposure: solarExposure,
@@ -669,49 +825,67 @@ const ProjectManagementCenter = ({
 
     setUploading(type);
     
+    let uploadedRef = null;
     try {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const base64 = event.target?.result as string;
-        
-        if (type === 'report') {
-          await uploadLargeFile('technicalReports', {
-            clientId: selectedClient,
-            title: file.name.split('.')[0],
-            fileName: file.name,
-            authorId: auth.currentUser?.uid,
-            collectionName: 'technicalReports',
-            type: 'report'
-          }, base64);
-        } else if (type === 'invoice') {
-          await uploadLargeFile('invoices', {
-            clientId: selectedClient,
-            description: `Project Invoice: ${file.name}`,
-            amount: 0,
-            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            status: 'unpaid',
-            fileName: file.name,
-            collectionName: 'invoices',
-            type: 'invoice'
-          }, base64);
-        } else {
-          await uploadLargeFile('documents', {
-            clientId: selectedClient,
-            title: file.name,
-            fileName: file.name,
-            fileType: file.type,
-            category: type === 'image' ? 'image' : 'document',
-            collectionName: 'documents',
-          }, base64);
-        }
-        
-        alert(`${type.charAt(0).toUpperCase() + type.slice(1)} uploaded successfully`);
-        setUploading(null);
-      };
-      reader.readAsDataURL(file);
+      const storageRef = ref(storage, `${type}s/${selectedClient}/${Date.now()}_${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      uploadedRef = snapshot.ref;
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      if (type === 'report') {
+        const metadata = {
+          clientId: selectedClient,
+          title: file.name.split('.')[0],
+          fileName: file.name,
+          authorId: auth.currentUser?.uid,
+          collectionName: 'technicalReports',
+          type: 'report',
+          fileUrl: downloadURL
+        };
+        await addDoc(collection(db, 'technicalReports'), {
+          ...metadata,
+          createdAt: serverTimestamp()
+        });
+      } else if (type === 'invoice') {
+        const metadata = {
+          clientId: selectedClient,
+          description: `Project Invoice: ${file.name}`,
+          amount: 0,
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          status: 'unpaid',
+          fileName: file.name,
+          collectionName: 'invoices',
+          type: 'invoice',
+          fileUrl: downloadURL
+        };
+        await addDoc(collection(db, 'invoices'), {
+          ...metadata,
+          createdAt: serverTimestamp()
+        });
+      } else {
+        const metadata = {
+          clientId: selectedClient,
+          title: file.name,
+          fileName: file.name,
+          fileType: file.type,
+          category: type === 'image' ? 'image' : 'document',
+          collectionName: 'documents',
+          fileData: downloadURL
+        };
+        await addDoc(collection(db, 'documents'), {
+          ...metadata,
+          createdAt: serverTimestamp()
+        });
+      }
+      
+      alert(`${type.charAt(0).toUpperCase() + type.slice(1)} uploaded successfully`);
+      setUploading(null);
       e.target.value = '';
     } catch (error) {
       console.error("Upload error:", error);
+      if (uploadedRef) {
+        await deleteObject(uploadedRef).catch(console.error);
+      }
       alert('Upload failed');
       setUploading(null);
       e.target.value = '';
@@ -843,6 +1017,70 @@ const ProjectManagementCenter = ({
               className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/20 p-6 font-mono text-xs leading-relaxed outline-none focus:border-accent resize-none"
               placeholder="Provide a high-level summary of today's progress for the client dashboard..."
             />
+          </div>
+
+          <div className="pt-8 border-t border-steel/10 space-y-8">
+            <h3 className="font-mono text-xs uppercase tracking-widest text-charcoal dark:text-concrete font-bold flex items-center gap-3">
+              <ClipboardList className="text-accent" size={20} />
+              Project Scope Parameters
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[10px] font-mono uppercase tracking-widest text-steel font-bold mt-2">Project Scale</label>
+                <input 
+                  type="text" 
+                  value={scopeScale}
+                  onChange={(e) => setScopeScale(e.target.value)}
+                  className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/20 p-4 font-mono text-xs outline-none focus:border-accent"
+                  placeholder="e.g. Medium (5000 sq ft)"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-mono uppercase tracking-widest text-steel font-bold mt-2">Project Type</label>
+                <input 
+                  type="text" 
+                  value={scopeType}
+                  onChange={(e) => setScopeType(e.target.value)}
+                  className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/20 p-4 font-mono text-xs outline-none focus:border-accent"
+                  placeholder="e.g. Residential Multi-Family"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[10px] font-mono uppercase tracking-widest text-steel font-bold mt-2">Target Timeline</label>
+                <input 
+                  type="text" 
+                  value={scopeTimeline}
+                  onChange={(e) => setScopeTimeline(e.target.value)}
+                  className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/20 p-4 font-mono text-xs outline-none focus:border-accent"
+                  placeholder="e.g. 18 Months"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-mono uppercase tracking-widest text-steel font-bold mt-2">Budget Target</label>
+                <input 
+                  type="text" 
+                  value={scopeBudget}
+                  onChange={(e) => setScopeBudget(e.target.value)}
+                  className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/20 p-4 font-mono text-xs outline-none focus:border-accent"
+                  placeholder="e.g. Standard"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-[10px] font-mono uppercase tracking-widest text-steel font-bold mt-2">Scope Description</label>
+              <textarea 
+                rows={3}
+                value={scopeDesc}
+                onChange={(e) => setScopeDesc(e.target.value)}
+                className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/20 p-4 font-mono text-xs outline-none focus:border-accent resize-none"
+                placeholder="High level description of project goals and scope..."
+              />
+            </div>
           </div>
 
           <div className="pt-8 border-t border-steel/10 space-y-8">
@@ -1088,9 +1326,9 @@ const PMUpdateSubmitter = ({
         {/* Publisher Tool */}
         <div className="lg:border-l lg:border-steel/20 lg:pl-8 flex flex-col">
           <div className="mb-6">
-            <h4 className="font-mono text-[10px] uppercase tracking-widest text-steel font-bold mb-2">Publish Official Timeline Update</h4>
+            <h4 className="font-mono text-[10px] uppercase tracking-widest text-steel font-bold mb-2">Publish To Timelines & Updates</h4>
             <p className="font-mono text-[10px] text-steel/70 leading-relaxed">
-              Synthesize the technical data above into a professional, cohesive update for the client. This will be visible on their project dashboard immediately.
+              Synthesize the technical data above into a professional, cohesive update for the client. This will be visible on their Timelines & Updates dashboard immediately.
             </p>
           </div>
           
@@ -1292,6 +1530,8 @@ export default function StaffPortal() {
       } else {
         setSiteParams({});
       }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, `projects/${selectedProject}`);
     });
 
     return () => unsubscribe();
@@ -1430,6 +1670,8 @@ export default function StaffPortal() {
           updateDoc(doc(db, 'internalMessages', msg.id), { read: true }).catch(() => {});
         });
       }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'internalMessages');
     });
 
     return () => unsubscribe();
@@ -1516,8 +1758,13 @@ export default function StaffPortal() {
     if (!selectedProject) return;
     setIsSavingSiteParams(true);
     try {
+      const safeParams = { ...params };
+      Object.keys(safeParams).forEach(k => { if (safeParams[k] === undefined) safeParams[k] = null; });
+      const safeSiteParams = { ...siteParams };
+      Object.keys(safeSiteParams).forEach(k => { if (safeSiteParams[k] === undefined) safeSiteParams[k] = null; });
+
       await updateDoc(doc(db, 'projects', selectedProject), {
-        siteParams: { ...siteParams, ...params },
+        siteParams: { ...safeSiteParams, ...safeParams },
         updatedAt: serverTimestamp()
       });
       setStatusMessage({ text: "Technical parameters synchronized successfully.", type: 'success' });
@@ -1530,81 +1777,39 @@ export default function StaffPortal() {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'internal' | 'pm') => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !user) return;
 
-    // Hard limit of 5MB for selection, but we will compress images to fit Firestore (1MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setStatusMessage({ text: "File size exceeds 5MB. Please upload a smaller file.", type: 'error' });
+    // Hard limit of 10MB for storage uploads
+    if (file.size > 10 * 1024 * 1024) {
+      setStatusMessage({ text: "File size exceeds 10MB. Please upload a smaller file.", type: 'error' });
       e.target.value = '';
       return;
     }
 
-    const processFile = async (f: File) => {
-      // If it's an image, try to compress it to fit under 1MB Firestore limit
-      if (f.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let width = img.width;
-            let height = img.height;
-            
-            // Max dimensions for technical docs
-            const MAX_WIDTH = 2000;
-            if (width > MAX_WIDTH) {
-              height = Math.round((height * MAX_WIDTH) / width);
-              width = MAX_WIDTH;
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx?.drawImage(img, 0, 0, width, height);
-            
-            // Start with 0.7 quality to stay under 1MB easily
-            const base64 = canvas.toDataURL('image/jpeg', 0.7);
-            
-            // Base64 size check
-            const stringSize = base64.length;
-            if (stringSize > 1000000) {
-              // Re-compress if still too large
-              const smallBase64 = canvas.toDataURL('image/jpeg', 0.4);
-              if (smallBase64.length > 1000000) {
-                setStatusMessage({ text: "Image is too complex to fit in the database even after compression. Please use a simpler image.", type: 'error' });
-                return;
-              }
-              if (target === 'internal') setInternalFile({ url: smallBase64, name: f.name });
-              else setPmFile({ url: smallBase64, name: f.name });
-            } else {
-              if (target === 'internal') setInternalFile({ url: base64, name: f.name });
-              else setPmFile({ url: base64, name: f.name });
-            }
-          };
-          img.src = event.target?.result as string;
-        };
-        reader.readAsDataURL(f);
+    setIsSubmitting(true);
+    let uploadedRef = null;
+    try {
+      const storageRef = ref(storage, `staff_uploads/${target}_${Date.now()}_${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      uploadedRef = snapshot.ref;
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      if (target === 'internal') {
+        setInternalFile({ url: downloadURL, name: file.name });
       } else {
-        // Non-image files (PDFs etc) - strictly capped at 10MB due to Firestore chunking support
-        if (f.size > MAX_FILE_SIZE) {
-          setStatusMessage({ text: "Documents are currently limited to 10MB per file.", type: 'error' });
-          return;
-        }
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const base64 = event.target?.result as string;
-          if (target === 'internal') {
-            setInternalFile({ url: base64, name: f.name });
-          } else {
-            setPmFile({ url: base64, name: f.name });
-          }
-        };
-        reader.readAsDataURL(f);
+        setPmFile({ url: downloadURL, name: file.name });
       }
+      setStatusMessage({ text: "File uploaded and staged.", type: 'success' });
+    } catch (err) {
+      console.error(err);
+      if (uploadedRef) {
+        await deleteObject(uploadedRef).catch(console.error);
+      }
+      setStatusMessage({ text: "Failed to upload to storage.", type: 'error' });
+    } finally {
+      setIsSubmitting(false);
       e.target.value = '';
-    };
-
-    processFile(file);
+    }
   };
 
   const submitInternalLog = async () => {
@@ -1900,6 +2105,8 @@ export default function StaffPortal() {
 
           {/* Project Analytics */}
           <ProjectAnalytics logs={internalLogs} />
+          {selectedProject && <ProjectMilestonesManager clientId={selectedProject} role={role} />}
+          {selectedProject && <InternalKanbanBoard projectId={selectedProject} />}
 
           {/* Project Management Control Center */}
           <ProjectManagementCenter 
@@ -2308,6 +2515,8 @@ export default function StaffPortal() {
 
           {/* Data Charting */}
           <ProjectAnalytics logs={internalLogs} />
+          {selectedProject && <ProjectMilestonesManager clientId={selectedProject} role={role} />}
+          {selectedProject && <InternalKanbanBoard projectId={selectedProject} />}
 
           {/* Internal Team Connectivity */}
           <InternalTeamChat 
@@ -2520,7 +2729,11 @@ export default function StaffPortal() {
           </div>
         </div>
 
-        {role === 'admin' && (
+          {/* Admin Tools */}
+          {role === 'admin' && <AdminTeamManagement />}
+
+          {/* Project Management Control Center */}
+          {role === 'admin' && (
           <ProjectManagementCenter 
             selectedClient={selectedProject || selectedChatClient}
             clients={clients}

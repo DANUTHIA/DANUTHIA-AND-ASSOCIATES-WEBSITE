@@ -9,17 +9,17 @@
   --font-mono: "Inter", ui-sans-serif, system-ui, sans-serif; /* Simplified mono to sans for minimal look too, or leave simple */
 
   --color-concrete: #F9F8F6; /* Warm off-white/alabaster */
-  --color-charcoal: #1A1A1A; /* Deep, rich charcoal */
+  --color-charcoal: #181E21; /* Luxury Black / Slate */
   --color-accent: var(--accent-color); /* Dynamic monochrome accent */
   --color-steel: #8C8C8C; /* Warm medium gray */
 }
 
 :root {
-  --accent-color: #1A1A1A; /* Charcoal in light mode */
+  --accent-color: #B2D5E5; /* Candy Blue in light mode */
 }
 
 .dark {
-  --accent-color: #F9F8F6; /* Concrete in dark mode */
+  --accent-color: #B2D5E5; /* Candy Blue in dark mode */
 }
 
 body {
@@ -85,4 +85,29 @@ h1, h2, h3, h4, h5, h6 {
 
 .dark .bg-blueprint-grid {
   background: transparent;
+}
+
+/* Fix for Leaflet + Tailwind CSS issue where tiles don't load or stack */
+.leaflet-container {
+  z-index: 10 !important;
+}
+.leaflet-pane {
+  z-index: 10 !important;
+}
+.leaflet-top, .leaflet-bottom {
+  z-index: 20 !important;
+}
+.leaflet-layer,
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out,
+.leaflet-control-attribution {
+  outline: none;
+}
+.leaflet-popup-content-wrapper {
+  background: white;
+  border-radius: 4px;
+}
+.leaflet-container img {
+  max-width: none !important;
+  max-height: none !important;
 }

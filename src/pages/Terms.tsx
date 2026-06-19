@@ -31,10 +31,10 @@ export default function Terms() {
             </h1>
             <div className="text-charcoal/70 dark:text-concrete/70 font-mono text-sm leading-relaxed space-y-6">
               <p>
-                Welcome to Danuthia & Associates. These Terms and Conditions outline the rules and regulations for the use of our website and services, located at danuthiaandassociates.com.
+                Welcome to Danuthia Associates Construction LLc. These Terms and Conditions outline the rules and regulations for the use of our website and services, located at danuthiaandassociates.com.
               </p>
               <p>
-                By accessing this website and utilizing our platform, we assume you accept these terms and conditions. Do not continue to use Danuthia & Associates if you do not agree to take all of the terms and conditions stated on this page.
+                By accessing this website and utilizing our platform, we assume you accept these terms and conditions. Do not continue to use Danuthia Associates Construction LLc if you do not agree to take all of the terms and conditions stated on this page.
               </p>
             </div>
           </motion.div>
@@ -75,8 +75,8 @@ export default function Terms() {
               <div className="font-mono text-sm leading-relaxed opacity-80 space-y-4">
                 <p>The information, resources, and materials provided on this Website are for general informational purposes only and do not constitute binding architectural, engineering, or urban planning advice. The initiation of any formal planning, design, or construction management services requires a separate, formally executed agreement.</p>
                 <p><strong>No Reliance on General Information:</strong> Building codes, zoning laws, and environmental regulations are highly localized. You agree not to solely rely on the general information provided on this Website for making structural, financial, or legal decisions regarding your specific project without direct professional consultation.</p>
-                <p><strong>User Responsibilities:</strong> If you utilize our platform to submit project inquiries, site details, or planning requests, you are solely responsible for the accuracy of the information provided. Danuthia & Associates shall not be held liable for any design errors, construction delays, or regulatory violations arising from inaccurate site data, property boundaries, or topographical information supplied by the user.</p>
-                <p><strong>Third-Party Contractors:</strong> We may reference third-party contractors, suppliers, or materials. Danuthia & Associates makes no warranties or representations regarding the performance, quality, or safety of any third-party services or physical materials unless explicitly stated in a formalized project contract.</p>
+                <p><strong>User Responsibilities:</strong> If you utilize our platform to submit project inquiries, site details, or planning requests, you are solely responsible for the accuracy of the information provided. Danuthia Associates Construction LLc shall not be held liable for any design errors, construction delays, or regulatory violations arising from inaccurate site data, property boundaries, or topographical information supplied by the user.</p>
+                <p><strong>Third-Party Contractors:</strong> We may reference third-party contractors, suppliers, or materials. Danuthia Associates Construction LLc makes no warranties or representations regarding the performance, quality, or safety of any third-party services or physical materials unless explicitly stated in a formalized project contract.</p>
               </div>
             </section>
 
@@ -90,7 +90,7 @@ export default function Terms() {
             <section>
               <h2 className="font-display text-2xl font-bold uppercase tracking-tight mb-4 text-accent">7. Intellectual Property Rights</h2>
               <p className="font-mono text-sm leading-relaxed opacity-80">
-                All architectural blueprints, 3D renders, site plans, and digital content displayed on this platform remain the exclusive intellectual property of Danuthia & Associates. Unauthorized reproduction or distribution is strictly prohibited.
+                All architectural blueprints, 3D renders, site plans, and digital content displayed on this platform remain the exclusive intellectual property of Danuthia Associates Construction LLc. Unauthorized reproduction or distribution is strictly prohibited.
               </p>
             </section>
 
@@ -111,21 +111,21 @@ export default function Terms() {
             <section>
               <h2 className="font-display text-2xl font-bold uppercase tracking-tight mb-4 text-accent">9. User Content</h2>
               <p className="font-mono text-sm leading-relaxed opacity-80">
-                "User Content" shall mean any audio, video text, images, or other material you choose to display on this Website. By displaying Your Content, you grant Danuthia & Associates a non-exclusive, worldwide irrevocable, sub-licensable license to use, reproduce, adapt, publish, translate and distribute it in any and all media. Your Content must be your own and must not be invading any third-party’s rights.
+                "User Content" shall mean any audio, video text, images, or other material you choose to display on this Website. By displaying Your Content, you grant Danuthia Associates Construction LLc a non-exclusive, worldwide irrevocable, sub-licensable license to use, reproduce, adapt, publish, translate and distribute it in any and all media. Your Content must be your own and must not be invading any third-party’s rights.
               </p>
             </section>
 
             <section>
               <h2 className="font-display text-2xl font-bold uppercase tracking-tight mb-4 text-accent">10. Disclaimers and Limitation of Liability</h2>
               <p className="font-mono text-sm leading-relaxed opacity-80">
-                Danuthia & Associates provides this platform as a digital interface for project exploration. We are not liable for any direct or indirect damages arising from the use of preliminary digital models, AI-generated estimates, or service interruptions. Formal liability is only established upon the signing of a physical, legally binding construction or consulting contract.
+                Danuthia Associates Construction LLc provides this platform as a digital interface for project exploration. We are not liable for any direct or indirect damages arising from the use of preliminary digital models, AI-generated estimates, or service interruptions. Formal liability is only established upon the signing of a physical, legally binding construction or consulting contract.
               </p>
             </section>
 
             <section>
               <h2 className="font-display text-2xl font-bold uppercase tracking-tight mb-4 text-accent">11. Indemnification</h2>
               <p className="font-mono text-sm leading-relaxed opacity-80">
-                You hereby indemnify to the fullest extent Danuthia & Associates from and against any and/or all liabilities, costs, demands, causes of action, damages, and expenses arising in any way related to your breach of any of the provisions of these Terms.
+                You hereby indemnify to the fullest extent Danuthia Associates Construction LLc from and against any and/or all liabilities, costs, demands, causes of action, damages, and expenses arising in any way related to your breach of any of the provisions of these Terms.
               </p>
             </section>
 
@@ -140,8 +140,8 @@ export default function Terms() {
               <h2 className="font-display text-2xl font-bold uppercase tracking-tight mb-4 text-accent">13. General Provisions</h2>
               <div className="font-mono text-sm leading-relaxed opacity-80 space-y-4">
                 <p><strong>Severability:</strong> If any provision of these Terms is found to be invalid under any applicable law, such provisions shall be deleted without affecting the remaining provisions herein.</p>
-                <p><strong>Variation of Terms:</strong> Danuthia & Associates is permitted to revise these Terms at any time as it sees fit.</p>
-                <p><strong>Assignment:</strong> Danuthia & Associates is allowed to assign, transfer, and subcontract its rights and/or obligations under these Terms without any notification. You are not allowed to assign, transfer, or subcontract any of your rights.</p>
+                <p><strong>Variation of Terms:</strong> Danuthia Associates Construction LLc is permitted to revise these Terms at any time as it sees fit.</p>
+                <p><strong>Assignment:</strong> Danuthia Associates Construction LLc is allowed to assign, transfer, and subcontract its rights and/or obligations under these Terms without any notification. You are not allowed to assign, transfer, or subcontract any of your rights.</p>
                 <p><strong>Governing Law & Jurisdiction:</strong> These Terms will be governed by and interpreted in accordance with the laws of Kenya, and you submit to the non-exclusive jurisdiction of the state and federal courts located in Kenya for the resolution of any disputes.</p>
               </div>
             </section>

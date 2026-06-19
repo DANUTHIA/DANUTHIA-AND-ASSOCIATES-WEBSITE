@@ -19,7 +19,7 @@ export default function Loader() {
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, y: "-100%" }}
-          transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
+          transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] as const }}
           className="fixed inset-0 z-[99999] bg-charcoal flex flex-col items-center justify-center overflow-hidden"
         >
           <motion.div

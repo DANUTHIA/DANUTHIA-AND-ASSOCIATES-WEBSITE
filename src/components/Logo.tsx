@@ -77,7 +77,7 @@ export default function Logo({ className = "" }: { className?: string }) {
       
       <div className="flex flex-col items-center md:items-start leading-none mt-2">
         <span className="font-display font-bold text-xl md:text-2xl tracking-tighter transition-colors duration-500">
-          DANUTHIA & CO.
+          DANUTHIA ASSOCIATES CONSTRUCTION LLC
         </span>
       </div>
     </div>

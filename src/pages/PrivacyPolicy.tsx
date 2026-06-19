@@ -35,7 +35,7 @@ export default function PrivacyPolicy() {
             <section>
               <h2 className="font-display text-2xl font-bold uppercase tracking-tight mb-4 text-accent">Introduction</h2>
               <p className="font-mono text-sm leading-relaxed opacity-80">
-                Welcome to Danuthia & Associates. We are committed to redefining the African built environment while fiercely protecting your personal data. This Privacy Policy outlines how we collect, process, and safeguard your information in accordance with the Kenya Data Protection Act (DPA).
+                Welcome to Danuthia Associates Construction LLc. We are committed to redefining the African built environment while fiercely protecting your personal data. This Privacy Policy outlines how we collect, process, and safeguard your information in accordance with the Kenya Data Protection Act (DPA).
               </p>
             </section>
 

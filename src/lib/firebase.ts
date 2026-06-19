@@ -1,24 +1,13 @@
 import { initializeApp } from 'firebase/app';
-import { 
-  getAuth, 
-  GoogleAuthProvider, 
-  signInWithPopup, 
-  signOut,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail
-} from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy, doc, getDoc } from 'firebase/firestore';
-import firebaseConfig from '../firebase-applet-config.json';
+import { getStorage } from 'firebase/storage';
+import firebaseConfig from '../../firebase-applet-config.json';
 
-// Initialize Firebase SDK
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId); // CRITICAL: The app will break without this line
 export const auth = getAuth(app);
-import { setPersistence, browserLocalPersistence } from 'firebase/auth';
-setPersistence(auth, browserLocalPersistence).catch((error) => {
-    console.error("Failed to set auth persistence", error);
-});
+export const storage = getStorage(app);
 export const provider = new GoogleAuthProvider();
 
 export { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail };
@@ -86,7 +75,6 @@ export async function downloadLargeFile(document: any): Promise<string> {
   return snapshot.docs.map(doc => doc.data().data).join('');
 }
 
-// Error Handling Spec for Firestore Permissions
 export enum OperationType {
   CREATE = 'create',
   UPDATE = 'update',
@@ -101,45 +89,35 @@ export interface FirestoreErrorInfo {
   operationType: OperationType;
   path: string | null;
   authInfo: {
-    userId?: string;
+    userId?: string | null;
     email?: string | null;
-    emailVerified?: boolean;
-    isAnonymous?: boolean;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
     tenantId?: string | null;
-    providerInfo: {
-      providerId: string;
-      displayName: string | null;
-      email: string | null;
-      photoUrl: string | null;
+    providerInfo?: {
+      providerId?: string | null;
+      email?: string | null;
     }[];
   }
 }
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
-  const errorMessage = error instanceof Error ? error.message : String(error);
   const errInfo: FirestoreErrorInfo = {
-    error: errorMessage,
+    error: error instanceof Error ? error.message : String(error),
     authInfo: {
       userId: auth.currentUser?.uid,
       email: auth.currentUser?.email,
       emailVerified: auth.currentUser?.emailVerified,
       isAnonymous: auth.currentUser?.isAnonymous,
       tenantId: auth.currentUser?.tenantId,
-      providerInfo: auth.currentUser?.providerData.map(provider => ({
+      providerInfo: auth.currentUser?.providerData?.map(provider => ({
         providerId: provider.providerId,
-        displayName: provider.displayName,
         email: provider.email,
-        photoUrl: provider.photoURL
       })) || []
     },
     operationType,
     path
-  }
-  
-  if (errorMessage.toLowerCase().includes('permission')) {
-    console.error('Firestore Permission Error: ', JSON.stringify(errInfo));
-    throw new Error(JSON.stringify(errInfo));
-  } else {
-    console.error('Firestore Error: ', JSON.stringify(errInfo));
-  }
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
 }

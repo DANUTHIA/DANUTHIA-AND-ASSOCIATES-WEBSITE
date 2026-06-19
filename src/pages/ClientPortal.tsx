@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { auth, db, handleFirestoreError, OperationType, uploadLargeFile, downloadLargeFile, MAX_FILE_SIZE } from '../firebase';
+import { useNavigate, Link } from 'react-router-dom';
+import { auth, db, storage, handleFirestoreError, OperationType, uploadLargeFile, downloadLargeFile, MAX_FILE_SIZE } from '../lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, query, where, onSnapshot, orderBy, addDoc, serverTimestamp, or, updateDoc, doc, getDoc, limit } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { jsPDF } from 'jspdf';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   LogOut, FileText, Calendar, Clock, Download, MessageSquare, 
@@ -36,6 +38,7 @@ interface VaultDocument {
   createdAt: any;
   hasChunks?: boolean;
   totalChunks?: number;
+  status?: 'pending' | 'approved' | 'rejected';
 }
 
 interface Milestone {
@@ -169,7 +172,7 @@ export default function ClientPortal() {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('dashboard');
   
   // Loading states
   const [updatesLoading, setUpdatesLoading] = useState(true);
@@ -303,6 +306,7 @@ export default function ClientPortal() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
+        setUser(null);
         navigate('/login');
       } else {
         if (!currentUser.emailVerified) {
@@ -348,6 +352,8 @@ export default function ClientPortal() {
           }
         }
       });
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'notifications');
     });
 
     return () => unsubscribe();
@@ -557,6 +563,18 @@ export default function ClientPortal() {
         read: false
       });
       setNewMessage('');
+
+      // Send email notification to architect/PM
+      fetch('/api/send-reminder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: "machariag605@gmail.com", // Send to our firm email ideally, or pm email
+          name: "Architect",
+          projectTitle: "New Client Message: " + newMessage.trim().substring(0, 20) + "..."
+        })
+      }).catch(err => console.error(err));
+
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'messages');
     } finally {
@@ -564,8 +582,49 @@ export default function ClientPortal() {
     }
   };
 
+  const generateInvoicePDF = (invoice: Invoice) => {
+    const doc = new jsPDF();
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("DANUTHIA & CO.", 20, 30);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text("123 Architecture Blvd, Nairobi, Kenya", 20, 40);
+    doc.text("hello@danuthia.com | +254 700 000000", 20, 45);
+
+    doc.setFontSize(16);
+    doc.text("INVOICE / RECEIPT", 20, 70);
+    
+    doc.setFontSize(12);
+    doc.text(`Invoice ID: #${invoice.id.toUpperCase()}`, 20, 85);
+    doc.text(`Date Issued: ${new Date(invoice.createdAt?.seconds * 1000).toLocaleDateString() || new Date().toLocaleDateString()}`, 20, 95);
+    doc.text(`Status: ${invoice.status.toUpperCase()}`, 20, 105);
+
+    doc.setDrawColor(200);
+    doc.line(20, 115, 190, 115);
+
+    doc.text("Description", 20, 130);
+    doc.text("Amount", 160, 130);
+    
+    doc.line(20, 135, 190, 135);
+
+    doc.text(invoice.description, 20, 150);
+    doc.text(`$${invoice.amount.toLocaleString()}`, 160, 150);
+
+    doc.line(20, 160, 190, 160);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("TOTAL:", 120, 180);
+    doc.text(`$${invoice.amount.toLocaleString()}`, 160, 180);
+
+    doc.save(`Danuthia_Invoice_${invoice.id}.pdf`);
+  };
+
   const handleSignOut = async () => {
     try {
+      setUser(null);
       await signOut(auth);
       navigate('/');
     } catch (error) {
@@ -577,36 +636,43 @@ export default function ClientPortal() {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    if (file.size > MAX_FILE_SIZE) {
-      setUploadError('File size must be less than 10MB.');
-      e.target.value = '';
-      return;
-    }
-
     setUploadingDoc(true);
     setUploadError('');
 
+    let uploadedRef = null;
     try {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const base64String = event.target?.result as string;
-        
-        await uploadLargeFile('documents', {
-          clientId: user.uid,
-          fileName: file.name,
-          fileType: file.type || 'application/octet-stream',
-          uploadedBy: user.uid,
-        }, base64String);
-        
-        setUploadingDoc(false);
-      };
-      reader.onerror = () => {
-        setUploadError('Failed to read file.');
-        setUploadingDoc(false);
-      };
-      reader.readAsDataURL(file);
+      const storageRef = ref(storage, `documents/${user.uid}/${Date.now()}_${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      uploadedRef = snapshot.ref;
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      await addDoc(collection(db, 'documents'), {
+        clientId: user.uid,
+        fileName: file.name,
+        fileType: file.type || 'application/octet-stream',
+        fileData: downloadURL,
+        uploadedBy: user.uid,
+        createdAt: serverTimestamp(),
+      });
+
+      // Send email notification to architect/PM
+      fetch('/api/send-reminder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: "machariag605@gmail.com", 
+          name: "Architect",
+          projectTitle: "New Client Document Uploaded: " + file.name
+        })
+      }).catch(err => console.error(err));
+      
+      setUploadingDoc(false);
       e.target.value = '';
     } catch (error) {
+      console.error(error);
+      if (uploadedRef) {
+        await deleteObject(uploadedRef).catch(console.error);
+      }
       handleFirestoreError(error, OperationType.CREATE, 'documents');
       setUploadError('Failed to upload document.');
       setUploadingDoc(false);
@@ -623,6 +689,29 @@ export default function ClientPortal() {
     } catch (error) {
       console.error("Download failed", error);
       alert("Failed to reconstruct file. Please try again.");
+    }
+  };
+
+  const updateDocumentStatus = async (documentId: string, newStatus: 'approved' | 'rejected') => {
+    try {
+      await updateDoc(doc(db, 'documents', documentId), {
+        status: newStatus
+      });
+      // Notify PM
+      const targetDoc = documents.find(d => d.id === documentId);
+      if (user && targetDoc) {
+        await addDoc(collection(db, 'internalLogs'), {
+          projectId: user.uid,
+          staffName: "Client Portal",
+          role: "client",
+          message: `The client has **${newStatus.toUpperCase()}** the document: "${targetDoc.fileName}".`,
+          status: 'pending_review',
+          createdAt: serverTimestamp(),
+          type: 'log'
+        });
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, 'documents');
     }
   };
 
@@ -727,7 +816,7 @@ export default function ClientPortal() {
           </div>
           <h1 className="font-display text-3xl font-light tracking-tight mb-4 text-concrete">Pending Approval</h1>
           <p className="text-concrete/70 font-light leading-relaxed mb-8">
-            Confirmation mandated by an administrator. Your account is currently pending approval. Access to the client portal is restricted to active clients of Danuthia & Associates. We will notify you once your account has been verified.
+            Confirmation mandated by an administrator. Your account is currently pending approval. Access to the client portal is restricted to active clients of Danuthia Associates Construction LLc. We will notify you once your account has been verified.
           </p>
           <Magnetic className="w-full">
             <button 
@@ -891,19 +980,14 @@ export default function ClientPortal() {
         {/* Navigation Tabs */}
         <div className="flex overflow-x-auto gap-8 mb-12 border-b border-steel/10 pb-4 no-scrollbar">
           {[
-            { id: 'overview', label: 'Overview', icon: Clock },
-            { id: 'timeline', label: 'Timeline', icon: Calendar },
-            { id: '3d-models', label: '3D Models', icon: Box },
-            { id: 'vault', label: 'Vault', icon: FileText },
-            { id: 'reports', label: 'Technical Reports', icon: FileCheck },
-            { id: 'payments', label: 'Payments', icon: CreditCard },
-            { id: 'messages', label: 'Messages', icon: MessageSquare },
-            { id: 'feedback', label: 'Feedback', icon: CheckCircle2 },
+            { id: 'dashboard', label: 'Project HQ', icon: Box },
+            { id: 'project', label: 'Project Overview', icon: Activity },
+            { id: 'resources', label: 'Asset Vault', icon: FileText },
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 pb-4 px-2 text-xs font-bold uppercase tracking-widest transition-all relative ${
+              className={`flex items-center gap-2 pb-4 px-2 text-xs font-bold uppercase tracking-widest transition-all relative whitespace-nowrap ${
                 activeTab === tab.id ? 'text-accent' : 'text-steel hover:text-charcoal dark:hover:text-concrete'
               }`}
             >
@@ -928,53 +1012,153 @@ export default function ClientPortal() {
             exit={{ opacity: 0, x: -10 }}
             transition={{ duration: 0.3 }}
           >
-            {activeTab === 'overview' && (
+            {activeTab === 'dashboard' && (
               <div className="space-y-12">
-                {/* Project Overview Dashboard */}
+                {user?.role === 'admin' && (
+                  <div className="flex justify-end pt-4 pb-2">
+                    <Link to="/staff-portal" className="flex items-center gap-2 bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-6 py-3 font-mono text-xs uppercase tracking-widest font-bold hover:bg-accent dark:hover:bg-accent hover:text-white transition-all shadow-md">
+                      <Edit size={14} /> Update via PM Dashboard
+                    </Link>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500">
-                    <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Days Remaining</h3>
-                    <p className="font-display text-4xl text-charcoal dark:text-concrete">{projectData?.daysRemaining ?? 'TBD'}</p>
-                  </div>
-                  <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500">
-                    <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Budget Utilized</h3>
-                    <div className="w-full bg-steel/20 h-2 mb-2">
-                      <div className="bg-accent h-full" style={{ width: `${projectData?.budgetUtilized ?? 0}%` }}></div>
-                    </div>
-                    <p className="font-display text-xl text-charcoal dark:text-concrete">{projectData?.budgetUtilized ?? 0}%</p>
-                  </div>
-                  <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500 flex justify-between items-center">
-                    <div>
-                      <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Current Phase</h3>
-                      <p className="font-display text-2xl text-charcoal dark:text-concrete">{projectData?.currentPhase ?? 'Initializing'}</p>
-                    </div>
-                    <a href="https://calendly.com/your-firm/consultation" target="_blank" rel="noopener noreferrer" className="bg-accent text-concrete dark:text-charcoal px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-accent/90 transition-colors">
-                      Schedule
-                    </a>
-                  </div>
-                </div>
+                     <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Days Remaining</h3>
+                     <p className="font-display text-4xl text-charcoal dark:text-concrete">{projectData?.daysRemaining ?? 'TBD'}</p>
+                   </div>
+                   <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500">
+                     <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Budget Utilized</h3>
+                     <div className="w-full bg-steel/20 h-2 mb-2">
+                       <div className="bg-accent h-full" style={{ width: `${projectData?.budgetUtilized ?? 0}%` }}></div>
+                     </div>
+                     <p className="font-display text-xl text-charcoal dark:text-concrete">{projectData?.budgetUtilized ?? 0}%</p>
+                   </div>
+                   <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500 flex justify-between items-center">
+                     <div>
+                       <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-2">Current Phase</h3>
+                       <p className="font-display text-2xl text-charcoal dark:text-concrete">{projectData?.currentPhase ?? 'Initializing'}</p>
+                     </div>
+                     <a href="https://calendly.com/your-firm/consultation" target="_blank" rel="noopener noreferrer" className="bg-accent text-concrete dark:text-charcoal px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-accent/90 transition-colors">
+                       Schedule
+                     </a>
+                   </div>
+                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                  <div className="lg:col-span-8 space-y-12">
-                    {/* Project Summary */}
-                    {projectData?.dailySummary && (
-                      <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20">
-                        <h2 className="font-display text-xl font-light tracking-tight mb-4 flex items-center gap-3">
-                          <Activity size={18} className="text-accent" />
-                          Project Status Update
-                        </h2>
-                        <p className="text-steel font-light leading-relaxed">
-                          {projectData.dailySummary}
-                        </p>
-                        {projectData.nextActivity && (
-                          <div className="mt-8 pt-8 border-t border-steel/10">
-                            <h4 className="text-[10px] font-mono uppercase tracking-[0.2em] text-accent mb-2">Next Milestone</h4>
-                            <p className="text-sm font-medium">{projectData.nextActivity}</p>
-                          </div>
-                        )}
+                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                   <div className="lg:col-span-8 space-y-12">
+                     {/* Project Summary */}
+                     <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20">
+                       <h2 className="font-display text-xl font-light tracking-tight mb-4 flex items-center gap-3">
+                         <Activity size={18} className="text-accent" />
+                         Project Status Update
+                       </h2>
+                       <p className="text-steel font-light leading-relaxed">
+                         {projectData?.dailySummary || 'Welcome to your client portal. Here you can access all the resources and information you need to stay updated on your project.'}
+                       </p>
+                       {projectData?.nextActivity && (
+                         <div className="mt-8 pt-8 border-t border-steel/10">
+                           <h4 className="text-[10px] font-mono uppercase tracking-[0.2em] text-accent mb-2">Next Activity</h4>
+                           <p className="text-sm font-medium">{projectData.nextActivity}</p>
+                         </div>
+                       )}
+                     </div>
+                   </div>
+                   <div className="lg:col-span-4">
+                     <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 transition-colors duration-500 sticky top-24">
+                       <h2 className="font-display text-xl font-light tracking-tight mb-8 flex items-center gap-3 text-charcoal dark:text-concrete transition-colors duration-500">
+                         <Calendar className="text-accent" size={18} strokeWidth={1.5} />
+                         Next Milestone
+                       </h2>
+                       {milestones.find(m => m.status === 'in-progress') ? (
+                         <div className="space-y-4">
+                           <h4 className="font-bold text-sm uppercase tracking-widest text-charcoal dark:text-concrete">
+                             {milestones.find(m => m.status === 'in-progress')?.title}
+                           </h4>
+                           <p className="text-xs text-steel leading-relaxed">
+                             Currently in progress. Estimated completion: {milestones.find(m => m.status === 'in-progress')?.date || 'TBD'}
+                           </p>
+                           <div className="w-full bg-steel/10 h-1">
+                             <motion.div 
+                               initial={{ width: 0 }}
+                               animate={{ width: '45%' }}
+                               className="bg-accent h-full"
+                             />
+                           </div>
+                         </div>
+                       ) : (
+                         <p className="text-xs text-steel font-mono">No active milestones.</p>
+                       )}
+                     </div>
+                   </div>
+                 </div>
+              <div className="max-w-4xl mx-auto">
+                <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 flex flex-col h-[600px] transition-colors duration-500">
+                  <div className="flex justify-between items-center mb-6 pb-6 border-b border-steel/10">
+                    <h2 className="font-display text-2xl font-light tracking-tight flex items-center gap-3 text-charcoal dark:text-concrete transition-colors duration-500">
+                      <MessageSquare className="text-accent" size={20} strokeWidth={1.5} />
+                      {projectData?.pmInfo?.officialName || 'Project Manager'}
+                    </h2>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                      <span className="text-[10px] font-mono text-steel uppercase tracking-widest">
+                        {projectData?.pmInfo?.title || 'Direct Liaison'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto mb-6 space-y-6 pr-2 custom-scrollbar">
+                    {messagesLoading ? (
+                      <div className="space-y-4">
+                        {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full" />)}
                       </div>
+                    ) : messages.length === 0 ? (
+                      <div className="h-full flex items-center justify-center text-steel text-sm font-light text-center">
+                        Send a message to your project manager to get started.
+                      </div>
+                    ) : (
+                      messages.map((msg) => {
+                        const isMine = msg.senderId === user?.uid;
+                        return (
+                          <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`max-w-[85%] p-4 ${isMine ? 'bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal rounded-none transition-colors duration-500' : 'bg-concrete dark:bg-charcoal text-charcoal dark:text-concrete border border-steel/20 dark:border-concrete/20 rounded-none transition-colors duration-500'}`}>
+                              <p className="text-sm font-light leading-relaxed">{msg.text}</p>
+                              <span className="text-[10px] font-mono opacity-50 mt-2 block text-right uppercase tracking-widest">
+                                {msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Sending...'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })
                     )}
+                    <div ref={messagesEndRef} />
+                  </div>
 
+                  <form onSubmit={handleSendMessage} className="flex gap-3 mt-auto">
+                    <input
+                      type="text"
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      placeholder="Type your message..."
+                      className="flex-1 bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 px-4 py-4 text-sm font-light focus:outline-none focus:border-accent dark:focus:border-accent text-charcoal dark:text-concrete transition-colors duration-500"
+                      disabled={sendingMessage}
+                    />
+                    <button
+                      type="submit"
+                      disabled={!newMessage.trim() || sendingMessage}
+                      className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-8 py-4 hover:bg-accent dark:hover:bg-accent transition-colors duration-300 disabled:opacity-50 flex items-center justify-center"
+                    >
+                      <Send size={18} />
+                    </button>
+                  </form>
+                </div>
+              </div>
+              </div>
+            )}
+
+            {activeTab === 'project' && (
+              <div className="space-y-12 py-12">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                  <div className="lg:col-span-8 space-y-8">
                     <h2 className="font-display text-2xl font-light tracking-tight flex items-center gap-4">
                       <Clock className="text-accent" size={20} strokeWidth={1.5} />
                       Recent Updates
@@ -996,60 +1180,60 @@ export default function ClientPortal() {
                       </div>
                     )}
                   </div>
-                  
-                  <div className="lg:col-span-4">
-                    <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 transition-colors duration-500 sticky top-24">
-                      <h2 className="font-display text-xl font-light tracking-tight mb-8 flex items-center gap-3 text-charcoal dark:text-concrete transition-colors duration-500">
-                        <Calendar className="text-accent" size={18} strokeWidth={1.5} />
-                        Next Milestone
-                      </h2>
-                      {milestones.find(m => m.status === 'in-progress') ? (
-                        <div className="space-y-4">
-                          <h4 className="font-bold text-sm uppercase tracking-widest text-charcoal dark:text-concrete">
-                            {milestones.find(m => m.status === 'in-progress')?.title}
-                          </h4>
-                          <p className="text-xs text-steel leading-relaxed">
-                            Currently in progress. Estimated completion: {milestones.find(m => m.status === 'in-progress')?.date || 'TBD'}
-                          </p>
-                          <div className="w-full bg-steel/10 h-1">
-                            <motion.div 
-                              initial={{ width: 0 }}
-                              animate={{ width: '45%' }}
-                              className="bg-accent h-full"
-                            />
-                          </div>
+                  <div className="lg:col-span-4 space-y-8">
+                    <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8">
+                      <h3 className="text-steel font-mono text-[10px] uppercase tracking-widest border-b border-steel/10 pb-4 mb-4">Project Parameters</h3>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="font-mono text-steel uppercase tracking-widest text-[10px]">Scale</span>
+                          <span className="font-light text-charcoal dark:text-concrete capitalize">{projectData?.scope?.scale || 'Unknown'}</span>
                         </div>
-                      ) : (
-                        <p className="text-xs text-steel font-mono">No active milestones.</p>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="font-mono text-steel uppercase tracking-widest text-[10px]">Type</span>
+                          <span className="font-light text-charcoal dark:text-concrete capitalize">{projectData?.scope?.type || 'Unknown'}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="font-mono text-steel uppercase tracking-widest text-[10px]">Budget Target</span>
+                          <span className="font-light text-charcoal dark:text-concrete capitalize">{projectData?.scope?.budget || 'Unknown'}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="font-mono text-steel uppercase tracking-widest text-[10px]">Timeline</span>
+                          <span className="font-light text-charcoal dark:text-concrete capitalize">{projectData?.scope?.timeline || 'Unknown'}</span>
+                        </div>
+                      </div>
+                      
+                      {projectData?.scope?.description && (
+                        <div className="mt-8 pt-4 border-t border-steel/10">
+                           <span className="font-mono text-steel uppercase tracking-widest text-[10px] block mb-2">Primary Objective</span>
+                           <p className="text-xs text-charcoal/80 dark:text-concrete/80 leading-relaxed font-light">
+                             {projectData.scope.description}
+                           </p>
+                        </div>
                       )}
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
 
-            {activeTab === 'timeline' && (
-              <div className="py-12">
                 <div className="flex justify-between items-end mb-12">
                   <div>
                     <h2 className="font-display text-3xl font-light tracking-tight mb-2">Project Roadmap</h2>
-                    <p className="text-steel font-mono text-[10px] uppercase tracking-widest">Visual Gantt Chart & Progress Tracker</p>
+                      <p className="text-steel font-mono text-[10px] uppercase tracking-widest">Visual Gantt Chart & Progress Tracker</p>
+                    </div>
+                    <div className="flex gap-6 text-[10px] font-mono uppercase tracking-widest text-steel">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-accent" />
+                        <span>Completed</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-charcoal dark:bg-concrete" />
+                        <span>In Progress</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 border border-steel/30" />
+                        <span>Upcoming</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex gap-6 text-[10px] font-mono uppercase tracking-widest text-steel">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-accent" />
-                      <span>Completed</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-charcoal dark:bg-concrete" />
-                      <span>In Progress</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 border border-steel/30" />
-                      <span>Upcoming</span>
-                    </div>
-                  </div>
-                </div>
 
                 <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 overflow-x-auto transition-colors duration-500">
                   <div className="min-w-[800px] p-8">
@@ -1139,17 +1323,59 @@ export default function ClientPortal() {
                     </p>
                   </div>
                 </div>
-              </div>
-            )}
 
-            {activeTab === '3d-models' && (
-              <div className="space-y-8">
-                <div className="flex justify-between items-end mb-8">
-                  <div>
-                    <h2 className="font-display text-3xl font-light tracking-tight mb-2">Interactive 3D Models</h2>
-                    <p className="text-steel font-mono text-[10px] uppercase tracking-widest">Explore your project in three dimensions</p>
+                <div className="bg-concrete dark:bg-charcoal p-8 md:p-12 border border-steel/20 dark:border-concrete/20 transition-colors duration-500 overflow-x-auto">
+                  <h3 className="text-steel font-mono text-xs uppercase tracking-[0.2em] mb-12 flex items-center gap-2"><Activity size={16} className="text-accent" /> Live Project Tracker</h3>
+                  <div className="flex items-center min-w-[600px] px-4">
+                    {milestones.length === 0 ? (
+                      <p className="text-steel font-mono text-xs">Awaiting project roadmap...</p>
+                    ) : (
+                      milestones.sort((a, b) => a.order - b.order).map((milestone, idx) => (
+                        <div key={milestone.id} className="flex-1 relative">
+                          {/* Connecting Line */}
+                          {idx !== milestones.length - 1 && (
+                            <div className="absolute top-3 left-1/2 w-full h-[2px] bg-steel/20 dark:bg-steel/40">
+                              <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: milestone.status === 'completed' ? '100%' : '0%' }}
+                                className="h-full bg-accent"
+                                transition={{ duration: 1, delay: idx * 0.2 }}
+                              />
+                            </div>
+                          )}
+                          
+                          {/* Node */}
+                          <div className="relative flex flex-col items-center group">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 mb-4 transition-colors duration-500 z-10 bg-concrete dark:bg-charcoal ${
+                              milestone.status === 'completed' ? 'border-accent text-accent' : 
+                              milestone.status === 'in-progress' ? 'border-charcoal dark:border-concrete border-dashed animate-pulse' : 
+                              'border-steel/30 dark:border-steel/50'
+                            }`}>
+                              {milestone.status === 'completed' && <Check size={12} strokeWidth={4} />}
+                              {milestone.status === 'in-progress' && <div className="w-2 h-2 rounded-full bg-charcoal dark:bg-concrete" />}
+                            </div>
+                            <span className={`text-[10px] font-mono uppercase tracking-widest text-center max-w-[120px] ${
+                              milestone.status === 'completed' ? 'text-accent font-bold' : 
+                              milestone.status === 'in-progress' ? 'text-charcoal dark:text-concrete font-bold' : 
+                              'text-steel'
+                            }`}>
+                              {milestone.title}
+                            </span>
+                            <span className="text-[9px] font-mono text-steel mt-2">{milestone.date || 'TBD'}</span>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
+
+                <div className="space-y-8">
+                  <div className="flex justify-between items-end mb-8">
+                    <div>
+                      <h2 className="font-display text-3xl font-light tracking-tight mb-2">Interactive 3D Models</h2>
+                      <p className="text-steel font-mono text-[10px] uppercase tracking-widest">Explore your project in three dimensions</p>
+                    </div>
+                  </div>
 
                 {modelsLoading ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -1211,11 +1437,13 @@ export default function ClientPortal() {
                     </div>
                   </div>
                 )}
+                </div>
               </div>
             )}
 
-            {activeTab === 'vault' && (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            {activeTab === 'resources' && (
+              <div className="space-y-12">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                 <div className="lg:col-span-8">
                   <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 transition-colors duration-500">
                     <div className="flex justify-between items-center mb-8">
@@ -1283,6 +1511,7 @@ export default function ClientPortal() {
                             <th className="pb-4 font-medium">Name</th>
                             <th className="pb-4 font-medium">Type</th>
                             <th className="pb-4 font-medium">Date</th>
+                            <th className="pb-4 font-medium">Status</th>
                             <th className="pb-4 font-medium text-right">Actions</th>
                           </tr>
                         </thead>
@@ -1307,8 +1536,35 @@ export default function ClientPortal() {
                                 </td>
                                 <td className="py-4 text-[10px] font-mono text-steel uppercase">{doc.fileType.split('/')[1] || 'FILE'}</td>
                                 <td className="py-4 text-[10px] font-mono text-steel">{doc.createdAt?.toDate().toLocaleDateString()}</td>
+                                <td className="py-4 text-[10px] font-mono uppercase tracking-widest">
+                                  {doc.status === 'approved' ? (
+                                    <span className="text-green-500 font-bold border border-green-500/30 px-2 py-1 bg-green-500/10 backdrop-blur-sm">Approved</span>
+                                  ) : doc.status === 'rejected' ? (
+                                    <span className="text-red-500 font-bold border border-red-500/30 px-2 py-1 bg-red-500/10 backdrop-blur-sm">Rejected</span>
+                                  ) : (
+                                    <span className="text-steel font-bold border border-steel/30 px-2 py-1 bg-steel/10 backdrop-blur-sm">Pending</span>
+                                  )}
+                                </td>
                                 <td className="py-4 text-right">
-                                  <div className="flex justify-end gap-2">
+                                  <div className="flex justify-end gap-2 items-center">
+                                    {(doc.status === 'pending' || !doc.status) && (
+                                      <>
+                                        <button 
+                                          onClick={() => updateDocumentStatus(doc.id, 'approved')}
+                                          className="p-1 px-3 text-[10px] font-mono tracking-widest text-green-500 border border-green-500 hover:bg-green-500 hover:text-white transition-colors"
+                                          title="Sign Off / Approve"
+                                        >
+                                          APPROVE
+                                        </button>
+                                        <button 
+                                          onClick={() => updateDocumentStatus(doc.id, 'rejected')}
+                                          className="p-1 px-3 text-[10px] font-mono tracking-widest text-red-500 border border-red-500 hover:bg-red-500 hover:text-white transition-colors"
+                                          title="Reject"
+                                        >
+                                          REJECT
+                                        </button>
+                                      </>
+                                    )}
                                     <button 
                                       onClick={() => handleOpenBlueprint(doc)}
                                       className="p-2 text-steel hover:text-accent transition-colors disabled:opacity-50"
@@ -1364,10 +1620,6 @@ export default function ClientPortal() {
                   </div>
                 </div>
               </div>
-            )}
-
-            {activeTab === 'reports' && (
-              <div className="space-y-12">
                 <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 transition-colors duration-500">
                   <div className="flex justify-between items-center mb-12">
                     <h2 className="font-display text-4xl font-light tracking-tight flex items-center gap-4">
@@ -1428,7 +1680,7 @@ export default function ClientPortal() {
               </div>
             )}
 
-            {activeTab === 'payments' && (
+            {activeTab === 'resources' && (
               <div className="space-y-12">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   <div className="bg-concrete dark:bg-charcoal p-8 border border-steel/20 dark:border-concrete/20 transition-colors duration-500">
@@ -1511,7 +1763,10 @@ export default function ClientPortal() {
                                         Payment Successful
                                       </motion.span>
                                     )}
-                                    <button className="p-2 text-steel hover:text-accent transition-colors">
+                                    <button 
+                                      onClick={() => generateInvoicePDF(invoice)}
+                                      className="p-2 text-steel hover:text-accent transition-colors"
+                                    >
                                       <Download size={16} />
                                     </button>
                                   </div>
@@ -1527,69 +1782,7 @@ export default function ClientPortal() {
               </div>
             )}
 
-            {activeTab === 'messages' && (
-              <div className="max-w-4xl mx-auto">
-                <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 p-8 flex flex-col h-[600px] transition-colors duration-500">
-                  <div className="flex justify-between items-center mb-6 pb-6 border-b border-steel/10">
-                    <h2 className="font-display text-2xl font-light tracking-tight flex items-center gap-3 text-charcoal dark:text-concrete transition-colors duration-500">
-                      <MessageSquare className="text-accent" size={20} strokeWidth={1.5} />
-                      {projectData?.pmInfo?.officialName || 'Project Manager'}
-                    </h2>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                      <span className="text-[10px] font-mono text-steel uppercase tracking-widest">
-                        {projectData?.pmInfo?.title || 'Direct Liaison'}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex-1 overflow-y-auto mb-6 space-y-6 pr-2 custom-scrollbar">
-                    {messagesLoading ? (
-                      <div className="space-y-4">
-                        {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full" />)}
-                      </div>
-                    ) : messages.length === 0 ? (
-                      <div className="h-full flex items-center justify-center text-steel text-sm font-light text-center">
-                        Send a message to your project manager to get started.
-                      </div>
-                    ) : (
-                      messages.map((msg) => {
-                        const isMine = msg.senderId === user?.uid;
-                        return (
-                          <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`max-w-[85%] p-4 ${isMine ? 'bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal rounded-none transition-colors duration-500' : 'bg-concrete dark:bg-charcoal text-charcoal dark:text-concrete border border-steel/20 dark:border-concrete/20 rounded-none transition-colors duration-500'}`}>
-                              <p className="text-sm font-light leading-relaxed">{msg.text}</p>
-                              <span className="text-[10px] font-mono opacity-50 mt-2 block text-right uppercase tracking-widest">
-                                {msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Sending...'}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                    <div ref={messagesEndRef} />
-                  </div>
 
-                  <form onSubmit={handleSendMessage} className="flex gap-3 mt-auto">
-                    <input
-                      type="text"
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Type your message..."
-                      className="flex-1 bg-concrete dark:bg-charcoal border border-steel/20 dark:border-concrete/20 px-4 py-4 text-sm font-light focus:outline-none focus:border-accent dark:focus:border-accent text-charcoal dark:text-concrete transition-colors duration-500"
-                      disabled={sendingMessage}
-                    />
-                    <button
-                      type="submit"
-                      disabled={!newMessage.trim() || sendingMessage}
-                      className="bg-charcoal dark:bg-concrete text-concrete dark:text-charcoal px-8 py-4 hover:bg-accent dark:hover:bg-accent transition-colors duration-300 disabled:opacity-50 flex items-center justify-center"
-                    >
-                      <Send size={18} />
-                    </button>
-                  </form>
-                </div>
-              </div>
-            )}
           </motion.div>
         </AnimatePresence>
 

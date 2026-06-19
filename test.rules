@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isValidDummy(data) {
+      return data.diff({}).affectedKeys().hasOnly(['a', 'b']);
+    }
+    match /test/{doc} {
+      allow create: if isValidDummy(request.resource.data);
+    }
+  }
+}

@@ -19,6 +19,40 @@ async function startServer() {
   app.use(express.json());
 
   // API Routes
+
+  // HTTP Tarpit Defense Endpoint
+  // This intentionally holds the connection open and replies very slowly 
+  // to frustrate bot scanners and brute-force attacks
+  app.post("/api/login", async (req, res) => {
+    const { email, password } = req.body;
+    
+    // Tarpit logic: Instead of rejecting immediately, we trap the request
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Transfer-Encoding", "chunked");
+    res.status(401);
+
+    let chunkCount = 0;
+    const maxChunks = 20; // Hold connection for 20 seconds
+    
+    // Send initial padding so client doesn't time out immediately
+    res.write('{"status": "processing" ');
+
+    const interval = setInterval(() => {
+      res.write(' '); // Send whitespace to keep connection alive
+      chunkCount++;
+      
+      if (chunkCount >= maxChunks) {
+        clearInterval(interval);
+        res.end(', "error": "Invalid credentials"}');
+      }
+    }, 1000);
+
+    // Clear interval if hacker gives up and closes connection early
+    req.on("close", () => {
+      clearInterval(interval);
+    });
+  });
+
   app.post("/api/notify", async (req, res) => {
     const { fullName, projectScale, preferredDate } = req.body;
     
@@ -29,7 +63,7 @@ async function startServer() {
 
     try {
       await resend.emails.send({
-        from: "Danuthia & Co. <onboarding@resend.dev>",
+        from: "Danuthia Associates Construction LLc <onboarding@resend.dev>",
         to: "machariag605@gmail.com",
         subject: `New Booking Request: ${fullName}`,
         html: `
@@ -56,7 +90,7 @@ async function startServer() {
 
     try {
       await resend.emails.send({
-        from: "Danuthia & Co. <onboarding@resend.dev>",
+        from: "Danuthia Associates Construction LLc <onboarding@resend.dev>",
         to: email,
         subject: "Thank You for Your Booking",
         html: `
@@ -65,7 +99,7 @@ async function startServer() {
             <p>We've received your booking request and our team will review it shortly.</p>
             <p>We'll be in touch soon to confirm the details of your consultation.</p>
             <br/>
-            <p>Best regards,<br/>The Danuthia & Co. Team</p>
+            <p>Best regards,<br/>The Danuthia Associates Construction LLc Team</p>
           </div>
         `
       });
@@ -81,7 +115,7 @@ async function startServer() {
 
     try {
       await resend.emails.send({
-        from: "Danuthia & Co. <onboarding@resend.dev>",
+        from: "Danuthia Associates Construction LLc <onboarding@resend.dev>",
         to: email,
         subject: `Project Update: ${projectTitle}`,
         html: `
@@ -92,7 +126,7 @@ async function startServer() {
             <br/>
             <a href="${req.headers.origin}/portal" style="background-color: #B08D57; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">View Client Portal</a>
             <br/><br/>
-            <p>Best regards,<br/>The Danuthia & Co. Team</p>
+            <p>Best regards,<br/>The Danuthia Associates Construction LLc Team</p>
           </div>
         `
       });

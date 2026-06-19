@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Stage, Layer, Image as KonvaImage, Circle, Text, Group } from 'react-konva';
 import useImage from 'use-image';
-import { db } from '../firebase';
+import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, addDoc, onSnapshot, query, where, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
 import { Annotation } from '../types';
 import { Trash2, Plus, X } from 'lucide-react';
@@ -48,6 +48,8 @@ export default function BlueprintAnnotation({ blueprintId, imageUrl, userId, ini
     );
     return onSnapshot(q, (snapshot) => {
       setAnnotations(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Annotation)));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'annotations');
     });
   }, [blueprintId, currentVersion]);
 
@@ -61,6 +63,8 @@ export default function BlueprintAnnotation({ blueprintId, imageUrl, userId, ini
         if (data.version) versions.add(data.version);
       });
       setAvailableVersions(Array.from(versions).sort((a, b) => b - a));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'annotations');
     });
   }, [blueprintId]);
 

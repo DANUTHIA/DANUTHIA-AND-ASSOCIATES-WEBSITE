@@ -1,11 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Box, Building2, Map, ArrowRight, ClipboardList } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import HeroVideo from '../components/HeroVideo';
+import { useCMS } from '../lib/cms';
+
+const archDesignImg = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop";
+const urbanPlanningImg = "https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=1600&auto=format&fit=crop";
+const spatialAnalysisImg = "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop";
+const projectMgmtImg = "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=1600&auto=format&fit=crop";
 
 const fadeInUp: any = {
   hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" as const } }
 };
 
 const staggerContainer: any = {
@@ -17,21 +24,58 @@ const staggerContainer: any = {
 };
 
 export default function Services() {
+  const [activeService, setActiveService] = useState(0);
+  const { resources } = useCMS();
+
+  const servicesData = [
+    {
+      id: '01',
+      title: 'Architectural Design',
+      icon: Box,
+      descKey: 'service_desc_architectural',
+      imgKey: 'service_img_1',
+      desc: resources.service_desc_architectural || 'Full-service architectural design from concept to construction documentation. We specialize in residential, commercial, and institutional buildings that respond to their environment.',
+      bullets: ['Concept Design', '3D Modeling & Rendering', 'Construction Drawings', 'Project Management'],
+      img: resources.service_img_1 || archDesignImg
+    },
+    {
+      id: '02',
+      title: 'Urban Planning',
+      icon: Building2,
+      desc: 'Strategic planning for neighborhoods, cities, and regions. We focus on sustainable growth, mobility, and public space design to create vibrant, livable communities.',
+      bullets: ['Master Planning', 'Zoning & Land Use', 'Urban Design Guidelines', 'Feasibility Studies'],
+      img: resources.service_img_2 || urbanPlanningImg,
+      imgKey: 'service_img_2'
+    },
+    {
+      id: '03',
+      title: 'Spatial Analysis',
+      icon: Map,
+      desc: 'Advanced GIS mapping and spatial data analysis to inform design decisions and policy making. We turn complex geographical data into actionable insights.',
+      bullets: ['Topographical Analysis', 'Environmental Mapping', 'Demographic Studies', 'Infrastructure Planning'],
+      img: spatialAnalysisImg
+    },
+    {
+      id: '04',
+      title: 'Project Management',
+      icon: ClipboardList,
+      descKey: 'service_desc_pm',
+      desc: resources.service_desc_pm || 'End-to-end management of complex architectural and planning projects. We ensure that every milestone is met with precision, on time, and within budget.',
+      bullets: ['Agile Project Delivery', 'Stakeholder Coordination', 'Quality Assurance', 'Risk Mitigation'],
+      img: projectMgmtImg
+    }
+  ];
+
   return (
     <main className="bg-concrete dark:bg-charcoal min-h-screen transition-colors duration-500 bg-blueprint-grid">
       {/* Hero Section */}
       <section className="relative bg-charcoal dark:bg-charcoal text-concrete p-8 md:p-16 pt-32 md:pt-40 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
         <div className="absolute inset-0 w-full h-full overflow-hidden">
-          <video 
-            autoPlay 
-            loop 
-            muted 
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-70"
-          >
-            <source src="https://i.imgur.com/rY7EGfp.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent"></div>
+          <HeroVideo 
+            src="/videos/services.mp4"
+            poster="https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2000&auto=format&fit=crop"
+            opacity={70}
+          />
         </div>
 
         <motion.div 
@@ -51,9 +95,8 @@ export default function Services() {
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-end">
             <div>
-              <motion.h1 variants={fadeInUp} className="font-display text-5xl md:text-7xl font-bold leading-[0.9] tracking-tighter mb-8 uppercase">
-                Comprehensive.<br/>
-                <span className="text-accent">Precision-driven.</span>
+              <motion.h1 data-cms-key="service_hero_title" variants={fadeInUp} className="font-display text-5xl md:text-7xl font-bold leading-[0.9] tracking-tighter mb-8 uppercase whitespace-pre-wrap">
+                {resources.service_hero_title || 'Comprehensive.\nPrecision-driven.'}
               </motion.h1>
             </div>
             <motion.div variants={fadeInUp} className="pb-2">
@@ -65,148 +108,87 @@ export default function Services() {
         </motion.div>
       </section>
 
-      {/* Services List */}
+      {/* Interactive Services Section */}
       <section className="p-8 md:p-16 max-w-7xl mx-auto py-24">
-        <motion.div 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={staggerContainer}
-          className="flex flex-col gap-16 md:gap-32"
-        >
-          {/* Service 1 */}
-          <motion.div variants={fadeInUp} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center group">
-            <div className="lg:col-span-5 order-2 lg:order-1">
-              <div className="flex items-center gap-4 mb-6">
-                <span className="text-accent font-display text-3xl font-bold">01</span>
-                <div className="h-[1px] bg-steel/30 flex-grow"></div>
-                <Box size={24} className="text-steel group-hover:text-accent transition-colors" />
-              </div>
-              <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-6 text-charcoal dark:text-concrete transition-colors duration-500">Architectural Design</h2>
-              <p className="text-charcoal/70 dark:text-concrete/70 mb-8 text-lg font-light leading-relaxed transition-colors duration-500">
-                Full-service architectural design from concept to construction documentation. We specialize in residential, commercial, and institutional buildings that respond to their environment.
-              </p>
-              <ul className="space-y-4 text-sm font-mono uppercase tracking-wider text-charcoal/80 dark:text-concrete/80 mb-10 transition-colors duration-500">
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-accent rounded-none"></span> Concept Design</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-accent rounded-none"></span> 3D Modeling & Rendering</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-accent rounded-none"></span> Construction Drawings</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-accent rounded-none"></span> Project Management</li>
-              </ul>
-              <Link to="/portfolio" className="inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-charcoal dark:text-concrete hover:text-accent dark:hover:text-accent transition-colors">
-                View Related Projects <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
-              </Link>
-            </div>
-            <div className="lg:col-span-7 order-1 lg:order-2 h-[40vh] lg:h-[60vh] overflow-hidden relative">
-              <img 
-                src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop" 
-                alt="Architectural Design" 
-                className="w-full h-full object-cover  group-hover:mix-blend-normal group-hover:scale-105 transition-all duration-1000"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 border border-steel/20 m-4 pointer-events-none"></div>
-            </div>
-          </motion.div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24">
+          
+          {/* Left Column: Interactive List */}
+          <div className="lg:col-span-5 flex flex-col gap-8">
+            {servicesData.map((service, idx) => {
+              const isActive = activeService === idx;
+              const Icon = service.icon;
+              return (
+                <div 
+                  key={service.id}
+                  onClick={() => setActiveService(idx)}
+                  className={`cursor-pointer group flex flex-col border-b border-steel/20 dark:border-concrete/20 pb-8 transition-colors duration-500`}
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    <span className={`font-display text-2xl font-bold transition-colors duration-300 ${isActive ? 'text-accent' : 'text-steel'}`}>
+                      {service.id}
+                    </span>
+                    <Icon size={24} className={`transition-colors duration-300 ${isActive ? 'text-accent' : 'text-steel group-hover:text-charcoal dark:group-hover:text-concrete'}`} />
+                  </div>
+                  <h2 className={`font-display text-3xl font-bold uppercase tracking-tight transition-colors duration-300 ${isActive ? 'text-charcoal dark:text-concrete' : 'text-charcoal/50 dark:text-concrete/50 group-hover:text-charcoal dark:group-hover:text-concrete'}`}>
+                    {service.title}
+                  </h2>
+                  
+                  {/* Expanded Content */}
+                  <motion.div 
+                    initial={false}
+                    animate={{ height: isActive ? 'auto' : 0, opacity: isActive ? 1 : 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-6">
+                      <p data-cms-key={service.descKey} className="text-charcoal/70 dark:text-concrete/70 mb-8 text-base font-light leading-relaxed transition-colors duration-500">
+                        {service.desc}
+                      </p>
+                      <ul className="space-y-4 text-sm font-mono uppercase tracking-wider text-charcoal/80 dark:text-concrete/80 mb-8 transition-colors duration-500">
+                        {service.bullets.map((bullet, i) => (
+                          <li key={i} className="flex items-center gap-4 border-b border-steel/10 dark:border-concrete/10 pb-2 transition-colors duration-500">
+                            <span className="w-1.5 h-1.5 bg-accent rounded-none"></span> {bullet}
+                          </li>
+                        ))}
+                      </ul>
+                      <Link to="/portfolio" className="inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-charcoal dark:text-concrete hover:text-accent dark:hover:text-accent transition-colors">
+                        View Related Projects <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
+                      </Link>
+                    </div>
+                  </motion.div>
+                </div>
+              );
+            })}
+          </div>
 
-          {/* Service 2 */}
-          <motion.div variants={fadeInUp} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center group">
-            <div className="lg:col-span-7 h-[40vh] lg:h-[60vh] overflow-hidden relative">
-              <img 
-                src="https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=1600&auto=format&fit=crop" 
-                alt="Urban Planning" 
-                className="w-full h-full object-cover  group-hover:mix-blend-normal group-hover:scale-105 transition-all duration-1000"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 border border-steel/20 m-4 pointer-events-none"></div>
+          {/* Right Column: Sticky Image Display */}
+          <div className="lg:col-span-7 h-[50vh] lg:h-auto relative lg:sticky lg:top-32" style={{ maxHeight: '80vh' }}>
+            <div className="w-full h-full relative overflow-hidden bg-steel/10 border border-steel/20 dark:border-concrete/20">
+              {servicesData.map((service, idx) => (
+                <motion.div
+                  key={service.id}
+                  initial={false}
+                  animate={{ 
+                    opacity: activeService === idx ? 1 : 0,
+                    scale: activeService === idx ? 1 : 1.05
+                  }}
+                  transition={{ duration: 0.8, ease: "easeInOut" }}
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ zIndex: activeService === idx ? 10 : 0 }}
+                >
+                  <img 
+                    data-cms-key={service.imgKey}
+                    src={service.img} 
+                    alt={service.title} 
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-charcoal/10 mix-blend-multiply"></div>
+                </motion.div>
+              ))}
             </div>
-            <div className="lg:col-span-5">
-              <div className="flex items-center gap-4 mb-6">
-                <span className="text-accent font-display text-3xl font-bold">02</span>
-                <div className="h-[1px] bg-steel/30 flex-grow"></div>
-                <Building2 size={24} className="text-steel group-hover:text-accent transition-colors" />
-              </div>
-              <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-6 text-charcoal dark:text-concrete transition-colors duration-500">Urban Planning</h2>
-              <p className="text-charcoal/70 dark:text-concrete/70 mb-8 text-lg font-light leading-relaxed transition-colors duration-500">
-                Strategic planning for neighborhoods, cities, and regions. We focus on sustainable growth, mobility, and public space design to create vibrant, livable communities.
-              </p>
-              <ul className="space-y-4 text-sm font-mono uppercase tracking-wider text-charcoal/80 dark:text-concrete/80 mb-10 transition-colors duration-500">
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-accent rounded-none"></span> Master Planning</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-accent rounded-none"></span> Zoning & Land Use</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-accent rounded-none"></span> Urban Design Guidelines</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-accent rounded-none"></span> Feasibility Studies</li>
-              </ul>
-              <Link to="/portfolio" className="inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-charcoal dark:text-concrete hover:text-accent dark:hover:text-accent transition-colors">
-                View Related Projects <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
-              </Link>
-            </div>
-          </motion.div>
-
-          {/* Service 3 */}
-          <motion.div variants={fadeInUp} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center group">
-            <div className="lg:col-span-5 order-2 lg:order-1">
-              <div className="flex items-center gap-4 mb-6">
-                <span className="text-accent font-display text-3xl font-bold">03</span>
-                <div className="h-[1px] bg-steel/30 flex-grow"></div>
-                <Map size={24} className="text-steel group-hover:text-accent transition-colors" />
-              </div>
-              <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-6 text-charcoal dark:text-concrete transition-colors duration-500">Spatial Analysis</h2>
-              <p className="text-charcoal/70 dark:text-concrete/70 mb-8 text-lg font-light leading-relaxed transition-colors duration-500">
-                Advanced GIS mapping and spatial data analysis to inform design decisions and policy making. We turn complex geographical data into actionable insights.
-              </p>
-              <ul className="space-y-4 text-sm font-mono uppercase tracking-wider text-charcoal/80 dark:text-concrete/80 mb-10 transition-colors duration-500">
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-accent rounded-none"></span> Topographical Analysis</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-accent rounded-none"></span> Environmental Mapping</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-accent rounded-none"></span> Demographic Studies</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-accent rounded-none"></span> Infrastructure Planning</li>
-              </ul>
-              <Link to="/portfolio" className="inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-charcoal dark:text-concrete hover:text-accent dark:hover:text-accent transition-colors">
-                View Related Projects <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
-              </Link>
-            </div>
-              <div className="lg:col-span-7 order-1 lg:order-2 h-[40vh] lg:h-[60vh] overflow-hidden relative">
-              <img 
-                src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop" 
-                alt="Spatial Analysis" 
-                className="w-full h-full object-cover  group-hover:mix-blend-normal group-hover:scale-105 transition-all duration-1000"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 border border-steel/20 m-4 pointer-events-none"></div>
-            </div>
-          </motion.div>
-
-          {/* Service 4 */}
-          <motion.div variants={fadeInUp} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center group">
-            <div className="lg:col-span-7 h-[40vh] lg:h-[60vh] overflow-hidden relative">
-              <img 
-                src="https://images.unsplash.com/photo-1454165833767-027ff33027ef?q=80&w=1600&auto=format&fit=crop" 
-                alt="Project Management" 
-                className="w-full h-full object-cover  group-hover:mix-blend-normal group-hover:scale-105 transition-all duration-1000"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 border border-steel/20 m-4 pointer-events-none"></div>
-            </div>
-            <div className="lg:col-span-5">
-              <div className="flex items-center gap-4 mb-6">
-                <span className="text-accent font-display text-3xl font-bold">04</span>
-                <div className="h-[1px] bg-steel/30 flex-grow"></div>
-                <ClipboardList size={24} className="text-steel group-hover:text-accent transition-colors" />
-              </div>
-              <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-6 text-charcoal dark:text-concrete transition-colors duration-500">Project Management</h2>
-              <p className="text-charcoal/70 dark:text-concrete/70 mb-8 text-lg font-light leading-relaxed transition-colors duration-500">
-                End-to-end management of complex architectural and planning projects. We ensure that every milestone is met with precision, on time, and within budget.
-              </p>
-              <ul className="space-y-4 text-sm font-mono uppercase tracking-wider text-charcoal/80 dark:text-concrete/80 mb-10 transition-colors duration-500">
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-accent rounded-none"></span> Agile Project Delivery</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-accent rounded-none"></span> Stakeholder Coordination</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-accent rounded-none"></span> Quality Assurance</li>
-                <li className="flex items-center gap-4 border-b border-steel/20 dark:border-concrete/20 pb-2 transition-colors duration-500"><span className="w-1.5 h-1.5 bg-accent rounded-none"></span> Risk Mitigation</li>
-              </ul>
-              <Link to="/portfolio" className="inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-charcoal dark:text-concrete hover:text-accent dark:hover:text-accent transition-colors">
-                View Related Projects <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
-              </Link>
-            </div>
-          </motion.div>
-
-        </motion.div>
+          </div>
+          
+        </div>
       </section>
 
       {/* Markets Section */}

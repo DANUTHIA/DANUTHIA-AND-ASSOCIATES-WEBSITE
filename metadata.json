@@ -1,5 +1,6 @@
 {
   "name": "DANUTHIA & CO Architecture",
   "description": "A comprehensive, single-page website mockup for DANUTHIA & CO, an innovative architectural and urban planning startup based in Kenya.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

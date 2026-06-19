@@ -99,6 +99,40 @@ export interface Testimonial {
   projectType: string;
 }
 
+export interface Project {
+  id: string;
+  title: string;
+  category: string;
+  location: string;
+  year: string;
+  img: string;
+  diagram?: string;
+  images?: string[];
+  description: string;
+  client: string;
+  area: string;
+  status: string;
+  collaborators?: string;
+  materials?: {
+    name: string;
+    description: string;
+    textureUrl?: string;
+  }[];
+  processGallery?: {
+    type: string;
+    url: string;
+    caption: string;
+  }[];
+  sustainablePrinciples?: string[];
+  siteData?: {
+    wind: string;
+    solar: string;
+    rainfall: string;
+  };
+  lifecyclePhase?: number;
+  createdAt?: Timestamp;
+}
+
 export interface NewsletterSubscriber {
   id: string;
   email: string;

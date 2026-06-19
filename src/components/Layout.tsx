@@ -3,7 +3,7 @@ import { Menu, X, CheckCircle, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Outlet, Link, NavLink, useLocation } from 'react-router-dom';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../firebase';
+import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import Logo from './Logo';
 import Magnetic from './Magnetic';
 import ThemeToggle from './ThemeToggle';
@@ -73,18 +73,36 @@ export default function Layout() {
       
       {/* Navigation */}
       <header className={`fixed top-0 left-0 w-full md:w-72 md:h-screen z-50 transition-all duration-500 flex flex-col md:bg-transparent ${scrolled && !isMobileMenuOpen ? 'bg-concrete/95 dark:bg-charcoal/95 backdrop-blur-xl border-b border-steel/10 md:border-b-0 md:backdrop-blur-none py-4 md:py-16' : 'bg-transparent py-6 md:py-16'}`}>
-        <div className="w-full px-6 md:px-16 flex md:flex-col items-center md:items-start justify-between gap-16">
-          <Magnetic>
-            <Link to="/" className="hover:opacity-80 transition-opacity cursor-pointer z-50 inline-block" onClick={closeMenu}>
-              <Logo className="scale-90 md:scale-100 origin-left" />
-            </Link>
-          </Magnetic>
+        <div className="w-full px-6 md:px-12 flex md:flex-col items-center md:items-start justify-between md:justify-start gap-8 md:gap-12 md:flex-1 md:min-h-0">
+          <div className="w-full flex items-center justify-between md:flex-none">
+            <Magnetic>
+              <Link to="/" className="hover:opacity-80 transition-opacity cursor-pointer z-50 inline-block" onClick={closeMenu}>
+                <Logo className="scale-90 md:scale-100 origin-left" />
+              </Link>
+            </Magnetic>
+
+            {/* Top Controls: Mobile Theme Toggle and Mobile Menu */}
+            <div className="flex flex-row items-center gap-4 z-50 md:hidden">
+              <Magnetic>
+                <ThemeToggle isDarkMode={isDarkMode} toggle={toggleDarkMode} />
+              </Magnetic>
+              <Magnetic>
+                <button 
+                  className="p-2 text-charcoal dark:text-concrete hover:text-accent transition-colors"
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                >
+                  {isMobileMenuOpen ? <X size={28} strokeWidth={1.5} /> : <Menu size={28} strokeWidth={1.5} />}
+                </button>
+              </Magnetic>
+            </div>
+          </div>
           
           {/* Desktop Nav */}
-          <nav className="hidden md:flex flex-col items-start gap-5 text-[11px] font-sans uppercase tracking-[0.15em] pt-12">
+          <nav className="hidden md:flex flex-col items-start gap-4 lg:gap-5 text-[11px] font-sans uppercase tracking-[0.15em] pt-4 md:pt-8 w-full overflow-y-auto no-scrollbar md:flex-1 pb-4">
             <Magnetic><NavLink to="/" className={navLinkClass}>Home</NavLink></Magnetic>
             <Magnetic><NavLink to="/services" className={navLinkClass}>Services</NavLink></Magnetic>
             <Magnetic><NavLink to="/portfolio" className={navLinkClass}>Portfolio</NavLink></Magnetic>
+            <Magnetic><NavLink to="/book" className={navLinkClass}>Book Consultation</NavLink></Magnetic>
             <Magnetic><NavLink to="/sustainability" className={navLinkClass}>Sustainability</NavLink></Magnetic>
             <Magnetic><NavLink to="/about" className={navLinkClass}>About</NavLink></Magnetic>
             <Magnetic><NavLink to="/logbook" className={navLinkClass}>Logbook</NavLink></Magnetic>
@@ -94,24 +112,9 @@ export default function Layout() {
         </div>
 
         {/* Desktop Bottom Controls */}
-        <div className="hidden md:flex flex-col gap-6 px-16 pb-12 mt-auto">
+        <div className="hidden md:flex flex-col gap-6 px-12 pb-12 mt-auto md:flex-none pt-4">
           <Magnetic>
             <ThemeToggle isDarkMode={isDarkMode} toggle={toggleDarkMode} />
-          </Magnetic>
-        </div>
-
-        {/* Mobile Menu Toggle */}
-        <div className="md:hidden flex items-center gap-4 z-50 px-6">
-          <Magnetic>
-            <ThemeToggle isDarkMode={isDarkMode} toggle={toggleDarkMode} />
-          </Magnetic>
-          <Magnetic>
-            <button 
-              className="p-2 text-charcoal dark:text-concrete hover:text-accent transition-colors"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X size={28} strokeWidth={1.5} /> : <Menu size={28} strokeWidth={1.5} />}
-            </button>
           </Magnetic>
         </div>
 
@@ -141,14 +144,14 @@ export default function Layout() {
 
       {/* Main Layout Wrapper */}
       <div className="flex flex-col flex-grow md:pl-72 min-h-screen">
-        <div className="flex-grow pt-24 md:pt-0 overflow-hidden">
+        <div className="flex-grow pt-24 md:pt-0 overflow-x-hidden md:overflow-x-visible">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] as const }}
               className="w-full"
             >
               <Outlet />
@@ -159,7 +162,7 @@ export default function Layout() {
         {/* Footer */}
         <footer className="mt-auto py-12 px-8 text-charcoal/50 dark:text-concrete/50 transition-colors duration-500">
           <div className="w-full flex flex-col md:flex-row justify-between items-center gap-6 font-sans text-xs tracking-widest uppercase">
-            <p>© {new Date().getFullYear()} Danuthia & Associates.</p>
+            <p>© {new Date().getFullYear()} Danuthia Associates Construction LLc</p>
             <div className="flex gap-8 flex-wrap justify-center md:justify-end">
               <Link to="/staff-login" className="hover:text-charcoal dark:hover:text-concrete transition-colors">Staff Portal</Link>
               <Link to="/admin" className="hover:text-charcoal dark:hover:text-concrete transition-colors">Admin Portal</Link>

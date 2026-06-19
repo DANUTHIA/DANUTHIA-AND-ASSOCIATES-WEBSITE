@@ -2,6 +2,8 @@ import React, { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import HeroVideo from '../components/HeroVideo';
+import { useCMS } from '../lib/cms';
 
 const fadeInUp: any = {
   hidden: { opacity: 0, y: 40 },
@@ -17,6 +19,7 @@ const staggerContainer: any = {
 };
 
 export default function About() {
+  const { resources } = useCMS();
   const imageBreakRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: imageBreakRef,
@@ -29,16 +32,11 @@ export default function About() {
       {/* Hero Section */}
       <section className="relative bg-charcoal dark:bg-charcoal text-concrete p-8 md:p-16 pt-32 md:pt-40 flex flex-col justify-center overflow-hidden min-h-[60vh] transition-colors duration-500">
         <div className="absolute inset-0 w-full h-full overflow-hidden">
-          <video 
-            autoPlay 
-            loop 
-            muted 
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-70"
-          >
-            <source src="https://i.imgur.com/okef0xf.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent"></div>
+          <HeroVideo 
+            src={resources.about_hero_video || "/videos/about.mp4"}
+            poster={resources.about_hero_poster || "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2000&auto=format&fit=crop"}
+            opacity={70}
+          />
         </div>
 
         <motion.div 
@@ -58,14 +56,13 @@ export default function About() {
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-end">
             <div>
-              <motion.h1 variants={fadeInUp} className="font-display text-5xl md:text-7xl font-bold leading-[0.9] tracking-tighter mb-8 uppercase">
-                Rooted in context.<br/>
-                <span className="text-accent">Designing for tomorrow.</span>
+              <motion.h1 data-cms-key="about_hero_title" variants={fadeInUp} className="font-display text-5xl md:text-7xl font-bold leading-[0.9] tracking-tighter mb-8 uppercase whitespace-pre-wrap">
+                {resources.about_hero_title || 'Rooted in context.\nDesigning for tomorrow.'}
               </motion.h1>
             </div>
             <motion.div variants={fadeInUp} className="pb-2">
-              <p className="text-lg md:text-xl text-concrete/80 font-light leading-relaxed border-l border-accent pl-6">
-                Danuthia & Associates. is a premier architectural and urban planning firm based in Nairobi, Kenya. We believe in designing spaces that respect the past while building for the future.
+              <p data-cms-key="about_hero_subtitle" className="text-lg md:text-xl text-concrete/80 font-light leading-relaxed border-l border-accent pl-6">
+                {resources.about_hero_subtitle || 'Danuthia Associates Construction LLc is a premier architectural and urban planning firm based in Nairobi, Kenya. We believe in designing spaces that respect the past while building for the future.'}
               </p>
             </motion.div>
           </div>
@@ -75,12 +72,12 @@ export default function About() {
       {/* Image Break */}
       <section ref={imageBreakRef} className="w-full h-[50vh] md:h-[70vh] relative overflow-hidden">
         <motion.div style={{ y }} className="absolute inset-0 w-full h-[140%] -top-[20%]">
-          <motion.img 
+          <motion.img data-cms-key="about_image_break" 
             initial={{ scale: 1.1 }}
             whileInView={{ scale: 1 }}
             transition={{ duration: 1.5 }}
             viewport={{ once: true }}
-            src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?q=80&w=1600&auto=format&fit=crop" 
+            src={resources.about_image_break || "https://images.unsplash.com/photo-1487958449943-2429e8be8625?q=80&w=1600&auto=format&fit=crop"} 
             alt="Architectural detail" 
             className="w-full h-full object-cover "
             referrerPolicy="no-referrer"
@@ -99,10 +96,10 @@ export default function About() {
           className="grid grid-cols-1 lg:grid-cols-12 gap-16"
         >
           <motion.div variants={fadeInUp} className="lg:col-span-7">
-            <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-12 text-charcoal dark:text-concrete transition-colors duration-500">Our Philosophy</h2>
+            <h2 data-cms-key="about_philosophy_title" className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-12 text-charcoal dark:text-concrete transition-colors duration-500">{resources.about_philosophy_title || 'Our Philosophy'}</h2>
             <div className="space-y-8 text-lg md:text-xl text-charcoal/80 dark:text-concrete/80 leading-relaxed font-light transition-colors duration-500">
-              <p>
-                We approach every project with a deep understanding of local context, environmental sustainability, and human-centric design. Our data-driven methodology ensures that our master plans and architectural designs are not just visually striking, but highly functional and resilient.
+              <p data-cms-key="about_philosophy_text">
+                {resources.about_philosophy_text || "We approach every project with a deep understanding of local context, environmental sustainability, and human-centric design. Our data-driven methodology ensures that our master plans and architectural designs are not just visually striking, but highly functional and resilient."}
               </p>
               <p>
                 The African urban landscape is evolving rapidly. To meet these challenges, we integrate advanced spatial analysis (GIS) with cutting-edge architectural drafting to deliver comprehensive solutions that stand the test of time.
@@ -247,21 +244,21 @@ export default function About() {
           >
             <motion.div variants={fadeInUp} className="relative aspect-[3/4] w-full max-w-md mx-auto lg:mx-0">
               <div className="absolute inset-0 bg-accent/20 translate-x-4 translate-y-4"></div>
-              <img 
-                src="/joseph-macharia.png" 
-                alt="Joseph Macharia - Founder" 
+              <img data-cms-key="about_founder_image" 
+                src={resources.about_founder_image || "/joseph-macharia.png"} 
+                alt={resources.about_founder_name || "Joseph Macharia - Founder"} 
                 className="relative z-10 w-full h-full object-cover  hover:-0 transition-all duration-700"
                 referrerPolicy="no-referrer"
               />
             </motion.div>
             
             <motion.div variants={fadeInUp} className="flex flex-col justify-center">
-              <h2 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-4">Joseph Macharia</h2>
-              <p className="text-accent font-mono text-sm uppercase tracking-widest mb-8">Founder & Principal Planner</p>
+              <h2 data-cms-key="about_founder_name" className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight mb-4">{resources.about_founder_name || 'Joseph Macharia'}</h2>
+              <p data-cms-key="about_founder_role" className="text-accent font-mono text-sm uppercase tracking-widest mb-8">{resources.about_founder_role || 'Founder & Principal Planner'}</p>
               
               <div className="space-y-6 text-lg text-steel font-light leading-relaxed">
                 <p>
-                  "Architecture is more than just erecting buildings; it is about crafting the backdrop to people's lives. At Danuthia & Co., our vision has always been to bridge the gap between sustainable urban planning and innovative architectural design."
+                  "Architecture is more than just erecting buildings; it is about crafting the backdrop to people's lives. At Danuthia Associates Construction LLc, our vision has always been to bridge the gap between sustainable urban planning and innovative architectural design."
                 </p>
                 <p>
                   "We strive to create spaces that not only serve their functional purpose but also enrich the communities they inhabit. Every project is an opportunity to respect our heritage while boldly designing for tomorrow."

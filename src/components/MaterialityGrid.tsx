@@ -4,7 +4,7 @@ import { motion } from 'motion/react';
 interface Material {
   name: string;
   description: string;
-  textureUrl: string;
+  textureUrl?: string;
 }
 
 interface MaterialityGridProps {
@@ -22,12 +22,18 @@ export default function MaterialityGrid({ materials }: MaterialityGridProps) {
           transition={{ delay: idx * 0.1 }}
           className={`relative overflow-hidden border border-steel/20 dark:border-concrete/10 group ${idx === 0 ? 'col-span-2' : ''}`}
         >
-          <img 
-            src={material.textureUrl} 
-            alt={material.name} 
-            className="w-full h-48 object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
-            referrerPolicy="no-referrer"
-          />
+          {material.textureUrl ? (
+            <img 
+              src={material.textureUrl} 
+              alt={material.name} 
+              className="w-full h-48 object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="w-full h-48 bg-steel/10 dark:bg-concrete/5 flex items-center justify-center font-mono text-[10px] uppercase text-steel/50">
+              Texture Analysis // NA
+            </div>
+          )}
           <div className="absolute inset-0 bg-charcoal/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
             <h4 className="text-concrete font-bold font-display uppercase tracking-widest text-sm">{material.name}</h4>
             <p className="text-accent text-[10px] font-mono">{material.description}</p>

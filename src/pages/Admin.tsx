@@ -2,10 +2,11 @@ import React, { useEffect, useState } from "react";
 import {
   auth,
   db,
+  storage,
   provider,
   handleFirestoreError,
   OperationType,
-} from "../firebase";
+} from "../lib/firebase";
 import {
   signInWithPopup,
   signOut,
@@ -27,6 +28,7 @@ import {
   onSnapshot,
   setDoc,
 } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import {
   LogOut,
   RefreshCw,
@@ -52,6 +54,15 @@ import {
   TrendingUp,
   MapPin,
   Shield,
+  Sparkles,
+  Smartphone,
+  Laptop,
+  X,
+  Info,
+  Layers,
+  Eye,
+  Undo,
+  RotateCcw,
 } from "lucide-react";
 import {
   BarChart,
@@ -69,6 +80,11 @@ import {
 } from "recharts";
 import { motion } from "motion/react";
 import Magnetic from "../components/Magnetic";
+
+import AdminPortfolio from "../components/PortfolioDashboard";
+
+import { useCMS, DEFAULT_RESOURCES } from "../lib/cms";
+import { Testimonial, Invoice } from "../types";
 
 interface BookingRequest {
   id: string;
@@ -147,7 +163,8 @@ export default function Admin() {
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [activeTab, setActiveTab] = useState<
     | "overview"
-    | "bookings"
+    | "portfolio"
+    | "leads"
     | "newsletter"
     | "updates"
     | "messages"
@@ -158,12 +175,17 @@ export default function Admin() {
     | "testimonials"
     | "staff"
     | "security"
-  >("overview");
+    | "cms"
+  >(() => {
+    const params = new URLSearchParams(window.location.search);
+    return (params.get("tab") as any) || "overview";
+  });
 
   const [admins, setAdmins] = useState<{ id: string; email: string }[]>([]);
   const [requests, setRequests] = useState<BookingRequest[]>([]);
   const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
   const [updates, setUpdates] = useState<ProjectUpdate[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [users, setUsers] = useState<AppUser[]>([]);
   const clients = React.useMemo(
     () => users.filter((u) => u.role === "client"),
@@ -183,8 +205,89 @@ export default function Admin() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [documents, setDocuments] = useState<VaultDocument[]>([]);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
-  const [invoices, setInvoices] = useState<any[]>([]);
-  const [testimonials, setTestimonials] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+
+  // CMS Content Management State
+  const { allResources, updateResource, resetToDefaults } = useCMS();
+  const [cmsGroupFilter, setCmsGroupFilter] = useState("All");
+  const [cmsEditValues, setCmsEditValues] = useState<Record<string, string>>({});
+  const [uploadingKeys, setUploadingKeys] = useState<Record<string, boolean>>({});
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [cmsSearchText, setCmsSearchText] = useState("");
+  const [saveStatus, setSaveStatus] = useState<Record<string, "idle" | "saving" | "saved" | "error">>({});
+
+  // Listen for iframe clicks
+  useEffect(() => {
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data?.type === 'CMS_EDIT_CLICK') {
+        const key = e.data.key;
+        
+        // Change group filter if necessary
+        const resourceItem = allResources?.find((r: any) => r.key === key) || DEFAULT_RESOURCES.find((r: any) => r.key === key);
+        if (resourceItem && resourceItem.group) {
+          setCmsGroupFilter(resourceItem.group);
+        }
+
+        // Scroll to the item and focus it
+        setTimeout(() => {
+          const el = document.getElementById(`cms-input-${key}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Add a brief highlight
+            const oldBg = el.style.backgroundColor;
+            el.style.backgroundColor = 'rgba(142, 144, 137, 0.2)'; // accent overlay
+            el.style.transition = 'background-color 1.5s ease-out';
+            
+            // Focus if it's text
+            const input = el.querySelector('textarea') || el.querySelector('input[type="text"]');
+            if (input) {
+              (input as HTMLElement).focus();
+            }
+
+            setTimeout(() => {
+              el.style.backgroundColor = oldBg;
+            }, 1500);
+          }
+        }, 300);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [allResources]);
+
+  // CMS Advanced Custom Creation & Simulator States
+  const [customKey, setCustomKey] = useState("");
+  const [customName, setCustomName] = useState("");
+  const [customType, setCustomType] = useState<'image' | 'video' | 'text' | 'link' | 'number'>("text");
+  const [customGroup, setCustomGroup] = useState("Hero Section");
+  const [customValue, setCustomValue] = useState("");
+  const [showCustomForm, setShowCustomForm] = useState(false);
+  const [activeSimulatorTab, setActiveSimulatorTab] = useState<string>("/");
+  const [activeSimulatorTheme, setActiveSimulatorTheme] = useState<"desktop" | "mobile">("desktop");
+  const [newCustomError, setNewCustomError] = useState("");
+  const [newCustomSuccess, setNewCustomSuccess] = useState("");
+
+  useEffect(() => {
+    if (allResources && allResources.length > 0) {
+      const values: Record<string, string> = {};
+      allResources.forEach(res => {
+        values[res.key] = res.value;
+      });
+      setCmsEditValues(prev => {
+        const next = { ...values };
+        // Don't overwrite active unsaved changes user is currently typing
+        Object.keys(prev).forEach(key => {
+          if (prev[key] !== undefined && prev[key] !== values[key]) {
+            // Keep unsaved modifications
+            next[key] = prev[key];
+          }
+        });
+        return next;
+      });
+    }
+  }, [allResources]);
 
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -203,6 +306,7 @@ export default function Admin() {
     imageUrl: "",
   });
   const [isCreatingUpdate, setIsCreatingUpdate] = useState(false);
+  const [uploadingUpdateImage, setUploadingUpdateImage] = useState(false);
   const [editingUpdateId, setEditingUpdateId] = useState<string | null>(null);
 
   // New Milestone Form State
@@ -342,6 +446,7 @@ export default function Admin() {
         fetchInvoices(),
         fetchTestimonials(),
         fetchAdmins(),
+        fetchProjects(),
       ]);
 
       results.forEach((result, index) => {
@@ -368,6 +473,20 @@ export default function Admin() {
     }
   };
 
+  const fetchProjects = async () => {
+    try {
+      const q = query(collection(db, "projects"), orderBy("year", "desc"));
+      const querySnapshot = await getDocs(q);
+      const projs: any[] = [];
+      querySnapshot.forEach((doc) => {
+        projs.push({ id: doc.id, ...doc.data() });
+      });
+      setProjects(projs);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, "projects");
+    }
+  };
+
   const fetchMilestones = async () => {
     try {
       const q = query(collection(db, "milestones"), orderBy("order", "asc"));
@@ -385,7 +504,7 @@ export default function Admin() {
   const fetchRequests = async () => {
     try {
       const q = query(
-        collection(db, "bookingRequests"),
+        collection(db, "leads"),
         orderBy("createdAt", "desc"),
       );
       const querySnapshot = await getDocs(q);
@@ -395,7 +514,7 @@ export default function Admin() {
       });
       setRequests(reqs);
     } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, "bookingRequests");
+      handleFirestoreError(error, OperationType.LIST, "leads");
     }
   };
 
@@ -550,7 +669,8 @@ export default function Admin() {
     } catch (err: any) {
       if (
         err?.code === "auth/popup-closed-by-user" ||
-        (err instanceof Error && err.message.includes("popup-closed-by-user"))
+        err?.code === "auth/cancelled-popup-request" ||
+        (err instanceof Error && (err.message.includes("popup-closed-by-user") || err.message.includes("cancelled-popup-request")))
       ) {
         console.log("Authentication popup was closed by the user.");
       } else {
@@ -575,14 +695,14 @@ export default function Admin() {
 
   const updateStatus = async (id: string, newStatus: string) => {
     try {
-      await updateDoc(doc(db, "bookingRequests", id), {
+      await updateDoc(doc(db, "leads", id), {
         status: newStatus,
       });
       setRequests(
         requests.map((r) => (r.id === id ? { ...r, status: newStatus } : r)),
       );
     } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, "bookingRequests");
+      handleFirestoreError(err, OperationType.UPDATE, "leads");
       setError("Failed to update status. You may not have admin permissions.");
     }
   };
@@ -657,7 +777,7 @@ export default function Admin() {
 
     try {
       if (deleteConfirm.type === "booking") {
-        await deleteDoc(doc(db, "bookingRequests", deleteConfirm.id));
+        await deleteDoc(doc(db, "leads", deleteConfirm.id));
         setRequests(requests.filter((r) => r.id !== deleteConfirm.id));
       } else if (deleteConfirm.type === "newsletter") {
         await deleteDoc(doc(db, "newsletter", deleteConfirm.id));
@@ -677,15 +797,12 @@ export default function Admin() {
       }
     } catch (err) {
       const collectionName =
-        deleteConfirm.type === "booking"
-          ? "bookingRequests"
-          : deleteConfirm.type === "newsletter"
-            ? "newsletter"
-            : deleteConfirm.type === "document"
-              ? "documents"
-              : deleteConfirm.type === "milestone"
-                ? "milestones"
-                : "projectUpdates";
+        deleteConfirm.type === "booking" ? "leads"
+          : deleteConfirm.type === "newsletter" ? "newsletter"
+          : deleteConfirm.type === "document" ? "documents"
+          : deleteConfirm.type === "milestone" ? "milestones"
+          : deleteConfirm.type === "admin" ? "admins"
+          : "projectUpdates";
       handleFirestoreError(err, OperationType.DELETE, collectionName);
       setError("Failed to delete item. You may not have admin permissions.");
     } finally {
@@ -753,6 +870,29 @@ export default function Admin() {
     }
   };
 
+  const handleUpdateImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploadingUpdateImage(true);
+    let uploadedRef = null;
+    try {
+      const storageRef = ref(storage, `updates/${Date.now()}_${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      uploadedRef = snapshot.ref;
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      setNewUpdate(prev => ({ ...prev, imageUrl: downloadURL }));
+    } catch (err) {
+      console.error(err);
+      if (uploadedRef) {
+        await deleteObject(uploadedRef).catch(console.error);
+      }
+      setError("Failed to upload update image.");
+    } finally {
+      setUploadingUpdateImage(false);
+    }
+  };
+
   const handleSendReply = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!adminReply.trim() || !user || !selectedChatClient) return;
@@ -779,40 +919,34 @@ export default function Admin() {
     const file = e.target.files?.[0];
     if (!file || !user || !selectedDocClient) return;
 
-    if (file.size > 1024 * 1024) {
-      // 1MB limit for Firestore
-      setUploadError("File size must be less than 1MB.");
-      return;
-    }
-
     setUploadingDoc(true);
     setUploadError("");
 
+    let uploadedRef = null;
     try {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const base64String = event.target?.result as string;
+      const storageRef = ref(storage, `vault/${selectedDocClient}/${Date.now()}_${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      uploadedRef = snapshot.ref;
+      const downloadURL = await getDownloadURL(snapshot.ref);
 
-        await addDoc(collection(db, "documents"), {
-          clientId: selectedDocClient,
-          fileName: file.name,
-          fileType: file.type || "application/octet-stream",
-          fileData: base64String,
-          uploadedBy: user.uid,
-          createdAt: serverTimestamp(),
-        });
+      await addDoc(collection(db, "documents"), {
+        clientId: selectedDocClient,
+        fileName: file.name,
+        fileType: file.type || "application/octet-stream",
+        fileData: downloadURL,
+        uploadedBy: user.uid,
+        createdAt: serverTimestamp(),
+      });
 
-        setUploadingDoc(false);
-        fetchDocuments();
-      };
-      reader.onerror = () => {
-        setUploadError("Failed to read file.");
-        setUploadingDoc(false);
-      };
-      reader.readAsDataURL(file);
+      setUploadingDoc(false);
+      fetchDocuments();
     } catch (error) {
+      console.error(error);
+      if (uploadedRef) {
+        await deleteObject(uploadedRef).catch(console.error);
+      }
       handleFirestoreError(error, OperationType.CREATE, "documents");
-      setUploadError("Failed to upload document.");
+      setUploadError("Failed to upload document to storage.");
       setUploadingDoc(false);
     }
   };
@@ -1002,34 +1136,40 @@ export default function Admin() {
           Overview
         </button>
         <button
+          onClick={() => setActiveTab("portfolio")}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === "portfolio" ? "text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete" : "text-steel hover:text-charcoal dark:hover:text-concrete"}`}
+        >
+          Portfolio Management
+        </button>
+        <button
           onClick={() => setActiveTab("analytics")}
           className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === "analytics" ? "text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete" : "text-steel hover:text-charcoal dark:hover:text-concrete"}`}
         >
           Business Intelligence
         </button>
         <button
-          onClick={() => setActiveTab("bookings")}
-          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === "bookings" ? "text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete" : "text-steel hover:text-charcoal dark:hover:text-concrete"}`}
+          onClick={() => setActiveTab("leads")}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === "leads" ? "text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete" : "text-steel hover:text-charcoal dark:hover:text-concrete"}`}
         >
-          Booking Requests
+          Leads CRM
         </button>
         <button
           onClick={() => setActiveTab("updates")}
           className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === "updates" ? "text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete" : "text-steel hover:text-charcoal dark:hover:text-concrete"}`}
         >
-          Project Updates
+          Timelines & Updates
         </button>
         <button
           onClick={() => setActiveTab("milestones")}
           className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === "milestones" ? "text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete" : "text-steel hover:text-charcoal dark:hover:text-concrete"}`}
         >
-          Milestones
+          Task Database
         </button>
         <button
           onClick={() => setActiveTab("messages")}
           className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap flex items-center gap-2 ${activeTab === "messages" ? "text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete" : "text-steel hover:text-charcoal dark:hover:text-concrete"}`}
         >
-          Messages
+          Meetings Database
           {messages.filter((m) => !m.read && m.receiverId === "admin").length >
             0 && (
             <span className="bg-accent text-concrete text-[8px] px-1.5 py-0.5 rounded-full">
@@ -1056,13 +1196,19 @@ export default function Admin() {
           onClick={() => setActiveTab("documents")}
           className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === "documents" ? "text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete" : "text-steel hover:text-charcoal dark:hover:text-concrete"}`}
         >
-          Documents
+          Resources & Assets
         </button>
         <button
           onClick={() => setActiveTab("testimonials")}
           className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === "testimonials" ? "text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete" : "text-steel hover:text-charcoal dark:hover:text-concrete"}`}
         >
           Testimonials
+        </button>
+        <button
+          onClick={() => setActiveTab("cms")}
+          className={`pb-4 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${activeTab === "cms" ? "text-charcoal dark:text-concrete border-b border-charcoal dark:border-concrete" : "text-steel hover:text-charcoal dark:hover:text-concrete"}`}
+        >
+          Content Management (CMS)
         </button>
         <button
           onClick={() => setActiveTab("security")}
@@ -1123,6 +1269,11 @@ export default function Admin() {
 
       {!error && (
         <div className="w-full">
+          {/* Portfolio Tab */}
+          {activeTab === "portfolio" && (
+            <AdminPortfolio projects={projects} refresh={fetchProjects} />
+          )}
+
           {/* Overview Tab */}
           {activeTab === "overview" && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -1585,8 +1736,8 @@ export default function Admin() {
               </div>
             </div>
           )}
-          {/* Bookings Tab */}
-          {activeTab === "bookings" && (
+          {/* Leads CRM Tab */}
+          {activeTab === "leads" && (
             <div className="bg-concrete dark:bg-charcoal border border-steel/20 dark:border-steel/40 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
@@ -1834,17 +1985,34 @@ export default function Admin() {
                   </div>
                   <div>
                     <label className="block text-[10px] font-mono uppercase tracking-[0.2em] text-steel mb-3">
-                      Image URL (Optional)
+                      Image (Optional)
                     </label>
-                    <input
-                      type="url"
-                      value={newUpdate.imageUrl}
-                      onChange={(e) =>
-                        setNewUpdate({ ...newUpdate, imageUrl: e.target.value })
-                      }
-                      className="w-full bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-accent dark:focus:border-accent transition-colors font-light text-charcoal dark:text-concrete placeholder:text-steel/50 dark:placeholder:text-steel/40"
-                      placeholder="https://..."
-                    />
+                    <div className="flex gap-4">
+                      <input
+                        type="url"
+                        value={newUpdate.imageUrl}
+                        onChange={(e) =>
+                          setNewUpdate({ ...newUpdate, imageUrl: e.target.value })
+                        }
+                        className="flex-1 bg-transparent border-b border-steel/30 dark:border-steel/60 py-3 text-sm focus:outline-none focus:border-accent dark:focus:border-accent transition-colors font-light text-charcoal dark:text-concrete placeholder:text-steel/50 dark:placeholder:text-steel/40"
+                        placeholder="Image URL or upload -->"
+                      />
+                      <div className="relative">
+                        <input 
+                          type="file"
+                          id="update-image-upload"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleUpdateImageUpload}
+                        />
+                        <label 
+                          htmlFor="update-image-upload"
+                          className={`h-full px-6 flex items-center justify-center border-b border-steel/30 dark:border-steel/60 cursor-pointer hover:text-accent transition-colors ${uploadingUpdateImage ? 'opacity-50 pointer-events-none' : ''}`}
+                        >
+                          {uploadingUpdateImage ? <RefreshCw className="animate-spin" size={14} /> : <Upload size={14} />}
+                        </label>
+                      </div>
+                    </div>
                   </div>
                   <button
                     type="submit"
@@ -3015,8 +3183,717 @@ export default function Admin() {
               </div>
             </div>
           )}
+
+          {activeTab === "cms" && (
+            <div className="space-y-8 animate-fadeIn">
+              {/* CMS Metric Highlighters */}
+              {(() => {
+                const draftCount = (allResources && allResources.length > 0 ? allResources : DEFAULT_RESOURCES.map(r => ({ ...r, id: r.key }))).filter(
+                  res => (cmsEditValues[res.key] !== undefined && cmsEditValues[res.key] !== res.value)
+                ).length;
+
+                const listToRender = (allResources && allResources.length > 0 ? allResources : DEFAULT_RESOURCES.map(r => ({ ...r, id: r.key })));
+                const textCount = listToRender.filter(r => r.type === "text").length;
+                const mediaCount = listToRender.filter(r => r.type === "image" || r.type === "video").length;
+
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="border border-steel/20 dark:border-steel/40 bg-white dark:bg-[#0a0a0c] p-6 flex flex-col justify-between rounded-sm shadow-sm hover:shadow-md transition-shadow">
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-steel font-semibold border-b border-steel/10 pb-2">Total Variables</span>
+                      <div className="flex items-baseline gap-2 mt-6">
+                        <span className="text-5xl font-sans font-bold tracking-tight text-charcoal dark:text-concrete">
+                          {listToRender.length}
+                        </span>
+                        <span className="text-xs text-steel font-mono uppercase tracking-widest">layers</span>
+                      </div>
+                    </div>
+
+                    <div className="border border-steel/20 dark:border-steel/40 bg-white dark:bg-[#0a0a0c] p-6 flex flex-col justify-between rounded-sm shadow-sm hover:shadow-md transition-shadow">
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-steel font-semibold border-b border-steel/10 pb-2">Unpublished Amends</span>
+                      <div className="flex items-baseline gap-2 mt-6">
+                        <span className={`text-5xl font-sans font-bold tracking-tight ${draftCount > 0 ? "text-amber-500" : "text-steel"}`}>
+                          {draftCount}
+                        </span>
+                        <span className="text-xs text-steel font-mono uppercase tracking-widest">drafts</span>
+                      </div>
+                    </div>
+
+                    <div className="border border-steel/20 dark:border-steel/40 bg-white dark:bg-[#0a0a0c] p-6 flex flex-col justify-between rounded-sm shadow-sm hover:shadow-md transition-shadow">
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-steel font-semibold border-b border-steel/10 pb-2">Text Blocks</span>
+                      <div className="flex items-baseline gap-2 mt-6">
+                        <span className="text-5xl font-sans font-bold tracking-tight text-charcoal dark:text-concrete">
+                          {textCount}
+                        </span>
+                        <span className="text-xs text-steel font-mono uppercase tracking-widest">slots</span>
+                      </div>
+                    </div>
+
+                    <div className="border border-steel/20 dark:border-steel/40 bg-white dark:bg-[#0a0a0c] p-6 flex flex-col justify-between rounded-sm shadow-sm hover:shadow-md transition-shadow">
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-steel font-semibold border-b border-steel/10 pb-2">Rich Media</span>
+                      <div className="flex items-baseline gap-2 mt-6">
+                        <span className="text-5xl font-sans font-bold tracking-tight text-charcoal dark:text-concrete">
+                          {mediaCount}
+                        </span>
+                        <span className="text-xs text-steel font-mono uppercase tracking-widest">assets</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div className="bg-white dark:bg-[#0a0a0c] border border-steel/20 dark:border-steel/40 p-4 md:p-8 shadow-sm">
+                <div className="flex flex-col xl:flex-row gap-8 items-start relative">
+                  <div className="w-full xl:w-1/2 flex flex-col space-y-8">
+                    {/* Header Action Row */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 pb-6 border-b border-steel/10">
+                  <div className="max-w-2xl">
+                    <div className="flex items-center gap-3 mb-2">
+                       <span className="font-mono text-[9px] uppercase tracking-widest bg-charcoal text-white dark:bg-white dark:text-charcoal px-2 py-0.5 rounded-sm">Content Editor</span>
+                    </div>
+                    <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-charcoal dark:text-concrete flex items-center gap-3">
+                      Global Content Management
+                    </h2>
+                    <p className="text-sm text-steel mt-2 font-sans leading-relaxed">
+                      Intuitive wireframe control interface to seamlessly inject and sync real-time visual assets, firm information, service descriptions, and portal guidelines.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => {
+                        setShowCustomForm(!showCustomForm);
+                        setNewCustomSuccess("");
+                        setNewCustomError("");
+                      }}
+                      className="px-4 py-2 bg-charcoal/5 dark:bg-concrete/5 text-charcoal dark:text-concrete font-mono text-[10px] uppercase tracking-widest hover:bg-steel/10 transition-colors flex items-center gap-2 rounded-sm border border-steel/10"
+                    >
+                      {showCustomForm ? "Hide Details" : "+ Custom Key"}
+                    </button>
+
+                    {confirmReset ? (
+                      <div className="flex items-center gap-2 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 p-1 rounded-sm">
+                        <span className="text-[9px] font-mono text-red-600 dark:text-red-400 uppercase tracking-widest animate-pulse px-2">Confirm reset?</span>
+                        <button
+                          onClick={async () => {
+                            setLoading(true);
+                            try {
+                              await resetToDefaults(user?.email || "admin@danuthia.com");
+                              setConfirmReset(false);
+                              setCmsEditValues({});
+                            } catch (e) {
+                              console.error(e);
+                            } finally {
+                              setLoading(false);
+                            }
+                          }}
+                          className="px-3 py-1 bg-red-600 text-white font-mono text-[9px] uppercase tracking-widest rounded-sm hover:bg-red-700 transition-colors shadow-sm"
+                        >
+                          Reset
+                        </button>
+                        <button
+                          onClick={() => setConfirmReset(false)}
+                          className="px-3 py-1 bg-white/50 dark:bg-charcoal/50 text-charcoal dark:text-concrete font-mono text-[9px] uppercase tracking-widest rounded-sm hover:bg-steel/10 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmReset(true)}
+                        className="px-4 py-2 border border-steel/20 text-steel font-mono text-[10px] uppercase tracking-widest hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-900/30 transition-all rounded-sm flex items-center gap-2"
+                      >
+                        <RotateCcw size={12} /> Defaults
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Custom Field Variable Creator Form Panel */}
+                {showCustomForm && (
+                  <div className="mb-8 border border-accent/20 bg-accent/5 p-6 animate-fadeIn">
+                    <div className="flex items-center justify-between mb-4 pb-2 border-b border-accent/10">
+                      <div className="flex items-center gap-2">
+                        <Sparkles size={16} className="text-accent animate-spin" style={{ animationDuration: '4s' }} />
+                        <h3 className="font-mono text-[11px] uppercase tracking-widest text-accent font-bold">Dynamic Schema Key Registration</h3>
+                      </div>
+                      <button onClick={() => setShowCustomForm(false)} className="text-steel hover:text-charcoal dark:hover:text-concrete">
+                        <X size={16} />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-mono uppercase tracking-wider text-steel mb-1">Resource Key Name (Unique/Lowercase)</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. project_banner_notice"
+                          value={customKey}
+                          onChange={(e) => setCustomKey(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                          className="w-full bg-concrete dark:bg-charcoal border border-steel/30 p-2.5 font-mono text-xs text-charcoal dark:text-concrete outline-none focus:border-accent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-mono uppercase tracking-wider text-steel mb-1">Friendly Label</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Pop-up Notice Title"
+                          value={customName}
+                          onChange={(e) => setCustomName(e.target.value)}
+                          className="w-full bg-concrete dark:bg-charcoal border border-steel/30 p-2.5 font-mono text-xs text-charcoal dark:text-concrete outline-none focus:border-accent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-mono uppercase tracking-wider text-steel mb-1">Data Layer Type</label>
+                        <select
+                          value={customType}
+                          onChange={(e: any) => setCustomType(e.target.value)}
+                          className="w-full bg-concrete dark:bg-charcoal border border-steel/30 p-2.5 font-mono text-xs text-charcoal dark:text-concrete outline-none focus:border-accent"
+                        >
+                          <option value="text">text (strings/paragraphs)</option>
+                          <option value="image">image (unsplash/base64 graphics)</option>
+                          <option value="video">video (mpeg/webm stream loops)</option>
+                          <option value="link">link (URLs/navigation anchors)</option>
+                          <option value="number">number (structural stats/integers)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-mono uppercase tracking-wider text-steel mb-1">Visual Group Classifier</label>
+                        <select
+                          value={customGroup}
+                          onChange={(e) => setCustomGroup(e.target.value)}
+                          className="w-full bg-concrete dark:bg-charcoal border border-steel/30 p-2.5 font-mono text-xs text-charcoal dark:text-concrete outline-none focus:border-accent"
+                        >
+                          <option value="Homepage">Homepage</option>
+                          <option value="Service Page">Service Page</option>
+                          <option value="Portfolio">Portfolio</option>
+                          <option value="Consultation Form">Consultation Form</option>
+                          <option value="Sustainability">Sustainability</option>
+                          <option value="About Section">About Section</option>
+                          <option value="Logbook">Logbook</option>
+                          <option value="Global">Global Elements</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <label className="block text-[10px] font-mono uppercase tracking-wider text-steel mb-1">Payload Value / Initial Content</label>
+                      <textarea
+                        rows={2}
+                        placeholder="Type initial layout string, image URL, or click preset shelf below..."
+                        value={customValue}
+                        onChange={(e) => setCustomValue(e.target.value)}
+                        className="w-full bg-concrete dark:bg-charcoal border border-steel/30 p-2.5 font-sans text-xs text-charcoal dark:text-concrete outline-none focus:border-accent"
+                      />
+                    </div>
+
+                    <div className="mt-4 flex items-center justify-between">
+                      <div className="text-[10px] font-mono uppercase tracking-wider text-steel">
+                        {newCustomError && <span className="text-red-500 font-bold">Error: {newCustomError}</span>}
+                        {newCustomSuccess && <span className="text-green-600 font-bold animate-pulse">✓ {newCustomSuccess}</span>}
+                      </div>
+                      <button
+                        onClick={async () => {
+                          setNewCustomError("");
+                          setNewCustomSuccess("");
+                          if (!customKey || !customName || !customValue) {
+                            setNewCustomError("All fields are mandatory to register a custom resource schema.");
+                            return;
+                          }
+                          const listToRender = (allResources && allResources.length > 0 ? allResources : DEFAULT_RESOURCES.map(r => ({ ...r, id: r.key })));
+                          if (listToRender.some(res => res.key === customKey)) {
+                            setNewCustomError(`A content key named '${customKey}' already exists in Firestore schemas.`);
+                            return;
+                          }
+
+                          setLoading(true);
+                          try {
+                            await updateResource(customKey, customValue, user?.email || "admin@danuthia.com", {
+                              name: customName,
+                              type: customType,
+                              group: customGroup
+                            });
+                            setNewCustomSuccess(`Registered successfully! Variable key '${customKey}' is now operational.`);
+                            setCustomKey("");
+                            setCustomName("");
+                            setCustomValue("");
+                            setTimeout(() => {
+                              setShowCustomForm(false);
+                            }, 3000);
+                          } catch (err) {
+                            setNewCustomError("Firestore rules rejected creation. Check permissions.");
+                          } finally {
+                            setLoading(false);
+                          }
+                        }}
+                        className="px-5 py-2.5 bg-accent text-concrete font-mono text-[10px] uppercase tracking-widest hover:bg-accent/90"
+                      >
+                        Publish Key to Schemas
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Filters and Search Bar */}
+                <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-8">
+                  <div className="flex gap-2 p-1 bg-charcoal/5 dark:bg-concrete/5 border border-steel/10 overflow-x-auto custom-scrollbar">
+                    {["All", "Homepage", "Service Page", "Portfolio", "Consultation Form", "Sustainability", "About Section", "Logbook", "Global"].map((grp) => (
+                      <button
+                        key={grp}
+                        onClick={() => setCmsGroupFilter(grp)}
+                        className={`px-4 py-2 font-mono text-[9px] uppercase tracking-widest transition-colors ${cmsGroupFilter === grp ? "bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal" : "text-steel hover:text-charcoal dark:hover:text-concrete"}`}
+                      >
+                        {grp}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="relative flex-1 md:max-w-md">
+                    <input
+                      type="text"
+                      placeholder="Search active Content keys & labels..."
+                      value={cmsSearchText}
+                      onChange={(e) => setCmsSearchText(e.target.value)}
+                      className="w-full bg-charcoal/5 dark:bg-concrete/5 border border-steel/30 p-3 font-mono text-xs text-charcoal dark:text-concrete outline-none focus:border-accent"
+                    />
+                  </div>
+                </div>
+
+                {/* CMS List */}
+                <div className="space-y-6">
+                  {(() => {
+                    const listToRender = (allResources && allResources.length > 0 ? allResources : DEFAULT_RESOURCES.map(r => ({ ...r, id: r.key }))).filter(res => {
+                      const matchesGroup = cmsGroupFilter === "All" || res.group === cmsGroupFilter;
+                      const matchesSearch = res.name.toLowerCase().includes(cmsSearchText.toLowerCase()) || res.key.toLowerCase().includes(cmsSearchText.toLowerCase());
+                      return matchesGroup && matchesSearch;
+                    });
+
+                    if (listToRender.length === 0) {
+                      return (
+                        <div className="py-12 text-center border border-dashed border-steel/20">
+                          <p className="font-mono text-xs text-steel uppercase tracking-widest">No managed resources match the query.</p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="grid grid-cols-1 gap-6">
+                        {listToRender.map((res) => {
+                          const currentVal = cmsEditValues[res.key] ?? res.value;
+                          const isEdited = currentVal !== res.value;
+                          const status = saveStatus[res.key] || "idle";
+
+                          const onPublish = async (valToSave: string) => {
+                            setSaveStatus(prev => ({ ...prev, [res.key]: "saving" }));
+                            try {
+                              await updateResource(res.key, valToSave, user?.email || "admin@danuthia.com");
+                              setSaveStatus(prev => ({ ...prev, [res.key]: "saved" }));
+                              setTimeout(() => {
+                                setSaveStatus(prev => ({ ...prev, [res.key]: "idle" }));
+                              }, 2000);
+                            } catch (err) {
+                              console.error(err);
+                              setSaveStatus(prev => ({ ...prev, [res.key]: "error" }));
+                            }
+                          };
+
+                          return (
+                            <div 
+                              key={res.key} 
+                              id={`cms-input-${res.key}`}
+                              className={`group relative overflow-hidden transition-all duration-300 border-l-[3px] border hover:shadow-lg ${isEdited ? "border-accent bg-accent/5 border-l-accent" : "border-steel/20 dark:border-steel/40 bg-white dark:bg-[#0f0f11] border-l-transparent hover:border-l-accent"}`}
+                            >
+                              <div className="p-6 md:p-8 flex flex-col xl:flex-row gap-8 items-start justify-between">
+                                <div className="flex-1 space-y-5 w-full">
+                                  <div className="flex items-center justify-between border-b border-steel/10 pb-3">
+                                    <div className="flex flex-col gap-1">
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-mono text-[9px] uppercase tracking-widest bg-charcoal/5 dark:bg-concrete/5 text-steel px-2 py-0.5 rounded-sm">
+                                          {res.group}
+                                        </span>
+                                        <div className="w-1 h-1 rounded-full bg-steel/30"></div>
+                                        <span className={`font-mono text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-sm ${res.type === 'image' || res.type === 'video' ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
+                                          {res.type}
+                                        </span>
+                                        {isEdited && (
+                                          <>
+                                            <div className="w-1 h-1 rounded-full bg-steel/30"></div>
+                                            <span className="font-mono text-[9px] uppercase tracking-widest bg-amber-500/20 text-amber-600 dark:text-amber-500 px-2 py-0.5 flex items-center gap-1.5 animate-pulse font-semibold">
+                                              <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span> Unsaved Draft
+                                            </span>
+                                          </>
+                                        )}
+                                      </div>
+                                      <div className="flex items-center gap-3 mt-2">
+                                        <h4 className="font-sans text-base font-semibold text-charcoal dark:text-concrete">
+                                          {res.name}
+                                        </h4>
+                                        <span className="font-mono text-[10px] text-steel/60">
+                                          {res.key}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="hidden xl:flex items-center gap-2">
+                                      {isEdited && (
+                                        <button
+                                          onClick={() => setCmsEditValues(prev => ({ ...prev, [res.key]: res.value }))}
+                                          className="p-1.5 text-steel hover:text-red-500 transition-colors"
+                                          title="Discard Changes"
+                                        >
+                                          <Undo size={14} />
+                                        </button>
+                                      )}
+                                      <button
+                                          onClick={() => onPublish(currentVal)}
+                                          disabled={status === "saving" || currentVal === res.value}
+                                          className={`px-4 py-2 font-mono text-[10px] uppercase tracking-widest rounded-sm transition-all flex items-center gap-2 ${status === "saved" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : status === "saving" ? "bg-amber-500/10 text-amber-600" : currentVal === res.value ? "bg-charcoal/5 dark:bg-concrete/5 text-steel opacity-50 cursor-not-allowed" : "bg-charcoal text-white hover:bg-black dark:bg-white dark:text-charcoal shadow-md"}`}
+                                        >
+                                          {status === "saved" ? <><Check size={14}/> Published</> : status === "saving" ? "Saving..." : currentVal === res.value ? "Up to date" : "Publish Changes"}
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  <div className="space-y-4">
+                                    {(res.type === "text" || res.type === "number") ? (
+                                      <div className="relative group/input">
+                                        <textarea
+                                          rows={res.type === 'text' && res.value.length > 100 ? 4 : 1}
+                                          value={currentVal}
+                                          onChange={(e) => {
+                                            setCmsEditValues(prev => ({ ...prev, [res.key]: e.target.value }));
+                                            e.target.style.height = 'auto';
+                                            e.target.style.height = e.target.scrollHeight + 'px';
+                                          }}
+                                          onFocus={(e) => {
+                                            e.target.style.height = 'auto';
+                                            e.target.style.height = e.target.scrollHeight + 'px';
+                                          }}
+                                          className={`w-full bg-charcoal/5 dark:bg-concrete/5 border-none p-4 rounded-sm font-sans ${res.type === 'text' && res.value.length > 50 ? 'text-sm' : 'text-lg font-medium'} text-charcoal dark:text-concrete outline-none focus:ring-1 focus:ring-accent/50 focus:bg-white dark:focus:bg-charcoal transition-all resize-none overflow-hidden block custom-scrollbar`}
+                                        />
+                                        <div className="absolute top-2 right-2 opacity-0 group-hover/input:opacity-100 transition-opacity pointer-events-none">
+                                          <Edit size={12} className="text-steel/50" />
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="space-y-3">
+                                        <div className="flex gap-2">
+                                          <input
+                                            type="text"
+                                            value={currentVal}
+                                            onChange={(e) => setCmsEditValues(prev => ({ ...prev, [res.key]: e.target.value }))}
+                                            placeholder="https://"
+                                            className="w-full bg-charcoal/5 dark:bg-concrete/5 border-none p-3 rounded-sm font-mono text-xs text-charcoal dark:text-concrete outline-none focus:ring-1 focus:ring-accent/50 focus:bg-white dark:focus:bg-charcoal transition-all"
+                                          />
+                                        </div>
+                                      </div>
+                                    )}
+
+                                  {(res.type === "image" || res.type === "video") && (
+                                    <div 
+                                      className="border border-dashed border-steel/30 hover:border-accent/50 p-4 transition-colors flex items-center justify-between cursor-pointer group"
+                                      onDragOver={(e) => e.preventDefault()}
+                                      onDrop={async (e) => {
+                                        e.preventDefault();
+                                        const file = e.dataTransfer.files?.[0];
+                                        if (file) {
+                                          setUploadingKeys(prev => ({ ...prev, [res.key]: true }));
+                                          setError("");
+                                          try {
+                                            const storageRef = ref(storage, `cms/${res.key}_${Date.now()}_${file.name}`);
+                                            const snapshot = await uploadBytes(storageRef, file);
+                                            const downloadURL = await getDownloadURL(snapshot.ref);
+                                            
+                                            await updateResource(res.key, downloadURL, user?.email || "admin@danuthia.com");
+                                            setCmsEditValues(prev => ({ ...prev, [res.key]: downloadURL }));
+                                          } catch (err) {
+                                            console.error(err);
+                                            setError("Failed to upload asset to Firebase Storage. Please check permissions and bucket configuration.");
+                                          } finally {
+                                            setUploadingKeys(prev => ({ ...prev, [res.key]: false }));
+                                          }
+                                        }
+                                      }}
+                                    >
+                                      <input
+                                        type="file"
+                                        id={`file-${res.key}`}
+                                        className="hidden"
+                                        accept={res.type === "image" ? "image/*" : "video/*"}
+                                        onChange={async (e) => {
+                                          const file = e.target.files?.[0];
+                                          if (file) {
+                                            setUploadingKeys(prev => ({ ...prev, [res.key]: true }));
+                                            setError("");
+                                            let uploadedRef = null;
+                                            try {
+                                              const storageRef = ref(storage, `cms/${res.key}_${Date.now()}_${file.name}`);
+                                              const snapshot = await uploadBytes(storageRef, file);
+                                              uploadedRef = snapshot.ref;
+                                              const downloadURL = await getDownloadURL(snapshot.ref);
+                                              
+                                              await updateResource(res.key, downloadURL, user?.email || "admin@danuthia.com");
+                                              setCmsEditValues(prev => ({ ...prev, [res.key]: downloadURL }));
+                                            } catch (err) {
+                                              console.error(err);
+                                              if (uploadedRef) {
+                                                await deleteObject(uploadedRef).catch(console.error);
+                                              }
+                                              setError("Failed to upload asset to Firebase Storage. Please check permissions and bucket configuration.");
+                                            } finally {
+                                              setUploadingKeys(prev => ({ ...prev, [res.key]: false }));
+                                            }
+                                          }
+                                        }}
+                                      />
+                                      <label htmlFor={`file-${res.key}`} className="flex items-center gap-3 w-full cursor-pointer">
+                                        <Upload size={14} className="text-steel group-hover:text-accent transition-colors" />
+                                        <span className="text-[10px] font-mono uppercase tracking-wider text-steel group-hover:text-charcoal dark:group-hover:text-concrete">
+                                          {uploadingKeys[res.key] ? "Processing Upload..." : "Drop file or Click to upload dynamic asset"}
+                                        </span>
+                                      </label>
+                                    </div>
+                                  )}
+                                </div>
+
+                                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-4 border-t border-steel/10 justify-between">
+                                    <div className="flex flex-wrap items-center gap-4">
+                                      <div className="flex items-center gap-1.5 px-3 py-1 bg-charcoal/5 dark:bg-concrete/5 rounded-sm">
+                                        <Clock size={10} className="text-steel" />
+                                        <span className="text-[9px] font-mono text-steel uppercase tracking-widest">
+                                          Update: {res.updatedBy || "System Default"}
+                                        </span>
+                                      </div>
+
+                                      {isEdited && (
+                                        <div className="flex items-center gap-1 px-3 py-1 bg-accent/10 rounded-sm">
+                                          <Info size={10} className="text-accent" />
+                                          <span className="text-[9px] font-mono text-accent">
+                                            {currentVal.length - res.value.length >= 0 ? `+${currentVal.length - res.value.length}` : `${currentVal.length - res.value.length}`} chars
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Mobile Publish Actions */}
+                                    <div className="flex xl:hidden items-center gap-2">
+                                      {isEdited && (
+                                        <button
+                                          onClick={() => setCmsEditValues(prev => ({ ...prev, [res.key]: res.value }))}
+                                          className="p-1.5 text-steel hover:text-red-500 transition-colors"
+                                          title="Discard Changes"
+                                        >
+                                          <Undo size={14} />
+                                        </button>
+                                      )}
+                                      <button
+                                          onClick={() => onPublish(currentVal)}
+                                          disabled={status === "saving" || currentVal === res.value}
+                                          className={`px-4 py-2 font-mono text-[10px] uppercase tracking-widest rounded-sm transition-all flex items-center gap-2 ${status === "saved" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : status === "saving" ? "bg-amber-500/10 text-amber-600" : currentVal === res.value ? "bg-charcoal/5 dark:bg-concrete/5 text-steel opacity-50 cursor-not-allowed" : "bg-charcoal text-white hover:bg-black dark:bg-white dark:text-charcoal shadow-md"}`}
+                                        >
+                                          {status === "saved" ? <><Check size={14}/> Published</> : status === "saving" ? "Saving..." : currentVal === res.value ? "Up to date" : "Publish"}
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Preview Asset Area (Only for visual items) */}
+                                {(res.type === "image" || res.type === "video") ? (
+                                  <div className="w-full xl:w-64 h-36 border border-steel/10 bg-charcoal/5 dark:bg-concrete/5 flex items-center justify-center flex-shrink-0 relative group">
+                                    {res.type === "image" && currentVal ? (
+                                      <img
+                                        src={currentVal}
+                                        alt="CMS Preview"
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                        referrerPolicy="no-referrer"
+                                        onError={(e) => {
+                                          e.currentTarget.style.display = "none";
+                                        }}
+                                      />
+                                    ) : res.type === "video" && currentVal ? (
+                                      <video
+                                        src={currentVal}
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                        muted
+                                        loop
+                                        autoPlay
+                                        playsInline
+                                        onError={(e) => {
+                                          e.currentTarget.style.display = "none";
+                                        }}
+                                      />
+                                    ) : (
+                                      <div className="p-4 text-center">
+                                        <span className="text-[9px] font-mono uppercase tracking-widest text-steel block">
+                                          Missing Visual Asset
+                                        </span>
+                                      </div>
+                                    )}
+                                    <div className="absolute inset-0 ring-1 ring-inset ring-black/10 dark:ring-white/10 pointer-events-none mix-blend-overlay"></div>
+                                  </div>
+                                ) : null}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+              <div className="hidden xl:block w-full xl:w-1/2 sticky top-8 h-[calc(100vh-64px)] space-y-8 pl-8 border-l border-steel/10">
+{/* Draggable Live Viewport Simulator - Real-time visual bindings */}
+                <div className="mb-8 border border-steel/20 bg-charcoal/5 dark:bg-concrete/5 p-6 rounded" id="live-wireframe">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <div>
+                      <h3 className="font-display text-lg font-light text-charcoal dark:text-concrete flex items-center gap-2">
+                        <Eye size={16} className="text-accent" />
+                        Dynamic Live Viewport Sandbox
+                      </h3>
+                      <p className="text-[10px] text-steel font-mono uppercase tracking-wider mt-0.5">
+                        Test draft layouts, interactive elements and typographic weight before publishing to database.
+                      </p>
+                    </div>
+
+                    {/* Simulator Controls */}
+                    <div className="flex items-center gap-4">
+                      {/* Section Tabs */}
+                      <div className="flex gap-1 bg-charcoal/10 dark:bg-concrete/10 p-1 border border-steel/15">
+                        {[
+                          { id: "/", label: "Homepage" },
+                          { id: "/about", label: "About Page" },
+                          { id: "/services", label: "Services" },
+                          { id: "/portfolio", label: "Portfolio" }
+                        ].map((tab) => (
+                          <button
+                            key={tab.id}
+                            onClick={() => setActiveSimulatorTab(tab.id)}
+                            className={`px-3 py-1 font-mono text-[8px] uppercase tracking-widest transition-colors ${activeSimulatorTab === tab.id ? "bg-charcoal text-concrete dark:bg-concrete dark:text-charcoal" : "text-steel hover:text-charcoal dark:hover:text-concrete"}`}
+                          >
+                            {tab.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Device Toggles */}
+                      <div className="flex border border-steel/25">
+                        <button
+                          onClick={() => setActiveSimulatorTheme("desktop")}
+                          className={`p-1.5 ${activeSimulatorTheme === "desktop" ? "bg-accent text-concrete" : "text-steel hover:text-charcoal dark:hover:text-concrete"}`}
+                          title="Desktop View"
+                        >
+                          <Laptop size={14} />
+                        </button>
+                        <button
+                          onClick={() => setActiveSimulatorTheme("mobile")}
+                          className={`p-1.5 ${activeSimulatorTheme === "mobile" ? "bg-accent text-concrete" : "text-steel hover:text-charcoal dark:hover:text-concrete"}`}
+                          title="Mobile View"
+                        >
+                          <Smartphone size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Simulator Screen Rendering */}
+                  <div className="flex justify-center bg-charcoal dark:bg-black/40 border border-steel/30 p-4 md:p-8 rounded relative overflow-hidden h-[600px] items-center">
+                    <div 
+                      className={`relative bg-charcoal shadow-2xl overflow-hidden transition-all duration-500 border border-steel/40 ${activeSimulatorTheme === "desktop" ? "w-full max-w-5xl h-[540px]" : "w-[375px] h-[540px]"}`}
+                    >
+                       <iframe 
+                         src={activeSimulatorTab} 
+                         className="w-full h-full border-none bg-concrete dark:bg-charcoal"
+                         title="CMS Interactive Simulator"
+                       />
+                       
+                       {/* Overlay indicator */}
+                       <div className="absolute bottom-4 right-4 pointer-events-none">
+                         <div className="bg-charcoal px-3 py-1.5 border border-steel/40 text-concrete font-mono text-[7px] uppercase tracking-widest rounded shadow-xl flex items-center gap-2">
+                           <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div> Live Preview Engine
+                         </div>
+                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stock Architectural Visuals presets library shelf */}
+                <div className="mb-8 border border-steel/20 p-6 bg-charcoal/5 dark:bg-concrete/5 rounded">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 pb-3 border-b border-steel/15">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Sparkles size={16} className="text-accent animate-pulse" />
+                        <h3 className="font-display text-base font-light text-charcoal dark:text-concrete">
+                          Premium Material & Architectural Asset Shelf
+                        </h3>
+                      </div>
+                      <p className="text-[10px] text-steel font-mono uppercase tracking-wider mt-0.5">
+                        Import professional high-resolution drone photography, master drafts, and concrete textures dynamically.
+                      </p>
+                    </div>
+
+                    {/* Presets target picker */}
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-[9px] uppercase tracking-widest text-steel font-semibold">Load to slot:</span>
+                      <select
+                        id="presetTargetSlotSelect"
+                        className="bg-concrete dark:bg-charcoal border border-steel/20 p-1.5 font-mono text-[10px] text-charcoal dark:text-concrete outline-none focus:border-accent"
+                      >
+                        <option value="hero_poster">Hero Background Image</option>
+                        <option value="process_before_image">Slider (Before Image)</option>
+                        <option value="process_after_image">Slider (After Image)</option>
+                        <option value="story_1_image">Story 1 Grid Image</option>
+                        <option value="story_2_image">Story 2 Grid Image</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
+                    {[
+                      { name: "Modern Raw Timber", url: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=1600&auto=format&fit=crop" },
+                      { name: "Luxury Cantilever", url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop" },
+                      { name: "CAD Sketch Drawing", url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=1600&auto=format&fit=crop" },
+                      { name: "Raw Concrete Slab", url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop" },
+                      { name: "Nairobi Skyline Dusk", url: "https://images.unsplash.com/photo-1449034446853-66c86144b0ad?q=80&w=1600&auto=format&fit=crop" },
+                      { name: "Lush Roof Garden", url: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=1600&auto=format&fit=crop" },
+                      { name: "Solar Skylight Atrium", url: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1600&auto=format&fit=crop" },
+                      { name: "Structural Shading Panel", url: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?q=80&w=1600&auto=format&fit=crop" }
+                    ].map((img, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          const selectElem = document.getElementById("presetTargetSlotSelect") as HTMLSelectElement;
+                          if (selectElem) {
+                            const targetKey = selectElem.value;
+                            setCmsEditValues(prev => ({ ...prev, [targetKey]: img.url }));
+                            setNewCustomSuccess(`Updated draft for ${targetKey}. Remember to Publish Update below.`);
+                            setTimeout(() => setNewCustomSuccess(""), 5000);
+                          }
+                        }}
+                        className="group relative h-16 w-full overflow-hidden border border-steel/20 hover:border-accent transition-all bg-charcoal flex flex-col justify-end"
+                        title="Click to apply this visual to selected CMS slot"
+                      >
+                        <img
+                          src={img.url}
+                          alt={img.name}
+                          className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:scale-110 transition-transform duration-500"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <span className="font-mono text-[8px] bg-accent text-concrete px-1 py-0.5 uppercase tracking-wider font-bold">Inject Slot</span>
+                        </div>
+                        <div className="p-1 z-10 w-full bg-black/60 truncate relative">
+                          <p className="font-mono text-[6px] text-white tracking-widest uppercase truncate">{img.name}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
-  );
+  )}
+</div>
+);
 }

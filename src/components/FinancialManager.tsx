@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot, doc, addDoc, updateDoc, deleteDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../firebase';
+import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { Plus, Save, Trash2, TrendingUp, CreditCard, Play, Calculator, PieChart, Info, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -30,6 +30,8 @@ export default function FinancialManager({ projectId, role }: { projectId: strin
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationResult, setSimulationResult] = useState<string | null>(null);
   
+  const [newInvoice, setNewInvoice] = useState({ description: '', amount: 0, dueDate: '' });
+
   const isEditable = role === 'project_manager' || role === 'financial_analyst' || role === 'admin';
 
   useEffect(() => {
@@ -81,6 +83,23 @@ export default function FinancialManager({ projectId, role }: { projectId: strin
       handleFirestoreError(e, OperationType.UPDATE, 'projects');
     } finally {
       setIsSavingParams(false);
+    }
+  };
+
+  const handleCreateInvoice = async () => {
+    if (!projectId || !newInvoice.description || newInvoice.amount <= 0 || !newInvoice.dueDate || !isEditable) return;
+    try {
+      await addDoc(collection(db, 'invoices'), {
+        clientId: projectId, // Assuming projectId is the clientId for invoices in this context
+        amount: Number(newInvoice.amount),
+        description: newInvoice.description,
+        dueDate: newInvoice.dueDate, // Must be YYYY-MM-DD
+        status: 'unpaid',
+        createdAt: serverTimestamp()
+      });
+      setNewInvoice({ description: '', amount: 0, dueDate: '' });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.CREATE, 'invoices');
     }
   };
 
@@ -395,40 +414,80 @@ export default function FinancialManager({ projectId, role }: { projectId: strin
             </div>
 
             {isEditable && (
-              <div className="mt-8 p-6 bg-charcoal dark:bg-charcoal/40 border border-steel/20">
-                <div className="flex items-center gap-2 mb-4">
-                  <Plus size={14} className="text-blue-500" />
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-concrete font-bold">Initialize New Cost Center</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <input 
-                    type="text" 
-                    placeholder="Activity Name (e.g., Concrete Foundation)" 
-                    className="bg-white/5 border border-steel/20 p-3 text-xs text-concrete focus:outline-none focus:border-blue-500 transition-all sm:col-span-1"
-                    value={newItem.costCenter}
-                    onChange={(e) => setNewItem({...newItem, costCenter: e.target.value})}
-                  />
-                  <input 
-                    type="number" 
-                    placeholder="Forecast ($)" 
-                    className="bg-white/5 border border-steel/20 p-3 text-xs text-concrete focus:outline-none focus:border-blue-500 transition-all"
-                    value={newItem.forecast || ''}
-                    onChange={(e) => setNewItem({...newItem, forecast: Number(e.target.value)})}
-                  />
-                  <div className="flex gap-2">
+              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-6 bg-charcoal dark:bg-charcoal/40 border border-steel/20">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Plus size={14} className="text-blue-500" />
+                    <span className="font-mono text-[9px] uppercase tracking-widest text-concrete font-bold">Initialize New Cost Center</span>
+                  </div>
+                  <div className="space-y-4">
                     <input 
-                      type="number" 
-                      placeholder="Actual ($)" 
-                      className="bg-white/5 border border-steel/20 p-3 text-xs text-concrete focus:outline-none focus:border-blue-500 transition-all flex-grow"
-                      value={newItem.actual || ''}
-                      onChange={(e) => setNewItem({...newItem, actual: Number(e.target.value)})}
+                      type="text" 
+                      placeholder="Activity (e.g., Concrete)" 
+                      className="w-full bg-white/5 border border-steel/20 p-3 text-xs text-concrete focus:outline-none focus:border-blue-500 transition-all"
+                      value={newItem.costCenter}
+                      onChange={(e) => setNewItem({...newItem, costCenter: e.target.value})}
                     />
+                    <div className="flex gap-2">
+                      <input 
+                        type="number" 
+                        placeholder="Forecast ($)" 
+                        className="w-1/2 bg-white/5 border border-steel/20 p-3 text-xs text-concrete focus:outline-none focus:border-blue-500 transition-all"
+                        value={newItem.forecast || ''}
+                        onChange={(e) => setNewItem({...newItem, forecast: Number(e.target.value)})}
+                      />
+                      <input 
+                        type="number" 
+                        placeholder="Actual ($)" 
+                        className="w-1/2 bg-white/5 border border-steel/20 p-3 text-xs text-concrete focus:outline-none focus:border-blue-500 transition-all"
+                        value={newItem.actual || ''}
+                        onChange={(e) => setNewItem({...newItem, actual: Number(e.target.value)})}
+                      />
+                    </div>
                     <button 
                       onClick={handleAddItem}
                       disabled={!newItem.costCenter}
-                      className="bg-blue-500 text-white px-5 py-3 hover:bg-blue-600 transition-all disabled:opacity-30 disabled:hover:bg-blue-500 shadow-lg shadow-blue-500/20 flex items-center justify-center"
+                      className="w-full bg-blue-500 text-white px-5 py-3 hover:bg-blue-600 transition-all disabled:opacity-30 disabled:hover:bg-blue-500 shadow-lg shadow-blue-500/20 flex items-center justify-center text-xs font-bold uppercase tracking-widest"
                     >
-                      <Plus size={18} />
+                      Add Cost Center
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-6 bg-accent/5 border border-accent/20">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Plus size={14} className="text-accent" />
+                    <span className="font-mono text-[9px] uppercase tracking-widest text-charcoal dark:text-concrete font-bold">Generate Client Invoice</span>
+                  </div>
+                  <div className="space-y-4">
+                    <input 
+                      type="text" 
+                      placeholder="Invoice Description (e.g. Design Phase 2)" 
+                      className="w-full bg-charcoal/5 dark:bg-white/5 border border-accent/20 p-3 text-xs text-charcoal dark:text-concrete focus:outline-none focus:border-accent transition-all"
+                      value={newInvoice.description}
+                      onChange={(e) => setNewInvoice({...newInvoice, description: e.target.value})}
+                    />
+                    <div className="flex gap-2">
+                      <input 
+                        type="number" 
+                        placeholder="Amount ($)" 
+                        className="w-1/2 bg-charcoal/5 dark:bg-white/5 border border-accent/20 p-3 text-xs text-charcoal dark:text-concrete focus:outline-none focus:border-accent transition-all"
+                        value={newInvoice.amount || ''}
+                        onChange={(e) => setNewInvoice({...newInvoice, amount: Number(e.target.value)})}
+                      />
+                      <input 
+                        type="date" 
+                        className="w-1/2 bg-charcoal/5 dark:bg-white/5 border border-accent/20 p-3 text-xs text-charcoal dark:text-concrete focus:outline-none focus:border-accent transition-all uppercase font-mono text-[10px]"
+                        value={newInvoice.dueDate}
+                        onChange={(e) => setNewInvoice({...newInvoice, dueDate: e.target.value})}
+                      />
+                    </div>
+                    <button 
+                      onClick={handleCreateInvoice}
+                      disabled={!newInvoice.description || newInvoice.amount <= 0 || !newInvoice.dueDate}
+                      className="w-full bg-accent text-white px-5 py-3 hover:bg-opacity-90 transition-all disabled:opacity-30 flex items-center justify-center text-xs font-bold uppercase tracking-widest"
+                    >
+                      Issue Invoice
                     </button>
                   </div>
                 </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Leaf, Wind, Droplets, Sun, Zap, Recycle, Trees, Globe, ShieldCheck, BarChart3 } from 'lucide-react';
+import HeroVideo from '../components/HeroVideo';
 
 const fadeInUp: any = {
   hidden: { opacity: 0, y: 40 },
@@ -21,16 +22,11 @@ export default function Sustainability() {
       {/* Hero Section */}
       <section className="relative bg-charcoal text-concrete p-8 md:p-16 pt-32 md:pt-40 flex flex-col justify-center overflow-hidden min-h-[70vh]">
         <div className="absolute inset-0 w-full h-full overflow-hidden">
-          <video 
-            autoPlay 
-            loop 
-            muted 
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-70"
-          >
-            <source src="https://i.imgur.com/DKkCVme.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent"></div>
+          <HeroVideo 
+            src="/videos/sustainability.mp4"
+            poster="https://images.unsplash.com/photo-1518005020951-eccb494ad742?q=80&w=2000&auto=format&fit=crop"
+            opacity={70}
+          />
         </div>
 
         <motion.div 
@@ -56,7 +52,7 @@ export default function Sustainability() {
             <span className="text-accent">Better World.</span>
           </motion.h1>
           <motion.p variants={fadeInUp} className="text-xl md:text-2xl text-concrete/70 font-light max-w-2xl leading-relaxed border-l border-accent pl-8">
-            At Danuthia & Associates., sustainability isn't a feature—it's the foundation. We engineer environments that harmonize human ambition with ecological resilience.
+            At Danuthia Associates Construction LLc, sustainability isn't a feature—it's the foundation. We engineer environments that harmonize human ambition with ecological resilience.
           </motion.p>
         </motion.div>
       </section>

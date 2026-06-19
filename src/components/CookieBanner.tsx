@@ -103,7 +103,7 @@ export default function CookieBanner() {
               <div className="flex-1">
                 <h3 className="font-display text-xl font-bold uppercase tracking-tight mb-3">Your Privacy Choices</h3>
                 <p className="font-mono text-xs leading-relaxed opacity-80 max-w-4xl">
-                  Danuthia & Associates uses essential cookies to ensure our platform functions securely, and analytical cookies to improve your digital experience. By clicking 'Accept All', you consent to our use of these technologies. You can manage your preferences by clicking 'Cookie Settings'.
+                  Danuthia Associates Construction LLc uses essential cookies to ensure our platform functions securely, and analytical cookies to improve your digital experience. By clicking 'Accept All', you consent to our use of these technologies. You can manage your preferences by clicking 'Cookie Settings'.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0 w-full lg:w-auto">
